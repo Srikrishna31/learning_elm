@@ -25,6 +25,14 @@ lightGray =
     Element.rgb255 180 180 180
 
 
+fontGreatVibes =
+    Element.Font.family [ Element.Font.typeface "GreatVibes" ]
+
+
+fontTypewriter =
+    Element.Font.family [ Element.Font.typeface "Typewriter" ]
+
+
 viewLayout =
     Element.layoutWith
         { options = []
@@ -44,13 +52,20 @@ viewTitle =
     Element.paragraph
         [ Element.Font.bold
         , Element.Font.color blue
+        , fontGreatVibes
+        , Element.Font.size 48
         ]
         [ Element.text "My Dog"
         ]
 
 
 viewSubtitle =
-    Element.paragraph [ Element.Font.color black ]
+    Element.paragraph
+        [ Element.Font.color black
+        , fontTypewriter
+        , Element.Font.size 16
+        , Element.paddingXY 0 10
+        ]
         [ Element.text "A web page for my dog"
         ]
 
