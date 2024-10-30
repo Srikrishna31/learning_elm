@@ -10201,6 +10201,11 @@ var $mdgriffith$elm_ui$Element$column = F2(
 						attrs))),
 			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
+var $mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
+	return {$: 'AlignX', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
+var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$CenterX);
 var $mdgriffith$elm_ui$Internal$Model$Fill = function (a) {
 	return {$: 'Fill', a: a};
 };
@@ -10256,11 +10261,21 @@ var $mdgriffith$elm_ui$Element$image = F2(
 						$mdgriffith$elm_ui$Internal$Model$Unkeyed(_List_Nil))
 					])));
 	});
+var $mdgriffith$elm_ui$Internal$Model$Max = F2(
+	function (a, b) {
+		return {$: 'Max', a: a, b: b};
+	});
+var $mdgriffith$elm_ui$Element$maximum = F2(
+	function (i, l) {
+		return A2($mdgriffith$elm_ui$Internal$Model$Max, i, l);
+	});
 var $author$project$Main$dogImage = A2(
 	$mdgriffith$elm_ui$Element$image,
 	_List_fromArray(
 		[
-			$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
+			$mdgriffith$elm_ui$Element$width(
+			A2($mdgriffith$elm_ui$Element$maximum, 300, $mdgriffith$elm_ui$Element$fill)),
+			$mdgriffith$elm_ui$Element$centerX
 		]),
 	{description: 'A picture of my dog', src: 'dog.png'});
 var $mdgriffith$elm_ui$Internal$Model$OnlyDynamic = F2(
@@ -10545,17 +10560,6 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 			f,
 			f));
 };
-var $author$project$Main$black = A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 0);
-var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
-			'color',
-			fontColor));
-};
 var $mdgriffith$elm_ui$Element$Font$family = function (families) {
 	return A2(
 		$mdgriffith$elm_ui$Internal$Model$StyleClass,
@@ -10571,6 +10575,44 @@ var $author$project$Main$fontTypewriter = $mdgriffith$elm_ui$Element$Font$family
 		[
 			$mdgriffith$elm_ui$Element$Font$typeface('Typewriter')
 		]));
+var $mdgriffith$elm_ui$Internal$Model$paddingName = F4(
+	function (top, right, bottom, left) {
+		return 'pad-' + ($elm$core$String$fromInt(top) + ('-' + ($elm$core$String$fromInt(right) + ('-' + ($elm$core$String$fromInt(bottom) + ('-' + $elm$core$String$fromInt(left)))))));
+	});
+var $mdgriffith$elm_ui$Element$paddingEach = function (_v0) {
+	var top = _v0.top;
+	var right = _v0.right;
+	var bottom = _v0.bottom;
+	var left = _v0.left;
+	if (_Utils_eq(top, right) && (_Utils_eq(top, bottom) && _Utils_eq(top, left))) {
+		var topFloat = top;
+		return A2(
+			$mdgriffith$elm_ui$Internal$Model$StyleClass,
+			$mdgriffith$elm_ui$Internal$Flag$padding,
+			A5(
+				$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
+				'p-' + $elm$core$String$fromInt(top),
+				topFloat,
+				topFloat,
+				topFloat,
+				topFloat));
+	} else {
+		return A2(
+			$mdgriffith$elm_ui$Internal$Model$StyleClass,
+			$mdgriffith$elm_ui$Internal$Flag$padding,
+			A5(
+				$mdgriffith$elm_ui$Internal$Model$PaddingStyle,
+				A4($mdgriffith$elm_ui$Internal$Model$paddingName, top, right, bottom, left),
+				top,
+				right,
+				bottom,
+				left));
+	}
+};
+var $author$project$Main$paddingTop = function (size) {
+	return $mdgriffith$elm_ui$Element$paddingEach(
+		{bottom: 0, left: 0, right: 0, top: size});
+};
 var $mdgriffith$elm_ui$Element$paddingXY = F2(
 	function (x, y) {
 		if (_Utils_eq(x, y)) {
@@ -10653,6 +10695,83 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
+var $author$project$Main$text1 = 'Chocolate cotton candy lemon drops cake lollipop icing lollipop. Bear claw dessert biscuit cake soufflé danish. Dragée sweet chocolate cake lollipop bonbon carrot cake cookie cupcake marshmallow. Cookie topping jelly brownie tiramisu chocolate cookie chocolate cake. Ice cream lemon drops jelly-o marshmallow bear claw shortbread ice cream ice cream. Danish marzipan chocolate cake sweet roll cake icing dessert. Jujubes cupcake dessert sesame snaps gummi bears dessert gummi bears. Chupa chups sesame snaps tart croissant liquorice sugar plum. Toffee lollipop lollipop chocolate cake pudding marzipan. Dragée marshmallow sweet wafer marzipan chocolate bar marzipan gummies. Dragée dessert toffee fruitcake shortbread bonbon chocolate bar donut. Lemon drops gummi bears sweet roll cheesecake toffee.';
+var $author$project$Main$text2 = 'Chupa chups cookie gummies biscuit croissant sweet toffee. Ice cream dragée fruitcake tiramisu apple pie toffee oat cake chocolate. Sweet roll caramels lemon drops bonbon jujubes sweet. Jelly-o powder dessert tart icing liquorice jelly beans lollipop. Bonbon lollipop tiramisu topping topping. Cake pudding carrot cake dessert carrot cake gingerbread sugar plum. Toffee croissant chupa chups sweet roll ice cream icing. Jelly apple pie muffin tootsie roll dragée gummies cupcake cookie cake. Tootsie roll jelly-o sesame snaps gingerbread marzipan tart icing. Wafer chupa chups candy canes fruitcake candy canes. Candy canes cookie lollipop icing candy canes cheesecake. Marshmallow jelly-o gummies gummies jelly. Cupcake jujubes caramels tootsie roll toffee pie. Cotton candy shortbread danish oat cake danish.';
+var $author$project$Main$text3 = 'Bonbon tart cotton candy brownie macaroon chupa chups muffin cheesecake. Soufflé apple pie chocolate cake jelly-o toffee cake soufflé lemon drops. Jelly-o candy canes cookie sweet toffee. Lemon drops sesame snaps toffee candy chocolate cake candy cake. Gummies dragée chupa chups soufflé tart cotton candy candy canes powder wafer. Sweet ice cream croissant apple pie pastry liquorice wafer pie. Sugar plum toffee soufflé chocolate cake soufflé chocolate cake donut jelly donut. Candy canes liquorice bear claw oat cake macaroon jelly. Sweet roll pudding muffin chocolate bar ice cream. Pudding bear claw wafer croissant cheesecake cheesecake. Liquorice sweet tootsie roll pastry toffee candy powder. Bonbon powder macaroon danish marshmallow biscuit chupa chups sweet roll. Marzipan icing danish chocolate cake powder gingerbread.';
+var $author$project$Main$text4 = 'Muffin biscuit carrot cake biscuit lollipop lemon drops bear claw pudding. Chocolate cake oat cake oat cake sugar plum dessert cake pastry. Candy tiramisu candy canes gingerbread wafer lollipop powder apple pie. Brownie toffee donut dragée marzipan sweet croissant cake icing. Candy canes gummi bears cake ice cream cake chocolate topping macaroon chocolate bar. Fruitcake jelly candy canes halvah bear claw jelly. Halvah jelly wafer jelly-o pie cotton candy marzipan pastry tootsie roll. Liquorice gummies chupa chups chocolate bar cheesecake cookie. Marshmallow dragée pudding lollipop pudding. Shortbread candy tart topping bear claw. Cake pudding gummies sweet roll powder. Gummies danish jelly beans marzipan pie fruitcake brownie donut. Carrot cake cotton candy shortbread dragée caramels cheesecake biscuit.';
+var $author$project$Main$text5 = 'Chocolate cupcake lollipop caramels biscuit halvah gummies powder cookie. Brownie jujubes sweet roll cheesecake tart jelly sweet. Jelly-o tootsie roll chocolate cake icing fruitcake sweet roll pudding gingerbread. Macaroon candy canes tootsie roll brownie dragée apple pie cake gummi bears. Cake bear claw bonbon carrot cake lemon drops. Liquorice brownie tart tiramisu sesame snaps. Ice cream soufflé chocolate cake bear claw apple pie. Candy fruitcake apple pie brownie tart sugar plum cake sweet roll. Gingerbread fruitcake cheesecake sweet roll jelly. Dessert tart topping muffin macaroon candy canes cheesecake soufflé fruitcake. Dessert candy canes marshmallow chocolate bar sweet candy canes chupa chups chocolate bar powder. Fruitcake gingerbread biscuit pastry liquorice. Gummi bears sesame snaps brownie cheesecake shortbread shortbread croissant.';
+var $author$project$Main$viewContent = A2(
+	$mdgriffith$elm_ui$Element$column,
+	_List_fromArray(
+		[
+			$author$project$Main$fontTypewriter,
+			$mdgriffith$elm_ui$Element$Font$size(16),
+			$author$project$Main$paddingTop(20)
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					A2($mdgriffith$elm_ui$Element$paddingXY, 0, 20)
+				]),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text($author$project$Main$text1)
+				])),
+			A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					A2($mdgriffith$elm_ui$Element$paddingXY, 0, 20)
+				]),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text($author$project$Main$text2)
+				])),
+			A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					A2($mdgriffith$elm_ui$Element$paddingXY, 0, 20)
+				]),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text($author$project$Main$text3)
+				])),
+			A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					A2($mdgriffith$elm_ui$Element$paddingXY, 0, 20)
+				]),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text($author$project$Main$text4)
+				])),
+			A2(
+			$mdgriffith$elm_ui$Element$paragraph,
+			_List_fromArray(
+				[
+					A2($mdgriffith$elm_ui$Element$paddingXY, 0, 20)
+				]),
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$text($author$project$Main$text5)
+				]))
+		]));
+var $author$project$Main$black = A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 0);
+var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
+			'color',
+			fontColor));
+};
 var $author$project$Main$viewSubtitle = A2(
 	$mdgriffith$elm_ui$Element$paragraph,
 	_List_fromArray(
@@ -10703,6 +10822,6 @@ var $author$project$Main$viewLayout = A3(
 		$mdgriffith$elm_ui$Element$column,
 		_List_Nil,
 		_List_fromArray(
-			[$author$project$Main$viewTitle, $author$project$Main$viewSubtitle, $author$project$Main$dogImage])));
+			[$author$project$Main$viewTitle, $author$project$Main$viewSubtitle, $author$project$Main$dogImage, $author$project$Main$viewContent])));
 var $author$project$Main$main = $author$project$Main$viewLayout;
 _Platform_export({'Main':{'init':_VirtualDom_init($author$project$Main$main)(0)(0)}});}(this));
