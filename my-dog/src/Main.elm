@@ -1,15 +1,37 @@
 module Main exposing (main)
 
+import Browser
 import Element
 import Element.Background
 import Element.Font
 
 
 main =
-    viewLayout
+    Browser.sandbox
+        { init = darkColors
+        , view = viewLayout
+        , update = update
+        }
 
 
-colors =
+update msg model =
+    model
+
+
+darkColors =
+    { lightGray = Element.rgb255 180 180 180
+    , primary = Element.rgb255 0xFF 0xAB 0x00
+    , primaryLight = Element.rgb255 0xFF 0xDD 0x4B
+    , primaryDark = Element.rgb255 0xC6 0x7C 0x00
+    , secondary = Element.rgb255 0x3E 0x27 0x23
+    , secondaryLight = Element.rgb255 0x6A 0x4F 0x4B
+    , secondaryDark = Element.rgb255 0x1B 0x00 0x00
+    , textOnPrimary = Element.rgb255 0x00 0x00 0x00
+    , textOnSecondary = Element.rgb255 0xFF 0xFF 0xFF
+    }
+
+
+lightColors =
     { lightGray = Element.rgb255 180 180 180
     , primary = Element.rgb255 0xFF 0xAB 0x00
     , primaryLight = Element.rgb255 0xFF 0xDD 0x4B
@@ -30,27 +52,27 @@ fontTypewriter =
     Element.Font.family [ Element.Font.typeface "Typewriter" ]
 
 
-viewLayout =
+viewLayout model =
     Element.layoutWith
         { options = []
         }
-        [ Element.Background.color colors.secondaryDark
+        [ Element.Background.color model.secondaryDark
         , Element.padding 22
-        , Element.Font.color colors.textOnSecondary
+        , Element.Font.color model.textOnSecondary
         ]
         (Element.column []
-            [ viewTitle
-            , viewSubtitle
+            [ viewTitle model
+            , viewSubtitle model
             , dogImage
             , viewContent
             ]
         )
 
 
-viewTitle =
+viewTitle model =
     Element.paragraph
         [ Element.Font.bold
-        , Element.Font.color colors.primary
+        , Element.Font.color model.primary
         , fontGreatVibes
         , Element.Font.size 52
         ]
@@ -58,9 +80,9 @@ viewTitle =
         ]
 
 
-viewSubtitle =
+viewSubtitle model =
     Element.paragraph
-        [ Element.Font.color colors.primaryLight
+        [ Element.Font.color model.primaryLight
         , fontTypewriter
         , Element.Font.size 16
         , Element.paddingXY 0 10
