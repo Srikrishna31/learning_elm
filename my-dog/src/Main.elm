@@ -9,20 +9,17 @@ main =
     viewLayout
 
 
-red =
-    Element.rgb255 255 0 0
-
-
-black =
-    Element.rgb255 0 0 0
-
-
-blue =
-    Element.rgb255 0 0 200
-
-
-lightGray =
-    Element.rgb255 180 180 180
+colors =
+    { lightGray = Element.rgb255 180 180 180
+    , primary = Element.rgb255 0xFF 0xAB 0x00
+    , primaryLight = Element.rgb255 0xFF 0xDD 0x4B
+    , primaryDark = Element.rgb255 0xC6 0x7C 0x00
+    , secondary = Element.rgb255 0x3E 0x27 0x23
+    , secondaryLight = Element.rgb255 0x6A 0x4F 0x4B
+    , secondaryDark = Element.rgb255 0x1B 0x00 0x00
+    , textOnPrimary = Element.rgb255 0x00 0x00 0x00
+    , textOnSecondary = Element.rgb255 0xFF 0xFF 0xFF
+    }
 
 
 fontGreatVibes =
@@ -37,8 +34,9 @@ viewLayout =
     Element.layoutWith
         { options = []
         }
-        [ Element.Background.color lightGray
+        [ Element.Background.color colors.secondaryDark
         , Element.padding 22
+        , Element.Font.color colors.textOnSecondary
         ]
         (Element.column []
             [ viewTitle
@@ -52,9 +50,9 @@ viewLayout =
 viewTitle =
     Element.paragraph
         [ Element.Font.bold
-        , Element.Font.color blue
+        , Element.Font.color colors.primary
         , fontGreatVibes
-        , Element.Font.size 48
+        , Element.Font.size 52
         ]
         [ Element.text "My Dog"
         ]
@@ -62,7 +60,7 @@ viewTitle =
 
 viewSubtitle =
     Element.paragraph
-        [ Element.Font.color black
+        [ Element.Font.color colors.primaryLight
         , fontTypewriter
         , Element.Font.size 16
         , Element.paddingXY 0 10

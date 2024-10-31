@@ -4497,6 +4497,36 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $mdgriffith$elm_ui$Internal$Flag$fontColor = $mdgriffith$elm_ui$Internal$Flag$flag(14);
+var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$fontColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
+			'color',
+			fontColor));
+};
+var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
+	function (a, b, c, d) {
+		return {$: 'Rgba', a: a, b: b, c: c, d: d};
+	});
+var $mdgriffith$elm_ui$Element$rgb255 = F3(
+	function (red, green, blue) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
+	});
+var $author$project$Main$colors = {
+	lightGray: A3($mdgriffith$elm_ui$Element$rgb255, 180, 180, 180),
+	primary: A3($mdgriffith$elm_ui$Element$rgb255, 255, 171, 0),
+	primaryDark: A3($mdgriffith$elm_ui$Element$rgb255, 198, 124, 0),
+	primaryLight: A3($mdgriffith$elm_ui$Element$rgb255, 255, 221, 75),
+	secondary: A3($mdgriffith$elm_ui$Element$rgb255, 62, 39, 35),
+	secondaryDark: A3($mdgriffith$elm_ui$Element$rgb255, 27, 0, 0),
+	secondaryLight: A3($mdgriffith$elm_ui$Element$rgb255, 106, 79, 75),
+	textOnPrimary: A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 0),
+	textOnSecondary: A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255)
+};
 var $mdgriffith$elm_ui$Internal$Model$Unkeyed = function (a) {
 	return {$: 'Unkeyed', a: a};
 };
@@ -10288,10 +10318,6 @@ var $mdgriffith$elm_ui$Internal$Model$StaticRootAndDynamic = F2(
 	});
 var $mdgriffith$elm_ui$Internal$Model$AllowHover = {$: 'AllowHover'};
 var $mdgriffith$elm_ui$Internal$Model$Layout = {$: 'Layout'};
-var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
-	function (a, b, c, d) {
-		return {$: 'Rgba', a: a, b: b, c: c, d: d};
-	});
 var $mdgriffith$elm_ui$Internal$Model$focusDefaultStyle = {
 	backgroundColor: $elm$core$Maybe$Nothing,
 	borderColor: $elm$core$Maybe$Nothing,
@@ -10437,7 +10463,6 @@ var $mdgriffith$elm_ui$Internal$Model$SansSerif = {$: 'SansSerif'};
 var $mdgriffith$elm_ui$Internal$Model$Typeface = function (a) {
 	return {$: 'Typeface', a: a};
 };
-var $mdgriffith$elm_ui$Internal$Flag$fontColor = $mdgriffith$elm_ui$Internal$Flag$flag(14);
 var $mdgriffith$elm_ui$Internal$Flag$fontFamily = $mdgriffith$elm_ui$Internal$Flag$flag(5);
 var $mdgriffith$elm_ui$Internal$Flag$fontSize = $mdgriffith$elm_ui$Internal$Flag$flag(4);
 var $elm$core$String$toLower = _String_toLower;
@@ -10537,11 +10562,6 @@ var $mdgriffith$elm_ui$Element$layoutWith = F3(
 				_Utils_ap($mdgriffith$elm_ui$Internal$Model$rootStyle, attrs)),
 			child);
 	});
-var $mdgriffith$elm_ui$Element$rgb255 = F3(
-	function (red, green, blue) {
-		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
-	});
-var $author$project$Main$lightGray = A3($mdgriffith$elm_ui$Element$rgb255, 180, 180, 180);
 var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
 	function (a, b, c, d, e) {
 		return {$: 'PaddingStyle', a: a, b: b, c: c, d: d, e: e};
@@ -10761,22 +10781,11 @@ var $author$project$Main$viewContent = A2(
 					$mdgriffith$elm_ui$Element$text($author$project$Main$text5)
 				]))
 		]));
-var $author$project$Main$black = A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 0);
-var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
-	return A2(
-		$mdgriffith$elm_ui$Internal$Model$StyleClass,
-		$mdgriffith$elm_ui$Internal$Flag$fontColor,
-		A3(
-			$mdgriffith$elm_ui$Internal$Model$Colored,
-			'fc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(fontColor),
-			'color',
-			fontColor));
-};
 var $author$project$Main$viewSubtitle = A2(
 	$mdgriffith$elm_ui$Element$paragraph,
 	_List_fromArray(
 		[
-			$mdgriffith$elm_ui$Element$Font$color($author$project$Main$black),
+			$mdgriffith$elm_ui$Element$Font$color($author$project$Main$colors.primaryLight),
 			$author$project$Main$fontTypewriter,
 			$mdgriffith$elm_ui$Element$Font$size(16),
 			A2($mdgriffith$elm_ui$Element$paddingXY, 0, 10)
@@ -10785,7 +10794,6 @@ var $author$project$Main$viewSubtitle = A2(
 		[
 			$mdgriffith$elm_ui$Element$text('A web page for my dog')
 		]));
-var $author$project$Main$blue = A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 200);
 var $mdgriffith$elm_ui$Internal$Model$Class = F2(
 	function (a, b) {
 		return {$: 'Class', a: a, b: b};
@@ -10802,9 +10810,9 @@ var $author$project$Main$viewTitle = A2(
 	_List_fromArray(
 		[
 			$mdgriffith$elm_ui$Element$Font$bold,
-			$mdgriffith$elm_ui$Element$Font$color($author$project$Main$blue),
+			$mdgriffith$elm_ui$Element$Font$color($author$project$Main$colors.primary),
 			$author$project$Main$fontGreatVibes,
-			$mdgriffith$elm_ui$Element$Font$size(48)
+			$mdgriffith$elm_ui$Element$Font$size(52)
 		]),
 	_List_fromArray(
 		[
@@ -10815,8 +10823,9 @@ var $author$project$Main$viewLayout = A3(
 	{options: _List_Nil},
 	_List_fromArray(
 		[
-			$mdgriffith$elm_ui$Element$Background$color($author$project$Main$lightGray),
-			$mdgriffith$elm_ui$Element$padding(22)
+			$mdgriffith$elm_ui$Element$Background$color($author$project$Main$colors.secondaryDark),
+			$mdgriffith$elm_ui$Element$padding(22),
+			$mdgriffith$elm_ui$Element$Font$color($author$project$Main$colors.textOnSecondary)
 		]),
 	A2(
 		$mdgriffith$elm_ui$Element$column,
