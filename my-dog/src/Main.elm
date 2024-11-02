@@ -6,8 +6,10 @@ import Element.Background
 import Element.Border
 import Element.Font
 import Element.Input
+import Html exposing (Html)
 
 
+main : Program () Model Msg
 main =
     Browser.sandbox
         { init = darkColors
@@ -20,7 +22,8 @@ type Msg
     = MsgChangeColors
 
 
-update msg model =
+update : Msg -> Model -> Model
+update _ model =
     if model.primary == darkColors.primary then
         lightColors
 
@@ -28,6 +31,7 @@ update msg model =
         darkColors
 
 
+darkColors : Model
 darkColors =
     { lightGray = Element.rgb255 180 180 180
     , primary = Element.rgb255 0xFF 0xAB 0x00
@@ -41,6 +45,7 @@ darkColors =
     }
 
 
+lightColors : Model
 lightColors =
     { lightGray = Element.rgb255 180 180 180
     , secondary = Element.rgb255 0xFF 0xAB 0x00
@@ -54,14 +59,30 @@ lightColors =
     }
 
 
+fontGreatVibes : Element.Attribute msg
 fontGreatVibes =
     Element.Font.family [ Element.Font.typeface "GreatVibes" ]
 
 
+fontTypewriter : Element.Attribute msg
 fontTypewriter =
     Element.Font.family [ Element.Font.typeface "Typewriter" ]
 
 
+type alias Model =
+    { primaryDark : Element.Color
+    , secondaryDark : Element.Color
+    , textOnSecondary : Element.Color
+    , primaryLight : Element.Color
+    , primary : Element.Color
+    , secondary : Element.Color
+    , secondaryLight : Element.Color
+    , lightGray : Element.Color
+    , textOnPrimary : Element.Color
+    }
+
+
+viewLayout : Model -> Html Msg
 viewLayout model =
     Element.layoutWith
         { options =
@@ -86,6 +107,7 @@ viewLayout model =
         )
 
 
+viewTitle : Model -> Element.Element msg
 viewTitle model =
     Element.paragraph
         [ Element.Font.bold
@@ -97,6 +119,7 @@ viewTitle model =
         ]
 
 
+viewSubtitle : Model -> Element.Element msg
 viewSubtitle model =
     Element.paragraph
         [ Element.Font.color model.primaryLight
@@ -108,6 +131,7 @@ viewSubtitle model =
         ]
 
 
+dogImage : Element.Element msg
 dogImage =
     Element.image
         [ Element.width (Element.maximum 300 Element.fill)
@@ -118,6 +142,7 @@ dogImage =
         }
 
 
+buttonChangeColors : Model -> Element.Element Msg
 buttonChangeColors model =
     Element.Input.button
         [ Element.Background.color model.primaryLight
@@ -136,18 +161,22 @@ buttonChangeColors model =
         }
 
 
+text1 : String
 text1 =
     "Chocolate cotton candy lemon drops cake lollipop icing lollipop. Bear claw dessert biscuit cake soufflé danish. Dragée sweet chocolate cake lollipop bonbon carrot cake cookie cupcake marshmallow. Cookie topping jelly brownie tiramisu chocolate cookie chocolate cake. Ice cream lemon drops jelly-o marshmallow bear claw shortbread ice cream ice cream. Danish marzipan chocolate cake sweet roll cake icing dessert. Jujubes cupcake dessert sesame snaps gummi bears dessert gummi bears. Chupa chups sesame snaps tart croissant liquorice sugar plum. Toffee lollipop lollipop chocolate cake pudding marzipan. Dragée marshmallow sweet wafer marzipan chocolate bar marzipan gummies. Dragée dessert toffee fruitcake shortbread bonbon chocolate bar donut. Lemon drops gummi bears sweet roll cheesecake toffee."
 
 
+text2 : String
 text2 =
     "Chupa chups cookie gummies biscuit croissant sweet toffee. Ice cream dragée fruitcake tiramisu apple pie toffee oat cake chocolate. Sweet roll caramels lemon drops bonbon jujubes sweet. Jelly-o powder dessert tart icing liquorice jelly beans lollipop. Bonbon lollipop tiramisu topping topping. Cake pudding carrot cake dessert carrot cake gingerbread sugar plum. Toffee croissant chupa chups sweet roll ice cream icing. Jelly apple pie muffin tootsie roll dragée gummies cupcake cookie cake. Tootsie roll jelly-o sesame snaps gingerbread marzipan tart icing. Wafer chupa chups candy canes fruitcake candy canes. Candy canes cookie lollipop icing candy canes cheesecake. Marshmallow jelly-o gummies gummies jelly. Cupcake jujubes caramels tootsie roll toffee pie. Cotton candy shortbread danish oat cake danish."
 
 
+text3 : String
 text3 =
     "Bonbon tart cotton candy brownie macaroon chupa chups muffin cheesecake. Soufflé apple pie chocolate cake jelly-o toffee cake soufflé lemon drops. Jelly-o candy canes cookie sweet toffee. Lemon drops sesame snaps toffee candy chocolate cake candy cake. Gummies dragée chupa chups soufflé tart cotton candy candy canes powder wafer. Sweet ice cream croissant apple pie pastry liquorice wafer pie. Sugar plum toffee soufflé chocolate cake soufflé chocolate cake donut jelly donut. Candy canes liquorice bear claw oat cake macaroon jelly. Sweet roll pudding muffin chocolate bar ice cream. Pudding bear claw wafer croissant cheesecake cheesecake. Liquorice sweet tootsie roll pastry toffee candy powder. Bonbon powder macaroon danish marshmallow biscuit chupa chups sweet roll. Marzipan icing danish chocolate cake powder gingerbread."
 
 
+text4 : String
 text4 =
     "Muffin biscuit carrot cake biscuit lollipop lemon drops bear claw pudding. Chocolate cake oat cake oat cake sugar plum dessert cake pastry. Candy tiramisu candy canes gingerbread wafer lollipop powder apple pie. Brownie toffee donut dragée marzipan sweet croissant cake icing. Candy canes gummi bears cake ice cream cake chocolate topping macaroon chocolate bar. Fruitcake jelly candy canes halvah bear claw jelly. Halvah jelly wafer jelly-o pie cotton candy marzipan pastry tootsie roll. Liquorice gummies chupa chups chocolate bar cheesecake cookie. Marshmallow dragée pudding lollipop pudding. Shortbread candy tart topping bear claw. Cake pudding gummies sweet roll powder. Gummies danish jelly beans marzipan pie fruitcake brownie donut. Carrot cake cotton candy shortbread dragée caramels cheesecake biscuit."
 
@@ -156,10 +185,12 @@ text5 =
     "Chocolate cupcake lollipop caramels biscuit halvah gummies powder cookie. Brownie jujubes sweet roll cheesecake tart jelly sweet. Jelly-o tootsie roll chocolate cake icing fruitcake sweet roll pudding gingerbread. Macaroon candy canes tootsie roll brownie dragée apple pie cake gummi bears. Cake bear claw bonbon carrot cake lemon drops. Liquorice brownie tart tiramisu sesame snaps. Ice cream soufflé chocolate cake bear claw apple pie. Candy fruitcake apple pie brownie tart sugar plum cake sweet roll. Gingerbread fruitcake cheesecake sweet roll jelly. Dessert tart topping muffin macaroon candy canes cheesecake soufflé fruitcake. Dessert candy canes marshmallow chocolate bar sweet candy canes chupa chups chocolate bar powder. Fruitcake gingerbread biscuit pastry liquorice. Gummi bears sesame snaps brownie cheesecake shortbread shortbread croissant."
 
 
+paddingTop : Int -> Element.Attribute msg
 paddingTop size =
     Element.paddingEach { top = size, right = 0, bottom = 0, left = 0 }
 
 
+viewContent : Element.Element msg
 viewContent =
     Element.column
         [ fontTypewriter

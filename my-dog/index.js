@@ -9737,7 +9737,7 @@ var $author$project$Main$lightColors = {
 	textOnSecondary: A3($mdgriffith$elm_ui$Element$rgb255, 0, 0, 0)
 };
 var $author$project$Main$update = F2(
-	function (msg, model) {
+	function (_v0, model) {
 		return _Utils_eq(model.primary, $author$project$Main$darkColors.primary) ? $author$project$Main$lightColors : $author$project$Main$darkColors;
 	});
 var $author$project$Main$MsgChangeColors = {$: 'MsgChangeColors'};
