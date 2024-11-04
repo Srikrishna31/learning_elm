@@ -18,29 +18,29 @@ main =
 
 initModel : () -> ( Model, Cmd Msg )
 initModel _ =
-    ( { title = "Loading", error = Nothing }, getTitle )
+    ( { result = Nothing }, getTitle )
 
 
 view : Model -> Html.Html msg
 view model =
-    case model.error of
-        Just error ->
-            Html.text (getErrorMessage error)
+    case model.result of
+        Just result ->
+            case result of
+                Err error ->
+                    Html.text (getErrorMessage error)
+
+                Ok title ->
+                    Html.text title
 
         Nothing ->
-            Html.text model.title
+            Html.text "Loading ..."
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         MsgGotTitle result ->
-            case result of
-                Ok data ->
-                    ( { model | title = data }, Cmd.none )
-
-                Err errorDetail ->
-                    ( { model | error = Just errorDetail }, Cmd.none )
+            ( { model | result = Just result }, Cmd.none )
 
 
 getErrorMessage errorDetail =
@@ -67,8 +67,7 @@ subscriptions _ =
 
 
 type alias Model =
-    { title : String
-    , error : Maybe Http.Error
+    { result : Maybe (Result Http.Error String)
     }
 
 
