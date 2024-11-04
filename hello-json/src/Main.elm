@@ -4,6 +4,7 @@ import Browser
 import Html
 import Http
 import Json.Decode
+import RemoteData exposing (RemoteData)
 
 
 main : Program () Model Msg
@@ -18,29 +19,30 @@ main =
 
 initModel : () -> ( Model, Cmd Msg )
 initModel _ =
-    ( { result = Nothing }, getTitle )
+    ( { result = RemoteData.NotAsked }, getTitle )
 
 
 view : Model -> Html.Html msg
 view model =
     case model.result of
-        Just result ->
-            case result of
-                Err error ->
-                    Html.text (getErrorMessage error)
+        RemoteData.Failure error ->
+            Html.text (getErrorMessage error)
 
-                Ok title ->
-                    Html.text title
+        RemoteData.Success title ->
+            Html.text title
 
-        Nothing ->
+        RemoteData.Loading ->
             Html.text "Loading ..."
+
+        RemoteData.NotAsked ->
+            Html.text "Where everything starts"
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
         MsgGotTitle result ->
-            ( { model | result = Just result }, Cmd.none )
+            ( { model | result = result }, Cmd.none )
 
 
 getErrorMessage errorDetail =
@@ -67,20 +69,25 @@ subscriptions _ =
 
 
 type alias Model =
-    { result : Maybe (Result Http.Error String)
+    { result : RemoteData Http.Error String
     }
 
 
 type Msg
-    = MsgGotTitle (Result Http.Error String)
+    = MsgGotTitle (RemoteData Http.Error String)
 
 
 getTitle : Cmd Msg
 getTitle =
     Http.get
         { url = "https://jsonplaceholder.typicode.com/posts/2"
-        , expect = Http.expectJson MsgGotTitle dataTitleDecoder
+        , expect = Http.expectJson upgradeToRemoteData dataTitleDecoder
         }
+
+
+upgradeToRemoteData : Result Http.Error String -> Msg
+upgradeToRemoteData result =
+    MsgGotTitle (RemoteData.fromResult result)
 
 
 dataTitleDecoder : Json.Decode.Decoder String
