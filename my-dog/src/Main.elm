@@ -1,21 +1,12 @@
 module Main exposing (main)
 
 import Browser
-import Element
-    exposing
-        ( Element
-        , centerX
-        , fill
-        , image
-        , maximum
-        , paddingXY
-        , text
-        , width
-        )
-import Element.Background
-import Element.Border
+import Element as E
+import Element.Background as EBG
+import Element.Border as EB
 import Element.Font as EF
 import Element.Input as EI
+import Element.Region as ER
 import Html exposing (Html)
 
 
@@ -43,71 +34,71 @@ update _ model =
 
 darkColors : Model
 darkColors =
-    { lightGray = Element.rgb255 180 180 180
-    , primary = Element.rgb255 0xFF 0xAB 0x00
-    , primaryLight = Element.rgb255 0xFF 0xDD 0x4B
-    , primaryDark = Element.rgb255 0xC6 0x7C 0x00
-    , secondary = Element.rgb255 0x3E 0x27 0x23
-    , secondaryLight = Element.rgb255 0x6A 0x4F 0x4B
-    , secondaryDark = Element.rgb255 0x1B 0x00 0x00
-    , textOnPrimary = Element.rgb255 0x00 0x00 0x00
-    , textOnSecondary = Element.rgb255 0xFF 0xFF 0xFF
+    { lightGray = E.rgb255 180 180 180
+    , primary = E.rgb255 0xFF 0xAB 0x00
+    , primaryLight = E.rgb255 0xFF 0xDD 0x4B
+    , primaryDark = E.rgb255 0xC6 0x7C 0x00
+    , secondary = E.rgb255 0x3E 0x27 0x23
+    , secondaryLight = E.rgb255 0x6A 0x4F 0x4B
+    , secondaryDark = E.rgb255 0x1B 0x00 0x00
+    , textOnPrimary = E.rgb255 0x00 0x00 0x00
+    , textOnSecondary = E.rgb255 0xFF 0xFF 0xFF
     }
 
 
 lightColors : Model
 lightColors =
-    { lightGray = Element.rgb255 180 180 180
-    , secondary = Element.rgb255 0xFF 0xAB 0x00
-    , secondaryLight = Element.rgb255 0xFF 0xDD 0x4B
-    , secondaryDark = Element.rgb255 0xC6 0x7C 0x00
-    , primary = Element.rgb255 0x3E 0x27 0x23
-    , primaryLight = Element.rgb255 0x6A 0x4F 0x4B
-    , primaryDark = Element.rgb255 0x1B 0x00 0x00
-    , textOnSecondary = Element.rgb255 0x00 0x00 0x00
-    , textOnPrimary = Element.rgb255 0xFF 0xFF 0xFF
+    { lightGray = E.rgb255 180 180 180
+    , secondary = E.rgb255 0xFF 0xAB 0x00
+    , secondaryLight = E.rgb255 0xFF 0xDD 0x4B
+    , secondaryDark = E.rgb255 0xC6 0x7C 0x00
+    , primary = E.rgb255 0x3E 0x27 0x23
+    , primaryLight = E.rgb255 0x6A 0x4F 0x4B
+    , primaryDark = E.rgb255 0x1B 0x00 0x00
+    , textOnSecondary = E.rgb255 0x00 0x00 0x00
+    , textOnPrimary = E.rgb255 0xFF 0xFF 0xFF
     }
 
 
-fontGreatVibes : Element.Attribute msg
+fontGreatVibes : E.Attribute msg
 fontGreatVibes =
     EF.family [ EF.typeface "GreatVibes" ]
 
 
-fontTypewriter : Element.Attribute msg
+fontTypewriter : E.Attribute msg
 fontTypewriter =
     EF.family [ EF.typeface "Typewriter" ]
 
 
 type alias Model =
-    { primaryDark : Element.Color
-    , secondaryDark : Element.Color
-    , textOnSecondary : Element.Color
-    , primaryLight : Element.Color
-    , primary : Element.Color
-    , secondary : Element.Color
-    , secondaryLight : Element.Color
-    , lightGray : Element.Color
-    , textOnPrimary : Element.Color
+    { primaryDark : E.Color
+    , secondaryDark : E.Color
+    , textOnSecondary : E.Color
+    , primaryLight : E.Color
+    , primary : E.Color
+    , secondary : E.Color
+    , secondaryLight : E.Color
+    , lightGray : E.Color
+    , textOnPrimary : E.Color
     }
 
 
 viewLayout : Model -> Html Msg
 viewLayout model =
-    Element.layoutWith
+    E.layoutWith
         { options =
-            [ Element.focusStyle
+            [ E.focusStyle
                 { backgroundColor = Nothing
                 , borderColor = Just model.primaryDark
                 , shadow = Nothing
                 }
             ]
         }
-        [ Element.Background.color model.secondaryDark
-        , Element.padding 22
+        [ EBG.color model.secondaryDark
+        , E.padding 22
         , EF.color model.textOnSecondary
         ]
-        (Element.column []
+        (E.column []
             [ buttonChangeColors model
             , viewTitle model
             , viewSubtitle model
@@ -117,57 +108,59 @@ viewLayout model =
         )
 
 
-viewTitle : Model -> Element.Element msg
+viewTitle : Model -> E.Element msg
 viewTitle model =
-    Element.paragraph
+    E.paragraph
         [ EF.bold
         , EF.color model.primary
         , fontGreatVibes
         , EF.size 52
+        , ER.heading 1
         ]
-        [ Element.text "My Dog"
+        [ E.text "My Dog"
         ]
 
 
-viewSubtitle : Model -> Element.Element msg
+viewSubtitle : Model -> E.Element msg
 viewSubtitle model =
-    Element.paragraph
+    E.paragraph
         [ EF.color model.primaryLight
         , fontTypewriter
         , EF.size 16
-        , Element.paddingXY 0 10
+        , E.paddingXY 0 10
+        , ER.heading 2
         ]
-        [ Element.text "A web page for my dog"
+        [ E.text "A web page for my dog"
         ]
 
 
-dogImage : Element.Element msg
+dogImage : E.Element msg
 dogImage =
-    Element.image
-        [ Element.width (Element.maximum 300 Element.fill)
-        , Element.centerX
+    E.image
+        [ E.width (E.maximum 300 E.fill)
+        , E.centerX
         ]
         { src = "dog.png"
         , description = "A picture of my dog"
         }
 
 
-buttonChangeColors : Model -> Element.Element Msg
+buttonChangeColors : Model -> E.Element Msg
 buttonChangeColors model =
     EI.button
-        [ Element.Background.color model.primaryLight
-        , Element.Border.rounded 8
+        [ EBG.color model.primaryLight
+        , EB.rounded 8
         , EF.color model.secondaryDark
-        , Element.alignRight
-        , Element.paddingEach { top = 12, right = 12, bottom = 12, left = 12 }
+        , E.alignRight
+        , E.paddingEach { top = 12, right = 12, bottom = 12, left = 12 }
         , EF.size 16
         , EF.bold
-        , Element.mouseOver
-            [ Element.Background.color model.primary
+        , E.mouseOver
+            [ EB.color model.primary
             ]
         ]
         { onPress = Just MsgChangeColors
-        , label = Element.text "Change colors"
+        , label = E.text "Change colors"
         }
 
 
@@ -195,33 +188,34 @@ text5 =
     "Chocolate cupcake lollipop caramels biscuit halvah gummies powder cookie. Brownie jujubes sweet roll cheesecake tart jelly sweet. Jelly-o tootsie roll chocolate cake icing fruitcake sweet roll pudding gingerbread. Macaroon candy canes tootsie roll brownie dragée apple pie cake gummi bears. Cake bear claw bonbon carrot cake lemon drops. Liquorice brownie tart tiramisu sesame snaps. Ice cream soufflé chocolate cake bear claw apple pie. Candy fruitcake apple pie brownie tart sugar plum cake sweet roll. Gingerbread fruitcake cheesecake sweet roll jelly. Dessert tart topping muffin macaroon candy canes cheesecake soufflé fruitcake. Dessert candy canes marshmallow chocolate bar sweet candy canes chupa chups chocolate bar powder. Fruitcake gingerbread biscuit pastry liquorice. Gummi bears sesame snaps brownie cheesecake shortbread shortbread croissant."
 
 
-paddingTop : Int -> Element.Attribute msg
+paddingTop : Int -> E.Attribute msg
 paddingTop size =
-    Element.paddingEach { top = size, right = 0, bottom = 0, left = 0 }
+    E.paddingEach { top = size, right = 0, bottom = 0, left = 0 }
 
 
-viewContent : Element.Element msg
+viewContent : E.Element msg
 viewContent =
-    Element.column
+    E.column
         [ fontTypewriter
         , EF.size 16
         , paddingTop 20
+        , ER.mainContent
         ]
-        [ Element.paragraph
-            [ Element.paddingXY 0 20
+        [ E.paragraph
+            [ E.paddingXY 0 20
             ]
-            [ Element.text text1
+            [ E.text text1
             ]
-        , Element.paragraph
-            [ Element.paddingXY 0 20 ]
-            [ Element.text text2 ]
-        , Element.paragraph
-            [ Element.paddingXY 0 20 ]
-            [ Element.text text3 ]
-        , Element.paragraph
-            [ Element.paddingXY 0 20 ]
-            [ Element.text text4 ]
-        , Element.paragraph
-            [ Element.paddingXY 0 20 ]
-            [ Element.text text5 ]
+        , E.paragraph
+            [ E.paddingXY 0 20 ]
+            [ E.text text2 ]
+        , E.paragraph
+            [ E.paddingXY 0 20 ]
+            [ E.text text3 ]
+        , E.paragraph
+            [ E.paddingXY 0 20 ]
+            [ E.text text4 ]
+        , E.paragraph
+            [ E.paddingXY 0 20 ]
+            [ E.text text5 ]
         ]

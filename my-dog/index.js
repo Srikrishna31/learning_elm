@@ -15291,6 +15291,17 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
+var $mdgriffith$elm_ui$Internal$Flag$borderColor = $mdgriffith$elm_ui$Internal$Flag$flag(28);
+var $mdgriffith$elm_ui$Element$Border$color = function (clr) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$borderColor,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$Colored,
+			'bc-' + $mdgriffith$elm_ui$Internal$Model$formatColorClass(clr),
+			'border-color',
+			clr));
+};
 var $mdgriffith$elm_ui$Internal$Flag$fontColor = $mdgriffith$elm_ui$Internal$Flag$flag(14);
 var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 	return A2(
@@ -15524,7 +15535,7 @@ var $author$project$Main$buttonChangeColors = function (model) {
 				$mdgriffith$elm_ui$Element$mouseOver(
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$Background$color(model.primary)
+						$mdgriffith$elm_ui$Element$Border$color(model.primary)
 					]))
 			]),
 		{
@@ -15908,6 +15919,8 @@ var $author$project$Main$fontTypewriter = $mdgriffith$elm_ui$Element$Font$family
 		[
 			$mdgriffith$elm_ui$Element$Font$typeface('Typewriter')
 		]));
+var $mdgriffith$elm_ui$Internal$Model$Main = {$: 'Main'};
+var $mdgriffith$elm_ui$Element$Region$mainContent = $mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Main);
 var $author$project$Main$paddingTop = function (size) {
 	return $mdgriffith$elm_ui$Element$paddingEach(
 		{bottom: 0, left: 0, right: 0, top: size});
@@ -15990,7 +16003,8 @@ var $author$project$Main$viewContent = A2(
 		[
 			$author$project$Main$fontTypewriter,
 			$mdgriffith$elm_ui$Element$Font$size(16),
-			$author$project$Main$paddingTop(20)
+			$author$project$Main$paddingTop(20),
+			$mdgriffith$elm_ui$Element$Region$mainContent
 		]),
 	_List_fromArray(
 		[
@@ -16045,6 +16059,10 @@ var $author$project$Main$viewContent = A2(
 					$mdgriffith$elm_ui$Element$text($author$project$Main$text5)
 				]))
 		]));
+var $mdgriffith$elm_ui$Internal$Model$Heading = function (a) {
+	return {$: 'Heading', a: a};
+};
+var $mdgriffith$elm_ui$Element$Region$heading = A2($elm$core$Basics$composeL, $mdgriffith$elm_ui$Internal$Model$Describe, $mdgriffith$elm_ui$Internal$Model$Heading);
 var $author$project$Main$viewSubtitle = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$paragraph,
@@ -16053,7 +16071,8 @@ var $author$project$Main$viewSubtitle = function (model) {
 				$mdgriffith$elm_ui$Element$Font$color(model.primaryLight),
 				$author$project$Main$fontTypewriter,
 				$mdgriffith$elm_ui$Element$Font$size(16),
-				A2($mdgriffith$elm_ui$Element$paddingXY, 0, 10)
+				A2($mdgriffith$elm_ui$Element$paddingXY, 0, 10),
+				$mdgriffith$elm_ui$Element$Region$heading(2)
 			]),
 		_List_fromArray(
 			[
@@ -16073,7 +16092,8 @@ var $author$project$Main$viewTitle = function (model) {
 				$mdgriffith$elm_ui$Element$Font$bold,
 				$mdgriffith$elm_ui$Element$Font$color(model.primary),
 				$author$project$Main$fontGreatVibes,
-				$mdgriffith$elm_ui$Element$Font$size(52)
+				$mdgriffith$elm_ui$Element$Font$size(52),
+				$mdgriffith$elm_ui$Element$Region$heading(1)
 			]),
 		_List_fromArray(
 			[
