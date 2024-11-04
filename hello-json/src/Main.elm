@@ -18,12 +18,17 @@ main =
 
 initModel : () -> ( Model, Cmd Msg )
 initModel _ =
-    ( { title = "Testing" }, getTitle )
+    ( { title = "Loading", error = Nothing }, getTitle )
 
 
 view : Model -> Html.Html msg
 view model =
-    Html.text model.title
+    case model.error of
+        Just error ->
+            Html.text (getErrorMessage error)
+
+        Nothing ->
+            Html.text model.title
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -34,8 +39,26 @@ update msg model =
                 Ok data ->
                     ( { model | title = data }, Cmd.none )
 
-                Err _ ->
-                    ( { model | title = "Error" }, Cmd.none )
+                Err errorDetail ->
+                    ( { model | error = Just errorDetail }, Cmd.none )
+
+
+getErrorMessage errorDetail =
+    case errorDetail of
+        Http.NetworkError ->
+            "Connection error"
+
+        Http.BadStatus errorStatus ->
+            "Invalid server response " ++ String.fromInt errorStatus
+
+        Http.Timeout ->
+            "Request time out"
+
+        Http.BadUrl reasonError ->
+            "Invalid request URL " ++ reasonError
+
+        Http.BadBody invalidData ->
+            "Invalid data " ++ invalidData
 
 
 subscriptions : Model -> Sub msg
@@ -45,6 +68,7 @@ subscriptions _ =
 
 type alias Model =
     { title : String
+    , error : Maybe Http.Error
     }
 
 
