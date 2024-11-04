@@ -2,10 +2,20 @@ module Main exposing (main)
 
 import Browser
 import Element
+    exposing
+        ( Element
+        , centerX
+        , fill
+        , image
+        , maximum
+        , paddingXY
+        , text
+        , width
+        )
 import Element.Background
 import Element.Border
-import Element.Font
-import Element.Input
+import Element.Font as EF
+import Element.Input as EI
 import Html exposing (Html)
 
 
@@ -61,12 +71,12 @@ lightColors =
 
 fontGreatVibes : Element.Attribute msg
 fontGreatVibes =
-    Element.Font.family [ Element.Font.typeface "GreatVibes" ]
+    EF.family [ EF.typeface "GreatVibes" ]
 
 
 fontTypewriter : Element.Attribute msg
 fontTypewriter =
-    Element.Font.family [ Element.Font.typeface "Typewriter" ]
+    EF.family [ EF.typeface "Typewriter" ]
 
 
 type alias Model =
@@ -95,7 +105,7 @@ viewLayout model =
         }
         [ Element.Background.color model.secondaryDark
         , Element.padding 22
-        , Element.Font.color model.textOnSecondary
+        , EF.color model.textOnSecondary
         ]
         (Element.column []
             [ buttonChangeColors model
@@ -110,10 +120,10 @@ viewLayout model =
 viewTitle : Model -> Element.Element msg
 viewTitle model =
     Element.paragraph
-        [ Element.Font.bold
-        , Element.Font.color model.primary
+        [ EF.bold
+        , EF.color model.primary
         , fontGreatVibes
-        , Element.Font.size 52
+        , EF.size 52
         ]
         [ Element.text "My Dog"
         ]
@@ -122,9 +132,9 @@ viewTitle model =
 viewSubtitle : Model -> Element.Element msg
 viewSubtitle model =
     Element.paragraph
-        [ Element.Font.color model.primaryLight
+        [ EF.color model.primaryLight
         , fontTypewriter
-        , Element.Font.size 16
+        , EF.size 16
         , Element.paddingXY 0 10
         ]
         [ Element.text "A web page for my dog"
@@ -144,14 +154,14 @@ dogImage =
 
 buttonChangeColors : Model -> Element.Element Msg
 buttonChangeColors model =
-    Element.Input.button
+    EI.button
         [ Element.Background.color model.primaryLight
         , Element.Border.rounded 8
-        , Element.Font.color model.secondaryDark
+        , EF.color model.secondaryDark
         , Element.alignRight
         , Element.paddingEach { top = 12, right = 12, bottom = 12, left = 12 }
-        , Element.Font.size 16
-        , Element.Font.bold
+        , EF.size 16
+        , EF.bold
         , Element.mouseOver
             [ Element.Background.color model.primary
             ]
@@ -194,7 +204,7 @@ viewContent : Element.Element msg
 viewContent =
     Element.column
         [ fontTypewriter
-        , Element.Font.size 16
+        , EF.size 16
         , paddingTop 20
         ]
         [ Element.paragraph
