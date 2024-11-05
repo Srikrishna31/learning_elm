@@ -13,13 +13,20 @@ import Json.Decode as JD
 
 type alias Model =
     { searchText : String
-    , results : List String
+    , results : List Book
+    }
+
+
+type alias Book =
+    { title : String
+    , thumbnail : String
+    , link : String
     }
 
 
 type Msg
     = MsgSearch
-    | MsgGotResults (Result Http.Error (List String))
+    | MsgGotResults (Result Http.Error (List Book))
     | MsgInputTextField String
 
 
@@ -33,7 +40,7 @@ main =
         }
 
 
-init : () -> ( Model, Cmd msg )
+init : () -> ( Model, Cmd Msg )
 init _ =
     ( initModel, Cmd.none )
 
@@ -57,7 +64,7 @@ update msg model =
             ( { model | searchText = newTextInput }, Cmd.none )
 
         MsgSearch ->
-            ( model, cmdSearch )
+            ( model, cmdSearch model )
 
         MsgGotResults result ->
             case result of
@@ -118,36 +125,49 @@ viewSearchButton =
         }
 
 
-viewResults : Model -> E.Element Msg
+viewResults : Model -> E.Element msg
 viewResults model =
     E.column []
         [ case List.head model.results of
             Just firstItem ->
-                E.text firstItem
+                E.text firstItem.title
 
             Nothing ->
                 E.text "Empty"
         ]
 
 
-cmdSearch : Cmd Msg
-cmdSearch =
+cmdSearch : Model -> Cmd Msg
+cmdSearch model =
     Http.get
-        { url = "https://www.googleapis.com/books/v1/volumes?q=Elm+Language"
+        { url = "https://www.googleapis.com/books/v1/volumes?q=" ++ model.searchText
         , expect = Http.expectJson MsgGotResults decodeJson
         }
 
 
-decodeJson : JD.Decoder (List String)
+decodeJson : JD.Decoder (List Book)
 decodeJson =
     JD.field "items" decodeItems
 
 
-decodeItems : JD.Decoder (List String)
+decodeItems : JD.Decoder (List Book)
 decodeItems =
     JD.list decodeItem
 
 
-decodeItem : JD.Decoder String
+decodeItem : JD.Decoder Book
 decodeItem =
-    JD.field "id" JD.string
+    JD.field "volumInfo" decodeVolumeInfo
+
+
+decodeVolumeInfo : JD.Decoder Book
+decodeVolumeInfo =
+    JD.map3 Book
+        (JD.field "title" JD.string)
+        (JD.field "imageLinks" decodeImageLinks)
+        (JD.field "canonicalVolumeLink" JD.string)
+
+
+decodeImageLinks : JD.Decoder String
+decodeImageLinks =
+    JD.field "thumbnail" JD.string
