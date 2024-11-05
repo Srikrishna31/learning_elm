@@ -4,6 +4,7 @@ import Browser
 import Element as E
 import Element.Background as EBG
 import Element.Border as EB
+import Element.Font as EF
 import Element.Input as EI
 import Html
 
@@ -67,15 +68,44 @@ subscriptions _ =
 
 viewLayout : Model -> Html.Html Msg
 viewLayout model =
-    E.layout []
+    E.layoutWith
+        { options =
+            [ E.focusStyle
+                { borderColor = Nothing
+                , backgroundColor = Nothing
+                , shadow = Nothing
+                }
+            ]
+        }
+        []
         (viewSearchBar model)
 
 
 viewSearchBar : Model -> E.Element Msg
 viewSearchBar model =
-    EI.search []
-        { label = EI.labelLeft [] (E.text "Search Books: ")
-        , onChange = MsgInputTextField
-        , placeholder = Nothing
-        , text = model.searchText
+    E.row []
+        [ EI.search []
+            { label = EI.labelLeft [] (E.text "Search Books: ")
+            , onChange = MsgInputTextField
+            , placeholder = Nothing
+            , text = model.searchText
+            }
+        , viewSearchButton
+        ]
+
+
+viewSearchButton : E.Element Msg
+viewSearchButton =
+    EI.button
+        [ EBG.color (E.rgb255 0x00 0x33 0x66)
+        , EF.color (E.rgb255 0xEE 0xEE 0xEE)
+        , EB.rounded 5
+        , E.padding 12
+        , E.mouseOver
+            [ EBG.color (E.rgb255 0x33 0x66 0x99)
+            , EF.color (E.rgb255 0xDD 0xDD 0xDD)
+            ]
+        ]
+        { onPress = Just MsgSearch
+        , label = E.text "Search"
         }
