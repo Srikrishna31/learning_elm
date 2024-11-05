@@ -6,7 +6,9 @@ import Element.Background as EBG
 import Element.Border as EB
 import Element.Font as EF
 import Element.Input as EI
-import Html
+import Html exposing (Html)
+import Http
+import Json.Decode as JD
 
 
 type alias Model =
@@ -17,7 +19,7 @@ type alias Model =
 
 type Msg
     = MsgSearch
-    | MsgGotResults
+    | MsgGotResults (Result Http.Error (List String))
     | MsgInputTextField String
 
 
@@ -55,10 +57,15 @@ update msg model =
             ( { model | searchText = newTextInput }, Cmd.none )
 
         MsgSearch ->
-            ( model, Cmd.none )
+            ( model, cmdSearch )
 
-        MsgGotResults ->
-            ( model, Cmd.none )
+        MsgGotResults result ->
+            case result of
+                Ok data ->
+                    ( { model | results = data }, Cmd.none )
+
+                Err error ->
+                    ( model, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -78,7 +85,7 @@ viewLayout model =
             ]
         }
         []
-        (viewSearchBar model)
+        (E.column [] [ viewSearchBar model, viewResults model ])
 
 
 viewSearchBar : Model -> E.Element Msg
@@ -109,3 +116,38 @@ viewSearchButton =
         { onPress = Just MsgSearch
         , label = E.text "Search"
         }
+
+
+viewResults : Model -> E.Element Msg
+viewResults model =
+    E.column []
+        [ case List.head model.results of
+            Just firstItem ->
+                E.text firstItem
+
+            Nothing ->
+                E.text "Empty"
+        ]
+
+
+cmdSearch : Cmd Msg
+cmdSearch =
+    Http.get
+        { url = "https://www.googleapis.com/books/v1/volumes?q=Elm+Language"
+        , expect = Http.expectJson MsgGotResults decodeJson
+        }
+
+
+decodeJson : JD.Decoder (List String)
+decodeJson =
+    JD.field "items" decodeItems
+
+
+decodeItems : JD.Decoder (List String)
+decodeItems =
+    JD.list decodeItem
+
+
+decodeItem : JD.Decoder String
+decodeItem =
+    JD.field "id" JD.string
