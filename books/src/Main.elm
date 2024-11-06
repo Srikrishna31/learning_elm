@@ -17,6 +17,7 @@ type alias Model =
     { searchText : String
     , results : List Book
     , errorMessage : Maybe String
+    , loading : Bool
     }
 
 
@@ -55,6 +56,7 @@ initModel =
     { searchText = ""
     , results = []
     , errorMessage = Nothing
+    , loading = False
     }
 
 
@@ -70,29 +72,37 @@ update msg model =
             ( { model | searchText = newTextInput }, Cmd.none )
 
         MsgSearch ->
-            ( model, cmdSearch model )
+            ( { model | loading = True }, cmdSearch model )
 
         MsgGotResults result ->
+            let
+                newModel =
+                    { model | loading = False }
+            in
             case result of
                 Ok data ->
-                    ( { model | results = data }, Cmd.none )
+                    ( { newModel | results = data }, Cmd.none )
 
                 Err error ->
-                    case error of
-                        NetworkError ->
-                            ( { model | errorMessage = Just "Network Error" }, Cmd.none )
+                    let
+                        errorMessage =
+                            case error of
+                                NetworkError ->
+                                    "Network Error"
 
-                        BadUrl string ->
-                            ( { model | errorMessage = Just string }, Cmd.none )
+                                BadUrl string ->
+                                    string
 
-                        Timeout ->
-                            ( { model | errorMessage = Just "Request Timed out" }, Cmd.none )
+                                Timeout ->
+                                    "Request Timed out"
 
-                        BadStatus _ ->
-                            ( { model | errorMessage = Just "Bad status" }, Cmd.none )
+                                BadStatus _ ->
+                                    "Bad status"
 
-                        BadBody string ->
-                            ( { model | errorMessage = Just string }, Cmd.none )
+                                BadBody string ->
+                                    string
+                    in
+                    ( { newModel | errorMessage = Just errorMessage }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -161,7 +171,11 @@ viewSearchBar model =
             , text = model.searchText
             }
         , viewSearchButton
-        , E.html loadingImage
+        , if model.loading then
+            E.html loadingImage
+
+          else
+            E.none
         ]
 
 
