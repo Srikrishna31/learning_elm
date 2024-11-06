@@ -26,7 +26,7 @@ type alias Book =
     { title : String
     , thumbnail : Maybe String
     , link : String
-    , pages : Int
+    , pages : Maybe Int
     , publisher : Maybe String
     }
 
@@ -218,19 +218,45 @@ viewResults model =
 
 viewBook : Book -> E.Element msg
 viewBook book =
-    E.newTabLink []
+    let
+        title =
+            E.paragraph [ EF.bold ] [ E.text book.title ]
+
+        thumbnailE =
+            case book.thumbnail of
+                Just thumbnail ->
+                    viewBookCover thumbnail book.title
+
+                Nothing ->
+                    E.none
+
+        pagesE =
+            E.paragraph [ EF.size 12 ] [ E.text (Maybe.withDefault "No information" (Maybe.map String.fromInt book.pages) ++ " pages") ]
+
+        publisherE =
+            case book.publisher of
+                Just publisher ->
+                    E.paragraph [ EF.size 16 ] [ E.text publisher ]
+
+                Nothing ->
+                    E.none
+    in
+    E.newTabLink
+        [ E.width (E.px 360)
+        , E.height (E.px 300)
+        , EBG.color (E.rgb255 0xE3 0xEA 0xED)
+        , EB.rounded 20
+        , E.padding 5
+        ]
         { url = book.link
         , label =
-            E.column []
-                [ E.text book.title
-                , case book.thumbnail of
-                    Just thumbnail ->
-                        viewBookCover thumbnail book.title
-
-                    Nothing ->
-                        E.none
-                , E.text (String.fromInt book.pages)
-                , E.text (Maybe.withDefault "Publisher not found" book.publisher)
+            E.row []
+                [ thumbnailE
+                , E.column [ E.padding 20 ]
+                    [ title
+                    , publisherE
+                    , pagesE
+                    ]
                 ]
         }
 
@@ -272,7 +298,7 @@ decodeVolumeInfo =
         (JD.field "title" JD.string)
         (JD.maybe (JD.field "imageLinks" decodeImageLinks))
         (JD.field "canonicalVolumeLink" JD.string)
-        (JD.field "pageCount" JD.int)
+        (JD.maybe (JD.field "pageCount" JD.int))
         (JD.maybe (JD.field "publisher" JD.string))
 
 
