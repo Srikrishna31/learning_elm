@@ -9,6 +9,8 @@ import Element.Input as EI
 import Html exposing (Html)
 import Http exposing (Error(..))
 import Json.Decode as JD
+import Svg as S
+import Svg.Attributes as SA
 
 
 type alias Model =
@@ -86,7 +88,7 @@ update msg model =
                         Timeout ->
                             ( { model | errorMessage = Just "Request Timed out" }, Cmd.none )
 
-                        BadStatus int ->
+                        BadStatus _ ->
                             ( { model | errorMessage = Just "Bad status" }, Cmd.none )
 
                         BadBody string ->
@@ -113,6 +115,32 @@ viewLayout model =
         (E.column [] [ viewSearchBar model, viewErrorMessage model, viewResults model ])
 
 
+loadingImage : Html.Html msg
+loadingImage =
+    S.svg
+        [ SA.width "64px"
+        , SA.height "64px"
+        , SA.viewBox "0 0 48 48"
+        ]
+        [ S.circle
+            [ SA.cx "24"
+            , SA.cy "24"
+            , SA.stroke "#6699AA"
+            , SA.strokeWidth "4"
+            , SA.r "8"
+            , SA.fill "none"
+            ]
+            [ S.animate
+                [ SA.attributeName "opacity"
+                , SA.values "0;.8;0"
+                , SA.dur "2s"
+                , SA.repeatCount "indefinite"
+                ]
+                []
+            ]
+        ]
+
+
 viewErrorMessage : Model -> E.Element Msg
 viewErrorMessage model =
     case model.errorMessage of
@@ -133,6 +161,7 @@ viewSearchBar model =
             , text = model.searchText
             }
         , viewSearchButton
+        , E.html loadingImage
         ]
 
 
