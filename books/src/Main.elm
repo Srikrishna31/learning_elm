@@ -1,6 +1,7 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events
 import Element as E
 import Element.Background as EBG
 import Element.Border as EB
@@ -34,6 +35,7 @@ type Msg
     = MsgSearch
     | MsgGotResults (Result Http.Error (List Book))
     | MsgInputTextField String
+    | MsgKeyPressed String
 
 
 main : Program () Model Msg
@@ -74,6 +76,13 @@ update msg model =
         MsgSearch ->
             ( { model | loading = True }, cmdSearch model )
 
+        MsgKeyPressed key ->
+            if key == "Enter" then
+                ( { model | loading = True }, cmdSearch model )
+
+            else
+                ( model, Cmd.none )
+
         MsgGotResults result ->
             let
                 newModel =
@@ -105,9 +114,14 @@ update msg model =
                     ( { newModel | errorMessage = Just errorMessage }, Cmd.none )
 
 
-subscriptions : Model -> Sub msg
+subscriptions : Model -> Sub Msg
 subscriptions _ =
-    Sub.none
+    Browser.Events.onKeyPress keyPressed
+
+
+keyPressed : JD.Decoder Msg
+keyPressed =
+    JD.map MsgKeyPressed (JD.field "key" JD.string)
 
 
 viewLayout : Model -> Html.Html Msg
