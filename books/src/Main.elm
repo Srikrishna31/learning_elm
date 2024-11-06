@@ -136,7 +136,7 @@ viewLayout model =
             ]
         }
         []
-        (E.column [] [ viewSearchBar model, viewErrorMessage model, viewResults model ])
+        (E.column [ E.padding 20 ] [ viewSearchBar model, viewErrorMessage model, viewResults model ])
 
 
 loadingImage : Html.Html msg
@@ -177,7 +177,7 @@ viewErrorMessage model =
 
 viewSearchBar : Model -> E.Element Msg
 viewSearchBar model =
-    E.row []
+    E.row [ E.spacing 10, E.paddingXY 0 12 ]
         [ EI.search []
             { label = EI.labelLeft [] (E.text "Search Books: ")
             , onChange = MsgInputTextField
@@ -212,7 +212,7 @@ viewSearchButton =
 
 viewResults : Model -> E.Element msg
 viewResults model =
-    E.column []
+    E.wrappedRow [ E.spacing 5, E.centerX ]
         (List.map viewBook model.results)
 
 
