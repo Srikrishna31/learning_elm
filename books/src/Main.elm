@@ -154,13 +154,29 @@ viewSearchButton =
 viewResults : Model -> E.Element msg
 viewResults model =
     E.column []
-        [ case List.head model.results of
-            Just firstItem ->
-                E.text firstItem.title
+        (List.map viewBook model.results)
+
+
+viewBook : Book -> E.Element msg
+viewBook book =
+    E.column []
+        [ E.text book.title
+        , E.text book.link
+        , case book.thumbnail of
+            Just thumbnail ->
+                viewBookCover thumbnail book.title
 
             Nothing ->
-                E.text "Empty"
+                E.none
         ]
+
+
+viewBookCover : String -> String -> E.Element msg
+viewBookCover thumbnail title =
+    E.image []
+        { src = thumbnail
+        , description = title
+        }
 
 
 cmdSearch : Model -> Cmd Msg
