@@ -7,19 +7,20 @@ import Element.Border as EB
 import Element.Font as EF
 import Element.Input as EI
 import Html exposing (Html)
-import Http
+import Http exposing (Error(..))
 import Json.Decode as JD
 
 
 type alias Model =
     { searchText : String
     , results : List Book
+    , errorMessage : Maybe String
     }
 
 
 type alias Book =
     { title : String
-    , thumbnail : String
+    , thumbnail : Maybe String
     , link : String
     }
 
@@ -49,6 +50,7 @@ initModel : Model
 initModel =
     { searchText = ""
     , results = []
+    , errorMessage = Nothing
     }
 
 
@@ -72,7 +74,21 @@ update msg model =
                     ( { model | results = data }, Cmd.none )
 
                 Err error ->
-                    ( model, Cmd.none )
+                    case error of
+                        NetworkError ->
+                            ( { model | errorMessage = Just "Network Error" }, Cmd.none )
+
+                        BadUrl string ->
+                            ( { model | errorMessage = Just string }, Cmd.none )
+
+                        Timeout ->
+                            ( { model | errorMessage = Just "Request Timed out" }, Cmd.none )
+
+                        BadStatus int ->
+                            ( { model | errorMessage = Just "Bad status" }, Cmd.none )
+
+                        BadBody string ->
+                            ( { model | errorMessage = Just string }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
@@ -92,7 +108,17 @@ viewLayout model =
             ]
         }
         []
-        (E.column [] [ viewSearchBar model, viewResults model ])
+        (E.column [] [ viewSearchBar model, viewErrorMessage model, viewResults model ])
+
+
+viewErrorMessage : Model -> E.Element Msg
+viewErrorMessage model =
+    case model.errorMessage of
+        Just errorMessage ->
+            E.text errorMessage
+
+        Nothing ->
+            E.none
 
 
 viewSearchBar : Model -> E.Element Msg
@@ -157,14 +183,14 @@ decodeItems =
 
 decodeItem : JD.Decoder Book
 decodeItem =
-    JD.field "volumInfo" decodeVolumeInfo
+    JD.field "volumeInfo" decodeVolumeInfo
 
 
 decodeVolumeInfo : JD.Decoder Book
 decodeVolumeInfo =
     JD.map3 Book
         (JD.field "title" JD.string)
-        (JD.field "imageLinks" decodeImageLinks)
+        (JD.maybe (JD.field "imageLinks" decodeImageLinks))
         (JD.field "canonicalVolumeLink" JD.string)
 
 
