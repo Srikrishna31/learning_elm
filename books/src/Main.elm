@@ -23,7 +23,7 @@ type alias Model =
 
 
 type alias Book =
-    { title : String
+    { title : Maybe String
     , thumbnail : Maybe String
     , link : String
     , pages : Maybe Int
@@ -50,12 +50,12 @@ main =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( initModel, Cmd.none )
+    ( initModel, cmdSearch initModel )
 
 
 initModel : Model
 initModel =
-    { searchText = ""
+    { searchText = "Elm Language"
     , results = []
     , errorMessage = Nothing
     , loading = False
@@ -74,11 +74,11 @@ update msg model =
             ( { model | searchText = newTextInput }, Cmd.none )
 
         MsgSearch ->
-            ( { model | loading = True }, cmdSearch model )
+            updateStartSearch model
 
         MsgKeyPressed key ->
             if key == "Enter" then
-                ( { model | loading = True }, cmdSearch model )
+                updateStartSearch model
 
             else
                 ( model, Cmd.none )
@@ -114,6 +114,11 @@ update msg model =
                     ( { newModel | errorMessage = Just errorMessage }, Cmd.none )
 
 
+updateStartSearch : Model -> ( Model, Cmd Msg )
+updateStartSearch model =
+    ( { model | loading = True }, cmdSearch model )
+
+
 subscriptions : Model -> Sub Msg
 subscriptions _ =
     Browser.Events.onKeyPress keyPressed
@@ -129,7 +134,7 @@ viewLayout model =
     E.layoutWith
         { options =
             [ E.focusStyle
-                { borderColor = Nothing
+                { borderColor = Just (E.rgb255 0x00 0x33 0x66)
                 , backgroundColor = Nothing
                 , shadow = Nothing
                 }
@@ -204,6 +209,10 @@ viewSearchButton =
             [ EBG.color (E.rgb255 0x33 0x66 0x99)
             , EF.color (E.rgb255 0xDD 0xDD 0xDD)
             ]
+        , E.focused
+            [ EBG.color (E.rgb255 0x33 0x66 0x99)
+            , EF.color (E.rgb255 0xDD 0xDD 0xDD)
+            ]
         ]
         { onPress = Just MsgSearch
         , label = E.text "Search"
@@ -220,12 +229,15 @@ viewBook : Book -> E.Element msg
 viewBook book =
     let
         title =
-            E.paragraph [ EF.bold ] [ E.text book.title ]
+            Maybe.withDefault "{ No title provided }" book.title
+
+        titleE =
+            E.paragraph [ EF.bold, EF.underline, E.paddingXY 0 12 ] [ E.text title ]
 
         thumbnailE =
             case book.thumbnail of
                 Just thumbnail ->
-                    viewBookCover thumbnail book.title
+                    viewBookCover thumbnail title
 
                 Nothing ->
                     E.none
@@ -246,14 +258,20 @@ viewBook book =
         , E.height (E.px 300)
         , EBG.color (E.rgb255 0xE3 0xEA 0xED)
         , EB.rounded 20
-        , E.padding 5
+        , E.padding 10
+        , E.mouseOver
+            [ EBG.color (E.rgb255 0x33 0x66 0x99)
+            ]
+        , E.focused
+            [ EBG.color (E.rgb255 0x33 0x66 0x99)
+            ]
         ]
         { url = book.link
         , label =
-            E.row []
+            E.row [ E.centerX ]
                 [ thumbnailE
                 , E.column [ E.padding 20 ]
-                    [ title
+                    [ titleE
                     , publisherE
                     , pagesE
                     ]
@@ -272,7 +290,7 @@ viewBookCover thumbnail title =
 cmdSearch : Model -> Cmd Msg
 cmdSearch model =
     Http.get
-        { url = "https://www.googleapis.com/books/v1/volumes?q=" ++ model.searchText
+        { url = "https://www.googleapis.com/books/v1/volumes?&q=" ++ model.searchText
         , expect = Http.expectJson MsgGotResults decodeJson
         }
 
@@ -295,7 +313,7 @@ decodeItem =
 decodeVolumeInfo : JD.Decoder Book
 decodeVolumeInfo =
     JD.map5 Book
-        (JD.field "title" JD.string)
+        (JD.maybe (JD.field "title" JD.string))
         (JD.maybe (JD.field "imageLinks" decodeImageLinks))
         (JD.field "canonicalVolumeLink" JD.string)
         (JD.maybe (JD.field "pageCount" JD.int))
