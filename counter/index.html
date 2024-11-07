@@ -10,8 +10,12 @@
 <body>
   <script src="index.js"></script>
   <script>
-    Elm.Main.init({
-      flags: 20
+    const counter = localStorage.getItem("counter")
+    const app = Elm.Main.init({
+      flags: counter == null ? 0 : parseInt(counter)
+    });
+    app.ports.persistCounter.subscribe(function(counter) {
+      localStorage.setItem("counter", counter);
     })
   </script>
 </body>

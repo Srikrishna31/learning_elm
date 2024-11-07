@@ -1,4 +1,4 @@
-module Main exposing (main)
+port module Main exposing (main, persistCounter)
 
 import Browser exposing (Document)
 import Html exposing (text)
@@ -58,9 +58,12 @@ update msg model =
                 newModel =
                     { model | counter = newCounter, title = newTitle }
             in
-            ( newModel, Cmd.none )
+            ( newModel, persistCounter newCounter )
 
 
 subscriptions : Model -> Sub msg
 subscriptions _ =
     Sub.none
+
+
+port persistCounter : Int -> Cmd msg
