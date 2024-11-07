@@ -5,7 +5,7 @@ import Html exposing (text)
 import Html.Events exposing (onClick)
 
 
-main : Program () Model Msg
+main : Program Int Model Msg
 main =
     Browser.document
         { init = init
@@ -32,9 +32,9 @@ type alias Model =
     }
 
 
-init : () -> ( Model, Cmd msg )
-init _ =
-    ( initModel, Cmd.none )
+init : Int -> ( Model, Cmd msg )
+init start =
+    ( { initModel | counter = start }, Cmd.none )
 
 
 initModel : Model
