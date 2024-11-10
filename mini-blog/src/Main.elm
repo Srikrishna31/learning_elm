@@ -2,7 +2,7 @@ module Main exposing (main)
 
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation
-import Element
+import Element exposing (Element)
 import Element.Font
 import Html
 import Url
@@ -22,6 +22,8 @@ main =
 
 type alias Model =
     { title : String
+    , url : Url.Url
+    , navigationKey : Browser.Navigation.Key
     }
 
 
@@ -33,12 +35,14 @@ type Msg
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd msg )
 init _ url navigationKey =
-    ( initModel, Cmd.none )
+    ( initModel url navigationKey, Cmd.none )
 
 
-initModel : Model
-initModel =
+initModel : Url.Url -> Browser.Navigation.Key -> Model
+initModel url navigationKey =
     { title = "Hello Navigation"
+    , url = url
+    , navigationKey = navigationKey
     }
 
 
@@ -54,15 +58,32 @@ viewContent model =
     Element.layout []
         (Element.column [ Element.padding 22 ]
             [ Element.text model.title
-            , Element.link
-                [ Element.Font.color (Element.rgb255 0x11 0x55 0xFF)
-                , Element.Font.underline
-                ]
-                { url = "https://www.duckduckgo.com"
-                , label = Element.text "DuckDuckGo"
-                }
+            , viewLink "https://www.duckduckgo.com" "DuckDuckGo"
+            , viewLink "https://www.ecosia.org" "Ecosia"
+            , viewLink "/about" "About"
+            , viewLink "/" "Home"
+            , viewPage model
             ]
         )
+
+
+viewPage model =
+    if model.url.path == "/about" then
+        Element.text "About page"
+
+    else
+        Element.text "Home page"
+
+
+viewLink : String -> String -> Element msg
+viewLink url caption =
+    Element.link
+        [ Element.Font.color (Element.rgb255 0x11 0x55 0xFF)
+        , Element.Font.underline
+        ]
+        { url = url
+        , label = Element.text caption
+        }
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -77,7 +98,7 @@ update msg model =
         MsgUrlRequested urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Cmd.none )
+                    ( { model | title = url.path }, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
 
                 Browser.External url ->
                     ( { model | title = url }, Browser.Navigation.load url )
