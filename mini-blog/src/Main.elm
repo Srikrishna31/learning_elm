@@ -2,6 +2,8 @@ module Main exposing (main)
 
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation
+import Element
+import Element.Font
 import Html
 import Url
 
@@ -25,6 +27,8 @@ type alias Model =
 
 type Msg
     = MsgDummy
+    | MsgUrlChanged Url.Url
+    | MsgUrlRequested Browser.UrlRequest
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd msg )
@@ -39,15 +43,26 @@ initModel =
 
 
 view : Model -> Document msg
-view _ =
+view model =
     { title = "Test"
-    , body = [ viewContent ]
+    , body = [ viewContent model ]
     }
 
 
-viewContent : Html.Html msg
-viewContent =
-    Html.text "Navigation"
+viewContent : Model -> Html.Html msg
+viewContent model =
+    Element.layout []
+        (Element.column [ Element.padding 22 ]
+            [ Element.text model.title
+            , Element.link
+                [ Element.Font.color (Element.rgb255 0x11 0x55 0xFF)
+                , Element.Font.underline
+                ]
+                { url = "https://www.duckduckgo.com"
+                , label = Element.text "DuckDuckGo"
+                }
+            ]
+        )
 
 
 update : Msg -> Model -> ( Model, Cmd msg )
@@ -56,6 +71,17 @@ update msg model =
         MsgDummy ->
             ( model, Cmd.none )
 
+        MsgUrlChanged url ->
+            ( model, Cmd.none )
+
+        MsgUrlRequested urlRequest ->
+            case urlRequest of
+                Browser.Internal url ->
+                    ( model, Cmd.none )
+
+                Browser.External url ->
+                    ( { model | title = url }, Browser.Navigation.load url )
+
 
 subscriptions : Model -> Sub msg
 subscriptions _ =
@@ -63,10 +89,10 @@ subscriptions _ =
 
 
 onUrlChange : Url.Url -> Msg
-onUrlChange _ =
-    MsgDummy
+onUrlChange url =
+    MsgUrlChanged url
 
 
 onUrlRequest : UrlRequest -> Msg
-onUrlRequest _ =
-    MsgDummy
+onUrlRequest urlRequest =
+    MsgUrlRequested urlRequest
