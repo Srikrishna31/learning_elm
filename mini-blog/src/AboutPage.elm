@@ -53,3 +53,8 @@ update msg model =
     case msg of
         MsgShowDetailClicked ->
             ( { model | showDetail = True }, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none

@@ -130,9 +130,14 @@ update msg model =
             ( { model | modelHomePage = newHomePageModel }, Cmd.map MsgHomePage cmdHomePage )
 
 
-subscriptions : Model -> Sub msg
-subscriptions _ =
-    Sub.none
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.batch
+        [ Sub.map MsgAboutPage
+            (AboutPage.subscriptions model.modelAboutPage)
+        , Sub.map MsgHomePage
+            (HomePage.subscriptions model.modelHomePage)
+        ]
 
 
 onUrlChange : Url.Url -> Msg

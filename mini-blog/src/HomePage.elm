@@ -36,3 +36,8 @@ update msg model =
     case msg of
         MsgDummy ->
             ( model, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
