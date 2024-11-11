@@ -1,9 +1,11 @@
 module Main exposing (main)
 
+import AboutPage
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation
 import Element exposing (Element)
 import Element.Font
+import HomePage
 import Html
 import Url
 
@@ -48,7 +50,7 @@ initModel url navigationKey =
 
 view : Model -> Document msg
 view model =
-    { title = "Test"
+    { title = getTitle model.url
     , body = [ viewContent model ]
     }
 
@@ -57,22 +59,30 @@ viewContent : Model -> Html.Html msg
 viewContent model =
     Element.layout []
         (Element.column [ Element.padding 22 ]
-            [ Element.text model.title
-            , viewLink "https://www.duckduckgo.com" "DuckDuckGo"
-            , viewLink "https://www.ecosia.org" "Ecosia"
-            , viewLink "/about" "About"
+            [ viewLink "/about" "About"
             , viewLink "/" "Home"
             , viewPage model
+            , viewLink "https://www.duckduckgo.com" "DuckDuckGo"
+            , viewLink "https://www.ecosia.org" "Ecosia"
             ]
         )
 
 
-viewPage model =
-    if String.startsWith "/about" model.url.path then
-        Element.text "About page"
+getTitle : Url.Url -> String
+getTitle url =
+    if String.startsWith "/about" url.path then
+        "About"
 
     else
-        Element.text "Home page"
+        "My blog"
+
+
+viewPage model =
+    if String.startsWith "/about" model.url.path then
+        AboutPage.view
+
+    else
+        HomePage.view
 
 
 viewLink : String -> String -> Element msg
@@ -80,6 +90,7 @@ viewLink url caption =
     Element.link
         [ Element.Font.color (Element.rgb255 0x11 0x55 0xFF)
         , Element.Font.underline
+        , Element.Font.size 12
         ]
         { url = url
         , label = Element.text caption
