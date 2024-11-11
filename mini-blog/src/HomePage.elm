@@ -4,7 +4,8 @@ import Element
 import Element.Font
 
 
-view =
+view : () -> Element.Element msg
+view _ =
     Element.column [ Element.padding 20 ]
         [ Element.text "My Blog"
         , Element.paragraph

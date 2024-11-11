@@ -26,6 +26,7 @@ type alias Model =
     { title : String
     , url : Url.Url
     , navigationKey : Browser.Navigation.Key
+    , modelAboutPage : AboutPage.Model
     }
 
 
@@ -33,6 +34,7 @@ type Msg
     = MsgDummy
     | MsgUrlChanged Url.Url
     | MsgUrlRequested Browser.UrlRequest
+    | MsgAboutPage AboutPage.Msg
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd msg )
@@ -45,17 +47,18 @@ initModel url navigationKey =
     { title = "Hello Navigation"
     , url = url
     , navigationKey = navigationKey
+    , modelAboutPage = AboutPage.initModel
     }
 
 
-view : Model -> Document msg
+view : Model -> Document Msg
 view model =
     { title = getTitle model.url
     , body = [ viewContent model ]
     }
 
 
-viewContent : Model -> Html.Html msg
+viewContent : Model -> Html.Html Msg
 viewContent model =
     Element.layout []
         (Element.column [ Element.padding 22 ]
@@ -77,12 +80,13 @@ getTitle url =
         "My blog"
 
 
+viewPage : Model -> Element.Element Msg
 viewPage model =
     if String.startsWith "/about" model.url.path then
-        AboutPage.view
+        Element.map MsgAboutPage (AboutPage.view model.modelAboutPage)
 
     else
-        HomePage.view
+        HomePage.view ()
 
 
 viewLink : String -> String -> Element msg
@@ -113,6 +117,13 @@ update msg model =
 
                 Browser.External url ->
                     ( { model | title = url }, Browser.Navigation.load url )
+
+        MsgAboutPage msgAboutPage ->
+            let
+                newAboutPageModel =
+                    AboutPage.update msgAboutPage model.modelAboutPage
+            in
+            ( { model | modelAboutPage = newAboutPageModel }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
