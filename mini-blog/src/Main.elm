@@ -23,18 +23,18 @@ main =
 
 
 type alias Model =
-    { title : String
-    , url : Url.Url
+    { url : Url.Url
     , navigationKey : Browser.Navigation.Key
     , modelAboutPage : AboutPage.Model
+    , modelHomePage : HomePage.Model
     }
 
 
 type Msg
-    = MsgDummy
-    | MsgUrlChanged Url.Url
+    = MsgUrlChanged Url.Url
     | MsgUrlRequested Browser.UrlRequest
     | MsgAboutPage AboutPage.Msg
+    | MsgHomePage HomePage.Msg
 
 
 init : () -> Url.Url -> Browser.Navigation.Key -> ( Model, Cmd msg )
@@ -44,10 +44,10 @@ init _ url navigationKey =
 
 initModel : Url.Url -> Browser.Navigation.Key -> Model
 initModel url navigationKey =
-    { title = "Hello Navigation"
-    , url = url
+    { url = url
     , navigationKey = navigationKey
     , modelAboutPage = AboutPage.initModel
+    , modelHomePage = HomePage.initModel
     }
 
 
@@ -86,7 +86,7 @@ viewPage model =
         Element.map MsgAboutPage (AboutPage.view model.modelAboutPage)
 
     else
-        HomePage.view ()
+        HomePage.view model.modelHomePage
 
 
 viewLink : String -> String -> Element msg
@@ -104,9 +104,6 @@ viewLink url caption =
 update : Msg -> Model -> ( Model, Cmd msg )
 update msg model =
     case msg of
-        MsgDummy ->
-            ( model, Cmd.none )
-
         MsgUrlChanged url ->
             ( { model | url = url }, Cmd.none )
 
@@ -116,7 +113,7 @@ update msg model =
                     ( model, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
 
                 Browser.External url ->
-                    ( { model | title = url }, Browser.Navigation.load url )
+                    ( model, Browser.Navigation.load url )
 
         MsgAboutPage msgAboutPage ->
             let
@@ -124,6 +121,13 @@ update msg model =
                     AboutPage.update msgAboutPage model.modelAboutPage
             in
             ( { model | modelAboutPage = newAboutPageModel }, Cmd.none )
+
+        MsgHomePage msgHomePage ->
+            let
+                newHomePageModel =
+                    HomePage.update msgHomePage model.modelHomePage
+            in
+            ( { model | modelHomePage = newHomePageModel }, Cmd.none )
 
 
 subscriptions : Model -> Sub msg
