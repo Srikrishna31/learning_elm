@@ -68,7 +68,7 @@ viewContent model =
 
 
 viewPage model =
-    if model.url.path == "/about" then
+    if String.startsWith "/about" model.url.path then
         Element.text "About page"
 
     else
@@ -93,12 +93,12 @@ update msg model =
             ( model, Cmd.none )
 
         MsgUrlChanged url ->
-            ( model, Cmd.none )
+            ( { model | url = url }, Cmd.none )
 
         MsgUrlRequested urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( { model | title = url.path }, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
+                    ( model, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
 
                 Browser.External url ->
                     ( { model | title = url }, Browser.Navigation.load url )
