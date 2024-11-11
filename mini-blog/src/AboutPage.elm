@@ -48,8 +48,8 @@ viewDetail showDetail =
             }
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
 update msg model =
     case msg of
         MsgShowDetailClicked ->
-            { model | showDetail = True }
+            ( { model | showDetail = True }, Cmd.none )

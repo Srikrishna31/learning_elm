@@ -101,7 +101,7 @@ viewLink url caption =
         }
 
 
-update : Msg -> Model -> ( Model, Cmd msg )
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         MsgUrlChanged url ->
@@ -117,17 +117,17 @@ update msg model =
 
         MsgAboutPage msgAboutPage ->
             let
-                newAboutPageModel =
+                ( newAboutPageModel, cmdAboutPage ) =
                     AboutPage.update msgAboutPage model.modelAboutPage
             in
-            ( { model | modelAboutPage = newAboutPageModel }, Cmd.none )
+            ( { model | modelAboutPage = newAboutPageModel }, Cmd.map MsgAboutPage cmdAboutPage )
 
         MsgHomePage msgHomePage ->
             let
-                newHomePageModel =
+                ( newHomePageModel, cmdHomePage ) =
                     HomePage.update msgHomePage model.modelHomePage
             in
-            ( { model | modelHomePage = newHomePageModel }, Cmd.none )
+            ( { model | modelHomePage = newHomePageModel }, Cmd.map MsgHomePage cmdHomePage )
 
 
 subscriptions : Model -> Sub msg

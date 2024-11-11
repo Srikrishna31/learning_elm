@@ -31,8 +31,8 @@ view model =
         ]
 
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
 update msg model =
     case msg of
         MsgDummy ->
-            model
+            ( model, Cmd.none )
