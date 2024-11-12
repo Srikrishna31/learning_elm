@@ -86,7 +86,7 @@ viewPage model =
         Element.map MsgAboutPage (AboutPage.view model.modelAboutPage)
 
     else
-        HomePage.view model.modelHomePage
+        Element.map MsgHomePage (HomePage.view model.modelHomePage)
 
 
 viewLink : String -> String -> Element msg
@@ -110,7 +110,16 @@ update msg model =
         MsgUrlRequested urlRequest ->
             case urlRequest of
                 Browser.Internal url ->
-                    ( model, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
+                    if url.path == "/about/hide-detail" then
+                        let
+                            hiddenDetailModel =
+                                { showDetail = False
+                                }
+                        in
+                        ( { model | modelAboutPage = hiddenDetailModel }, Cmd.none )
+
+                    else
+                        ( model, Browser.Navigation.pushUrl model.navigationKey (Url.toString url) )
 
                 Browser.External url ->
                     ( model, Browser.Navigation.load url )

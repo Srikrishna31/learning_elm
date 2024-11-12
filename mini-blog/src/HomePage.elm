@@ -2,10 +2,11 @@ module HomePage exposing (..)
 
 import Element
 import Element.Font
+import Element.Input
 
 
 type Msg
-    = MsgDummy
+    = MsgIncrementCounter
 
 
 type alias Model =
@@ -18,7 +19,7 @@ initModel =
     }
 
 
-view : Model -> Element.Element msg
+view : Model -> Element.Element Msg
 view model =
     Element.column [ Element.padding 20 ]
         [ Element.text ("My Blog " ++ String.fromInt model.counter)
@@ -28,14 +29,18 @@ view model =
             ]
             [ Element.text "Welcome to my mini blog made with Elm and Elm UI"
             ]
+        , Element.Input.button []
+            { onPress = Just MsgIncrementCounter
+            , label = Element.text "Count"
+            }
         ]
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
 update msg model =
     case msg of
-        MsgDummy ->
-            ( model, Cmd.none )
+        MsgIncrementCounter ->
+            ( { model | counter = model.counter + 1 }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg

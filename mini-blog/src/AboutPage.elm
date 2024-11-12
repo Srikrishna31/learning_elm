@@ -39,7 +39,14 @@ view model =
 viewDetail : Bool -> Element.Element Msg
 viewDetail showDetail =
     if showDetail then
-        Element.text "The authors of this web site are amazing!"
+        Element.column []
+            [ Element.text "The authors of this web site are amazing!"
+            , Element.link
+                [ Element.Font.underline ]
+                { url = "/about/hide-detail"
+                , label = Element.text "Hide"
+                }
+            ]
 
     else
         Element.Input.button [ Element.Font.underline ]
