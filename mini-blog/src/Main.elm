@@ -4,7 +4,6 @@ import AboutPage
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation
 import Element exposing (Element)
-import Element.Font
 import HomePage
 import Html
 import UI

@@ -2,7 +2,6 @@ module AboutPage exposing (..)
 
 import Element exposing (Element)
 import Element.Font
-import Element.Input
 import UI
 
 
@@ -44,7 +43,10 @@ viewDetail showDetail =
             [ Element.Font.size 12, Element.Font.bold ]
     in
     if showDetail then
-        Element.column []
+        Element.column
+            [ Element.spacing 10
+            , Element.padding 10
+            ]
             [ Element.text "The authors of this web site are amazing!"
             , UI.link link_attrs "/about/hide-detail" "Hide"
             ]
@@ -61,5 +63,5 @@ update msg model =
 
 
 subscriptions : Model -> Sub Msg
-subscriptions model =
+subscriptions _ =
     Sub.none
