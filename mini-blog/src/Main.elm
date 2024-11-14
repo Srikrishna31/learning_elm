@@ -7,6 +7,7 @@ import Element exposing (Element)
 import Element.Font
 import HomePage
 import Html
+import UI
 import Url
 
 
@@ -62,13 +63,25 @@ viewContent : Model -> Html.Html Msg
 viewContent model =
     Element.layout []
         (Element.column [ Element.padding 22 ]
-            [ viewLink "/about" "About"
-            , viewLink "/" "Home"
+            [ viewHeader
             , viewPage model
-            , viewLink "https://www.duckduckgo.com" "DuckDuckGo"
-            , viewLink "https://www.ecosia.org" "Ecosia"
+            , viewFooter
             ]
         )
+
+
+viewHeader =
+    Element.row [ Element.spacing 10 ]
+        [ UI.link [] "/about" "About"
+        , UI.link [] "/" "Home"
+        ]
+
+
+viewFooter =
+    Element.row [ Element.spacing 10 ]
+        [ UI.link [] "https://www.duckduckgo.com" "DuckDuckGo"
+        , UI.link [] "https://www.ecosia.org" "Ecosia"
+        ]
 
 
 getTitle : Url.Url -> String
@@ -87,18 +100,6 @@ viewPage model =
 
     else
         Element.map MsgHomePage (HomePage.view model.modelHomePage)
-
-
-viewLink : String -> String -> Element msg
-viewLink url caption =
-    Element.link
-        [ Element.Font.color (Element.rgb255 0x11 0x55 0xFF)
-        , Element.Font.underline
-        , Element.Font.size 12
-        ]
-        { url = url
-        , label = Element.text caption
-        }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

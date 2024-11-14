@@ -3,6 +3,7 @@ module AboutPage exposing (..)
 import Element exposing (Element)
 import Element.Font
 import Element.Input
+import UI
 
 
 type alias Model =
@@ -38,21 +39,18 @@ view model =
 
 viewDetail : Bool -> Element.Element Msg
 viewDetail showDetail =
+    let
+        link_attrs =
+            [ Element.Font.size 12, Element.Font.bold ]
+    in
     if showDetail then
         Element.column []
             [ Element.text "The authors of this web site are amazing!"
-            , Element.link
-                [ Element.Font.underline ]
-                { url = "/about/hide-detail"
-                , label = Element.text "Hide"
-                }
+            , UI.link link_attrs "/about/hide-detail" "Hide"
             ]
 
     else
-        Element.Input.button [ Element.Font.underline ]
-            { onPress = Just MsgShowDetailClicked
-            , label = Element.text "Show more"
-            }
+        UI.linkWithAction link_attrs MsgShowDetailClicked "Show more"
 
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
