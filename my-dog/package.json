@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "elm-live src/Main.elm -- --debug --output=index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "elm-live src/Main.elm -- --debug --output=v2/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "elm make src/Main.elm --output=v2/index.js  --optimize"
   },
   "keywords": [],
   "author": "",

@@ -117,7 +117,7 @@ viewTitle model =
         , EF.size 52
         , ER.heading 1
         ]
-        [ E.text "My Dog"
+        [ E.text "My Dog version 2"
         ]
 
 
@@ -166,7 +166,7 @@ buttonChangeColors model =
 
 text1 : String
 text1 =
-    "Chocolate cotton candy lemon drops cake lollipop icing lollipop. Bear claw dessert biscuit cake soufflé danish. Dragée sweet chocolate cake lollipop bonbon carrot cake cookie cupcake marshmallow. Cookie topping jelly brownie tiramisu chocolate cookie chocolate cake. Ice cream lemon drops jelly-o marshmallow bear claw shortbread ice cream ice cream. Danish marzipan chocolate cake sweet roll cake icing dessert. Jujubes cupcake dessert sesame snaps gummi bears dessert gummi bears. Chupa chups sesame snaps tart croissant liquorice sugar plum. Toffee lollipop lollipop chocolate cake pudding marzipan. Dragée marshmallow sweet wafer marzipan chocolate bar marzipan gummies. Dragée dessert toffee fruitcake shortbread bonbon chocolate bar donut. Lemon drops gummi bears sweet roll cheesecake toffee."
+    "This is version 2. Chocolate cotton candy lemon drops cake lollipop icing lollipop. Bear claw dessert biscuit cake soufflé danish. Dragée sweet chocolate cake lollipop bonbon carrot cake cookie cupcake marshmallow. Cookie topping jelly brownie tiramisu chocolate cookie chocolate cake. Ice cream lemon drops jelly-o marshmallow bear claw shortbread ice cream ice cream. Danish marzipan chocolate cake sweet roll cake icing dessert. Jujubes cupcake dessert sesame snaps gummi bears dessert gummi bears. Chupa chups sesame snaps tart croissant liquorice sugar plum. Toffee lollipop lollipop chocolate cake pudding marzipan. Dragée marshmallow sweet wafer marzipan chocolate bar marzipan gummies. Dragée dessert toffee fruitcake shortbread bonbon chocolate bar donut. Lemon drops gummi bears sweet roll cheesecake toffee."
 
 
 text2 : String
