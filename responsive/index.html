@@ -12,7 +12,11 @@
     <script src="index.js"></script>
     <script>
         Elm.Main.init({
-            node: document.querySelector('main')
+            node: document.querySelector('main'),
+            flags: {
+                w: window.innerWidth,
+                h: window.innerHeight
+            }
         })
     </script>
 

@@ -1,11 +1,12 @@
 module Main exposing (main)
 
 import Browser
+import Browser.Events
 import Element
 import Html exposing (text)
 
 
-main : Program () Model Msg
+main : Program Size Model Msg
 main =
     Browser.element
         { init = init
@@ -27,19 +28,19 @@ type alias Model =
 
 
 type Msg
-    = MsgDummy
+    = MsgWindowSizeChanged Int Int
 
 
-init : () -> ( Model, Cmd.Cmd Msg )
-init flags =
-    ( initModel, Cmd.none )
+init : Size -> ( Model, Cmd.Cmd Msg )
+init size =
+    ( initModel size, Cmd.none )
 
 
-initModel : Model
-initModel =
+initModel : Size -> Model
+initModel size =
     { windowSize =
-        { w = 1024
-        , h = 768
+        { w = size.w
+        , h = size.h
         }
     }
 
@@ -52,9 +53,17 @@ view model =
 
 update : Msg -> Model -> ( Model, Cmd.Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        MsgWindowSizeChanged w h ->
+            let
+                newWindowSize =
+                    { w = w
+                    , h = h
+                    }
+            in
+            ( { model | windowSize = newWindowSize }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onResize MsgWindowSizeChanged
