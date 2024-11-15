@@ -1,7 +1,7 @@
 module Router exposing (..)
 
 import Url
-import Url.Parser
+import Url.Parser exposing ((</>))
 
 
 type Route
@@ -40,3 +40,8 @@ routerParser =
         [ Url.Parser.map RouteAboutPage aboutPageParser
         , Url.Parser.map RouteHomePage homePageParser
         ]
+
+
+referenceContactPageParser : Url.Parser.Parser a a
+referenceContactPageParser =
+    Url.Parser.s "about" </> Url.Parser.s "contact"

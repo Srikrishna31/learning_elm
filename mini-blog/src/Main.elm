@@ -6,6 +6,7 @@ import Browser.Navigation
 import Element exposing (Element)
 import HomePage
 import Html
+import Router
 import UI
 import Url
 
@@ -71,8 +72,8 @@ viewContent model =
 
 viewHeader =
     Element.row [ Element.spacing 10 ]
-        [ UI.link [] "/about" "About"
-        , UI.link [] "/" "Home"
+        [ UI.link [] (Router.asPath Router.RouteAboutPage) "About"
+        , UI.link [] (Router.asPath Router.RouteHomePage) "Home"
         ]
 
 
@@ -94,11 +95,15 @@ getTitle url =
 
 viewPage : Model -> Element.Element Msg
 viewPage model =
-    if String.startsWith "/about" model.url.path then
-        Element.map MsgAboutPage (AboutPage.view model.modelAboutPage)
+    case Router.fromUrl model.url of
+        Just Router.RouteAboutPage ->
+            Element.map MsgAboutPage (AboutPage.view model.modelAboutPage)
 
-    else
-        Element.map MsgHomePage (HomePage.view model.modelHomePage)
+        Just Router.RouteHomePage ->
+            Element.map MsgHomePage (HomePage.view model.modelHomePage)
+
+        Nothing ->
+            Element.text "Not found 404"
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
