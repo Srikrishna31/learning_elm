@@ -1,5 +1,6 @@
 module PhotoGroove exposing (main)
 
+import Array exposing (Array)
 import Browser
 import Html exposing (Html, div, h1, img, text)
 import Html.Attributes as Html exposing (..)
@@ -33,7 +34,7 @@ urlPrefix =
     "https://elm-in-action.com/"
 
 
-view : { photos : List { url : String }, selectedUrl : String } -> Html { description : String, data : String }
+view : Model -> Html Msg
 view model =
     div [ class "content" ]
         [ h1 [] [ text "Photo Groove" ]
@@ -47,7 +48,7 @@ view model =
         ]
 
 
-viewThumbnail : String -> { url : String } -> Html { description : String, data : String }
+viewThumbnail : String -> Photo -> Html Msg
 viewThumbnail selectedUrl thumb =
     img
         [ src (urlPrefix ++ thumb.url)
@@ -57,7 +58,7 @@ viewThumbnail selectedUrl thumb =
         []
 
 
-initialModel : { photos : List { url : String }, selectedUrl : String }
+initialModel : Model
 initialModel =
     { photos =
         [ { url = "1.jpeg" }
@@ -69,6 +70,29 @@ initialModel =
 
 
 
+-- A type alias assigns a name to a type. Anywhere you would refer to that type, you can substitute this name instead.
+
+
+type alias Photo =
+    { url : String }
+
+
+type alias Model =
+    { photos : List Photo
+    , selectedUrl : String
+    }
+
+
+type alias Msg =
+    { description : String, data : String }
+
+
+photoArray : Array Photo
+photoArray =
+    Array.fromList initialModel.photos
+
+
+
 {-
    In general, when update function receives a message, it will do the following:
    1. Look at the message  it received
@@ -77,7 +101,7 @@ initialModel =
 -}
 
 
-update : { description : String, data : String } -> { photos : List { url : String }, selectedUrl : String } -> { photos : List { url : String }, selectedUrl : String }
+update : { description : String, data : String } -> Model -> Model
 update msg model =
     if msg.description == "ClickedPhoto" then
         { model | selectedUrl = msg.data }
