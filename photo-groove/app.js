@@ -9702,9 +9702,19 @@ var $elm$browser$Browser$sandbox = function (impl) {
 };
 var $author$project$PhotoGroove$update = F2(
 	function (msg, model) {
-		return (msg.description === 'ClickedPhoto') ? _Utils_update(
-			model,
-			{selectedUrl: msg.data}) : model;
+		var _v0 = msg.description;
+		switch (_v0) {
+			case 'ClickedPhoto':
+				return _Utils_update(
+					model,
+					{selectedUrl: msg.data});
+			case 'ClickedSurpriseMe':
+				return _Utils_update(
+					model,
+					{selectedUrl: '2.jpeg'});
+			default:
+				return model;
+		}
 	});
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$img = _VirtualDom_node('img');
@@ -9771,6 +9781,17 @@ var $author$project$PhotoGroove$view = function (model) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Photo Groove')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Events$onClick(
+						{data: '', description: 'ClickedSurpriseMe'})
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Surprise Me!')
 					])),
 				A2(
 				$elm$html$Html$div,
