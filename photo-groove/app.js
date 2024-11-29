@@ -9832,6 +9832,10 @@ var $elm$random$Random$generate = F2(
 			$elm$random$Random$Generate(
 				A2($elm$random$Random$map, tagger, generator)));
 	});
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var $author$project$PhotoGroove$Loaded = F2(
 	function (a, b) {
 		return {$: 'Loaded', a: a, b: b};
@@ -9960,7 +9964,8 @@ var $author$project$PhotoGroove$update = F2(
 							var _v2 = _v1.a;
 							var firstPhoto = _v2.a;
 							var otherPhotos = _v2.b;
-							return _Utils_Tuple2(
+							return A2(
+								$elm$core$Tuple$pair,
 								model,
 								A2(
 									$elm$random$Random$generate,

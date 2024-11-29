@@ -210,11 +210,16 @@ update msg model =
         -}
         ClickedSurpriseMe ->
             case model.status of
+                {-
+                   The piplined code is saying the following:
+                   1. Call Random.uniform firstPhoto otherPhotos
+                   2. Pass its return value as the final argument to Random.generate GotRandomPhoto
+                   3. Pass that return value as the final argument to Tuple.pair model.
+                -}
                 Loaded (firstPhoto :: otherPhotos) _ ->
-                    ( model
-                    , Random.generate GotRandomPhoto
-                        (Random.uniform firstPhoto otherPhotos)
-                    )
+                    Random.uniform firstPhoto otherPhotos
+                        |> Random.generate GotRandomPhoto
+                        |> Tuple.pair model
 
                 Loading ->
                     ( model, Cmd.none )
