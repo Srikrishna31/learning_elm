@@ -52,21 +52,35 @@ urlPrefix =
 
 view : Model -> Html Msg
 view model =
-    div [ class "content" ]
-        [ h1 [] [ text "Photo Groove" ]
-        , button [ onClick ClickedSurpriseMe ]
-            [ text "Surprise Me!" ]
-        , h3 [] [ text "Thumbnail Size:" ]
-        , div [ id "choose-size" ]
-            (List.map (viewSizeChooser model.chosenSize) [ Small, Medium, Large ])
-        , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
-            (List.map (viewThumbnail model.selectedUrl) model.photos)
-        , img
-            [ class "large"
-            , src (urlPrefix ++ "large/" ++ model.selectedUrl)
-            ]
-            []
+    div [ class "content" ] <|
+        case model.status of
+            Loaded photos selectedUrl ->
+                viewLoaded photos selectedUrl model.chosenSize
+
+            Loading ->
+                []
+
+            Errored errorMessage ->
+                [ text ("Error: " ++ errorMessage) ]
+
+
+viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
+viewLoaded photos selectedUrl chosenSize =
+    [ h1 [] [ text "Photo Groove" ]
+    , button
+        [ onClick ClickedSurpriseMe ]
+        [ text "Surprise Me!" ]
+    , h3 [] [ text "Thumbnail Size:" ]
+    , div [ id "choose-size" ]
+        (List.map (viewSizeChooser chosenSize) [ Small, Medium, Large ])
+    , div [ id "thumbnails", class (sizeToString chosenSize) ]
+        (List.map (viewThumbnail selectedUrl) photos)
+    , img
+        [ class "large"
+        , src (urlPrefix ++ "large/" ++ selectedUrl)
         ]
+        []
+    ]
 
 
 viewThumbnail : String -> Photo -> Html Msg
@@ -105,24 +119,9 @@ sizeToString size =
             "large"
 
 
-getPhotoUrl : Int -> String
-getPhotoUrl index =
-    case Array.get index photoArray of
-        Just photo ->
-            photo.url
-
-        Nothing ->
-            ""
-
-
 initialModel : Model
 initialModel =
-    { photos =
-        [ { url = "1.jpeg" }
-        , { url = "2.jpeg" }
-        , { url = "3.jpeg" }
-        ]
-    , selectedUrl = "1.jpeg"
+    { status = Loading
     , chosenSize = Medium
     }
 
@@ -136,8 +135,7 @@ type alias Photo =
 
 
 type alias Model =
-    { photos : List Photo
-    , selectedUrl : String
+    { status : Status
     , chosenSize : ThumbnailSize
     }
 
@@ -145,7 +143,7 @@ type alias Model =
 type Msg
     = ClickedPhoto String
     | ClickedSize ThumbnailSize
-    | GotSelectedIndex Int
+    | GotRandomPhoto Photo
     | ClickedSurpriseMe
 
 
@@ -155,9 +153,10 @@ type ThumbnailSize
     | Large
 
 
-photoArray : Array Photo
-photoArray =
-    Array.fromList initialModel.photos
+type Status
+    = Loading
+    | Loaded (List Photo) String
+    | Errored String
 
 
 
@@ -168,15 +167,16 @@ photoArray =
 
     A command is a value that describes an operation for Elm runtime to perform. Unlike calling
     a function, running the same command multiple times can have a different result.
+
+    Random.uniform : elem -> List elem -> Random.Generator elem
+
+    Conceptually, Random.uniform "takes a non-empty list." The reason Elm's standard libraries don't
+    include a dedicated NonEmptyList type is that it's simple enough for a function that needs one
+    to follow Random.uniform's design: accept a mandatory elem as well as a List elem of optional
+    additional values. Similary, a function can "return a non-empty list" by returning an
+    (elem, List elem) tuple.
+
 -}
-
-
-randomPhotoPicker : Random.Generator Int
-randomPhotoPicker =
-    Random.int 0 (Array.length photoArray - 1)
-
-
-
 {-
    In general, when update function receives a message, it will do the following:
    1. Look at the message  it received
@@ -194,7 +194,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedPhoto url ->
-            ( { model | selectedUrl = url }, Cmd.none )
+            ( { model | status = selectUrl url model.status }, Cmd.none )
 
         ClickedSize size ->
             ( { model | chosenSize = size }, Cmd.none )
@@ -209,10 +209,38 @@ update msg model =
            at all.
         -}
         ClickedSurpriseMe ->
-            ( model, Random.generate GotSelectedIndex randomPhotoPicker )
+            case model.status of
+                Loaded (firstPhoto :: otherPhotos) _ ->
+                    ( model
+                    , Random.generate GotRandomPhoto
+                        (Random.uniform firstPhoto otherPhotos)
+                    )
 
-        GotSelectedIndex index ->
-            ( { model | selectedUrl = getPhotoUrl index }, Cmd.none )
+                Loading ->
+                    ( model, Cmd.none )
+
+                Errored errorMessage ->
+                    ( model, Cmd.none )
+
+                Loaded [] _ ->
+                    ( model, Cmd.none )
+
+        GotRandomPhoto photo ->
+            ( { model | status = selectUrl photo.url model.status }, Cmd.none )
+
+
+selectUrl : String -> Status -> Status
+selectUrl url status =
+    case status of
+        Loaded photos _ ->
+            Loaded photos url
+
+        Loading ->
+            status
+
+        --thought
+        Errored errorMessage ->
+            status
 
 
 
