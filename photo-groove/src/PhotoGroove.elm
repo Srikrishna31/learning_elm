@@ -2,7 +2,7 @@ module PhotoGroove exposing (main)
 
 import Array exposing (Array)
 import Browser
-import Html exposing (Html, button, div, h1, img, text)
+import Html exposing (Html, button, div, h1, h3, img, input, label, text)
 import Html.Attributes as Html exposing (..)
 import Html.Events exposing (onClick)
 
@@ -38,9 +38,12 @@ view : Model -> Html Msg
 view model =
     div [ class "content" ]
         [ h1 [] [ text "Photo Groove" ]
-        , button [ onClick { description = "ClickedSurpriseMe", data = "" } ]
+        , button [ onClick ClickedSurpriseMe ]
             [ text "Surprise Me!" ]
-        , div [ id "thumbnails" ]
+        , h3 [] [ text "Thumbnail Size:" ]
+        , div [ id "choose-size" ]
+            (List.map (viewSizeChooser model.chosenSize) [ Small, Medium, Large ])
+        , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
             (List.map (viewThumbnail model.selectedUrl) model.photos)
         , img
             [ class "large"
@@ -55,9 +58,45 @@ viewThumbnail selectedUrl thumb =
     img
         [ src (urlPrefix ++ thumb.url)
         , Html.classList [ ( "selected", selectedUrl == thumb.url ) ]
-        , onClick { description = "ClickedPhoto", data = thumb.url }
+        , onClick (ClickedPhoto thumb.url)
         ]
         []
+
+
+viewSizeChooser : ThumbnailSize -> ThumbnailSize -> Html Msg
+viewSizeChooser chosenSizde size =
+    label []
+        {-
+           The underscore in the type below, type_ attribute is very important.
+           type is a reserved keyword in Elm, so the Html.Attributes module names
+           the attribute type_ to work around this.
+        -}
+        [ input [ type_ "radio", name "size", value (sizeToString size), checked (chosenSizde == size), onClick (ClickedSize size) ] []
+        , text (sizeToString size)
+        ]
+
+
+sizeToString : ThumbnailSize -> String
+sizeToString size =
+    case size of
+        Small ->
+            "small"
+
+        Medium ->
+            "med"
+
+        Large ->
+            "large"
+
+
+getPhotoUrl : Int -> String
+getPhotoUrl index =
+    case Array.get index photoArray of
+        Just photo ->
+            photo.url
+
+        Nothing ->
+            ""
 
 
 initialModel : Model
@@ -68,6 +107,7 @@ initialModel =
         , { url = "3.jpeg" }
         ]
     , selectedUrl = "1.jpeg"
+    , chosenSize = Medium
     }
 
 
@@ -82,11 +122,20 @@ type alias Photo =
 type alias Model =
     { photos : List Photo
     , selectedUrl : String
+    , chosenSize : ThumbnailSize
     }
 
 
-type alias Msg =
-    { description : String, data : String }
+type Msg
+    = ClickedPhoto String
+    | ClickedSize ThumbnailSize
+    | ClickedSurpriseMe
+
+
+type ThumbnailSize
+    = Small
+    | Medium
+    | Large
 
 
 photoArray : Array Photo
@@ -103,17 +152,17 @@ photoArray =
 -}
 
 
-update : { description : String, data : String } -> Model -> Model
+update : Msg -> Model -> Model
 update msg model =
-    case msg.description of
-        "ClickedPhoto" ->
-            { model | selectedUrl = msg.data }
+    case msg of
+        ClickedPhoto url ->
+            { model | selectedUrl = url }
 
-        "ClickedSurpriseMe" ->
+        ClickedSize size ->
+            { model | chosenSize = size }
+
+        ClickedSurpriseMe ->
             { model | selectedUrl = "2.jpeg" }
-
-        _ ->
-            model
 
 
 
