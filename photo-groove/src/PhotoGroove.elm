@@ -1,11 +1,12 @@
 module PhotoGroove exposing (main)
 
-import Array exposing (Array)
 import Browser
 import Html exposing (Html, button, div, h1, h3, img, input, label, text)
-import Html.Attributes as Html exposing (..)
+import Html.Attributes as Html exposing (checked, class, id, name, src, title, type_, value)
 import Html.Events exposing (onClick)
 import Http
+import Json.Decode exposing (Decoder, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (optional, required)
 import Random
 
 
@@ -88,6 +89,7 @@ viewThumbnail : String -> Photo -> Html Msg
 viewThumbnail selectedUrl thumb =
     img
         [ src (urlPrefix ++ thumb.url)
+        , title (thumb.title ++ " [" ++ String.fromInt thumb.size ++ " KB]")
         , Html.classList [ ( "selected", selectedUrl == thumb.url ) ]
         , onClick (ClickedPhoto thumb.url)
         ]
@@ -140,7 +142,10 @@ initialModel =
 
 
 type alias Photo =
-    { url : String }
+    { url : String
+    , size : Int
+    , title : String
+    }
 
 
 type alias Model =
@@ -154,7 +159,7 @@ type Msg
     | ClickedSize ThumbnailSize
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
-    | GotPhotos (Result Http.Error String)
+    | GotPhotos (Result Http.Error (List Photo))
 
 
 type ThumbnailSize
@@ -251,34 +256,32 @@ update msg model =
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
 
-        GotPhotos (Ok responseStr) ->
-            case String.split "," responseStr of
-                (firstUrl :: _) as urls ->
-                    let
-                        {-
-                           Using type aliases to create records
-                                Declaring type alias Photo = {url:String} does more than give us a Photo type we
-                                can use in type annotations. It also gives us convenience function whose job it is
-                                to build Photo record instances. This function is also called Photo.
-                                This also works with type aliases involving multiple fields, like the one for Model:
-                                type alias Model =
-                                { status: Status
-                                , chosenSize: ThumbnailSize
-                                }
-                                This declaration gives us a convenience function called Model that builds a record
-                                and returns it:
-                                Model : Status -> ThumbnailSize -> Model
-                                The order of arguments matches the order of the fields in the type alias declaration.
-                                So, if you were to move the photos: List Photo declaration to the end of the
-                                type alias, then the Model function would look like this instead:
-                                Model: String -> ThumbnailSize -> List Photo -> Model
+        GotPhotos (Ok photos) ->
+            case photos of
+                first :: rest ->
+                    {-
+                       Using type aliases to create records
+                            Declaring type alias Photo = {url:String} does more than give us a Photo type we
+                            can use in type annotations. It also gives us convenience function whose job it is
+                            to build Photo record instances. This function is also called Photo.
+                            This also works with type aliases involving multiple fields, like the one for Model:
+                            type alias Model =
+                            { status: Status
+                            , chosenSize: ThumbnailSize
+                            }
+                            This declaration gives us a convenience function called Model that builds a record
+                            and returns it:
+                            Model : Status -> ThumbnailSize -> Model
+                            The order of arguments matches the order of the fields in the type alias declaration.
+                            So, if you were to move the photos: List Photo declaration to the end of the
+                            type alias, then the Model function would look like this instead:
+                            Model: String -> ThumbnailSize -> List Photo -> Model
 
-                                In the code below, we replace the lambda \url -> {url = url} with Photo!
-                        -}
-                        photos =
-                            List.map Photo urls
-                    in
-                    ( { model | status = Loaded photos firstUrl }, Cmd.none )
+                            In the code below, we replace the lambda \url -> {url = url} with Photo!
+                            -- The below code
+                            has been refactored out, but the comment remains for educational purposes.
+                    -}
+                    ( { model | status = Loaded photos first.url }, Cmd.none )
 
                 [] ->
                     ( { model | status = Errored "0 photos found" }, Cmd.none )
@@ -327,6 +330,40 @@ selectUrl url status =
 initialCmd : Cmd Msg
 initialCmd =
     Http.get
-        { url = "https://elm-in-action.com/photos/list"
-        , expect = Http.expectString GotPhotos -- can also be (\result -> GotPhotos result)
+        { url = "https://elm-in-action.com/photos/list.json"
+        , expect = Http.expectJson GotPhotos (list photoDecoder) -- can also be (\result -> GotPhotos result)
         }
+
+
+
+{-
+   Because of type aliasing, Photo function is equivalent to below definition of buildPhoto:
+   buildPhoto : String -> Int -> String -> Photo
+   buildPhoto url size title =
+       Photo url size title
+-}
+
+
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo
+        |> required "url" string
+        |> required "size" int
+        |> optional "title" string "(untitled)"
+
+
+
+{-
+   Decoding JSON HTTP responses
+    The Http.expectJson function requests data from a server and then decodes it. Here's how the
+    types of Http.expectJson and Http.expectString match up:
+
+    expectString: (Result Http.Error String -> msg)           -> Expect msg
+    expectJson: (Result Http.Error val -> msg) -> Decoder val -> Expect msg
+
+    Comparing types like this suggests how these functions are similar and how they differ. They
+    both accept a function to translate a Result into a msg. Both Result types have Http.Error
+    as their Error type. Howeve, wherease expectString takes no other arguments and always produces
+    a String as its Result's Ok type, expectJson additionally accepts a Decoder val, and on success
+    produces an Ok val result instead of Ok String.
+-}
