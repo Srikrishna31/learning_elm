@@ -34,7 +34,7 @@ import Random
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> ( initialModel, Cmd.none )
+        { init = \_ -> ( initialModel, initialCmd )
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -251,22 +251,40 @@ update msg model =
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
 
-        GotPhotos result ->
-            case result of
-                Ok responseStr ->
-                    case String.split "," responseStr of
-                        (firstUrl :: _) as urls ->
-                            let
-                                photos =
-                                    List.map (\url -> { url = url }) urls
-                            in
-                            ( { model | status = Loaded photos firstUrl }, Cmd.none )
+        GotPhotos (Ok responseStr) ->
+            case String.split "," responseStr of
+                (firstUrl :: _) as urls ->
+                    let
+                        {-
+                           Using type aliases to create records
+                                Declaring type alias Photo = {url:String} does more than give us a Photo type we
+                                can use in type annotations. It also gives us convenience function whose job it is
+                                to build Photo record instances. This function is also called Photo.
+                                This also works with type aliases involving multiple fields, like the one for Model:
+                                type alias Model =
+                                { status: Status
+                                , chosenSize: ThumbnailSize
+                                }
+                                This declaration gives us a convenience function called Model that builds a record
+                                and returns it:
+                                Model : Status -> ThumbnailSize -> Model
+                                The order of arguments matches the order of the fields in the type alias declaration.
+                                So, if you were to move the photos: List Photo declaration to the end of the
+                                type alias, then the Model function would look like this instead:
+                                Model: String -> ThumbnailSize -> List Photo -> Model
 
-                        [] ->
-                            ( { model | status = Errored "0 photos found" }, Cmd.none )
+                                In the code below, we replace the lambda \url -> {url = url} with Photo!
+                        -}
+                        photos =
+                            List.map Photo urls
+                    in
+                    ( { model | status = Loaded photos firstUrl }, Cmd.none )
 
-                Err httpError ->
-                    ( { model | status = Errored "Server error!" }, Cmd.none )
+                [] ->
+                    ( { model | status = Errored "0 photos found" }, Cmd.none )
+
+        GotPhotos (Err httpError) ->
+            ( { model | status = Errored "Server error!" }, Cmd.none )
 
 
 selectUrl : String -> Status -> Status
@@ -304,3 +322,11 @@ selectUrl url status =
        3.When the response comes back, use this toMsg function to translate it into an Msg.
        4.Send that Msg to update.
 -}
+
+
+initialCmd : Cmd Msg
+initialCmd =
+    Http.get
+        { url = "https://elm-in-action.com/photos/list"
+        , expect = Http.expectString GotPhotos -- can also be (\result -> GotPhotos result)
+        }
