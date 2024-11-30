@@ -5,6 +5,7 @@ import Browser
 import Html exposing (Html, button, div, h1, h3, img, input, label, text)
 import Html.Attributes as Html exposing (..)
 import Html.Events exposing (onClick)
+import Http
 import Random
 
 
@@ -128,6 +129,14 @@ initialModel =
 
 
 -- A type alias assigns a name to a type. Anywhere you would refer to that type, you can substitute this name instead.
+{-
+   1. A model represents our application state.
+   2. A view function takes a model and returns a list of Html nodes.
+   3. User events such as clicks get translated into message values.
+   4. Messages get run through the update function to produce a new model.
+   5. After an update, the new model is sent to the view function to determine the new DOM.
+   6. Browser.sandbox wires together model, view and update.
+-}
 
 
 type alias Photo =
@@ -143,8 +152,9 @@ type alias Model =
 type Msg
     = ClickedPhoto String
     | ClickedSize ThumbnailSize
-    | GotRandomPhoto Photo
     | ClickedSurpriseMe
+    | GotRandomPhoto Photo
+    | GotPhotos (Result Http.Error String)
 
 
 type ThumbnailSize
@@ -175,6 +185,14 @@ type Status
     to follow Random.uniform's design: accept a mandatory elem as well as a List elem of optional
     additional values. Similary, a function can "return a non-empty list" by returning an
     (elem, List elem) tuple.
+
+    All side-effects are performed by the Elm Runtime itself; Elm code only describes which effects to
+    perform, by returning values from update.
+    Note: Calling update does not directly alter any state. All update does is return a tuple. If you wanted to,
+    you could call update a hundred times in a row and all it would do is give you back a hundred tuples.
+
+    This system of "managed effects" in which the Elm runtime is in charge of performing all effects, means that
+    Elm programs can be written entirely in terms of data transformations.
 
 -}
 {-
@@ -233,6 +251,23 @@ update msg model =
         GotRandomPhoto photo ->
             ( { model | status = selectUrl photo.url model.status }, Cmd.none )
 
+        GotPhotos result ->
+            case result of
+                Ok responseStr ->
+                    case String.split "," responseStr of
+                        (firstUrl :: _) as urls ->
+                            let
+                                photos =
+                                    List.map (\url -> { url = url }) urls
+                            in
+                            ( { model | status = Loaded photos firstUrl }, Cmd.none )
+
+                        [] ->
+                            ( { model | status = Errored "0 photos found" }, Cmd.none )
+
+                Err httpError ->
+                    ( { model | status = Errored "Server error!" }, Cmd.none )
+
 
 selectUrl : String -> Status -> Status
 selectUrl url status =
@@ -250,10 +285,22 @@ selectUrl url status =
 
 
 {-
-   1. A model represents our application state.
-   2. A view function takes a model and returns a list of Html nodes.
-   3. User events such as clicks get translated into message values.
-   4. Messages get run through the update function to produce a new model.
-   5. After an update, the new model is sent to the view function to determine the new DOM.
-   6. Browser.sandbox wires together model, view and update.
+   Http.Get
+       Calls to Http.get can result in different results, even though they are passed the same parameters.
+       This is because of underlying network issues or server issues. Hence, Http.Get cannot be a pure Elm function.
+       Instead, it returns a Cmd which is executed by the Elm runtime, which manages the effects, and returns a uniform
+       result back to us.
+      The Http.get function returns a Cmd representing the HTTP request we want to make:
+       Http.get :{url: String, expect: Expect msg} -> Cmd msg
+       We pass Http.get a URL string, along with an Expect value that describes what we expect
+       to get back. Once this Cmd completes, it will send a Msg to update telling us what happened.
+   Suppose we called Http.get as below:
+       Http.get { url = "https://www.manning.com"
+                , expect = Http.expectString toMsg
+                }
+       The above code means the following steps:
+       1.Send an Http GET request to https://www.manning.com
+       2.I expect to get back a String for the response.
+       3.When the response comes back, use this toMsg function to translate it into an Msg.
+       4.Send that Msg to update.
 -}
