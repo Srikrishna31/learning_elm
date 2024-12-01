@@ -1,12 +1,13 @@
 module PhotoGroove exposing (main)
 
 import Browser
-import Html exposing (Html, button, div, h1, h3, img, input, label, text)
-import Html.Attributes as Html exposing (checked, class, id, name, src, title, type_, value)
-import Html.Events exposing (onClick)
+import Html exposing (Attribute, Html, button, div, h1, h3, img, input, label, node, text)
+import Html.Attributes as Attr exposing (checked, class, id, name, src, title, type_, value)
+import Html.Events exposing (on, onClick)
 import Http
-import Json.Decode exposing (Decoder, int, list, string, succeed)
+import Json.Decode exposing (Decoder, at, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (optional, required)
+import Json.Encode as JEncode
 import Random
 
 
@@ -66,12 +67,30 @@ view model =
                 [ text ("Error: " ++ errorMessage) ]
 
 
+viewFilter : String -> Int -> Html Msg
+viewFilter name magnitude =
+    div [ class "filter-slider" ]
+        [ label [] [ text name ]
+        , rangeSlider
+            [ Attr.max "11"
+            , Attr.property "val" (JEncode.int magnitude)
+            ]
+            []
+        , label [] [ text (String.fromInt magnitude) ]
+        ]
+
+
 viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
 viewLoaded photos selectedUrl chosenSize =
     [ h1 [] [ text "Photo Groove" ]
     , button
         [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
+    , div [ class "filters" ]
+        [ viewFilter "Hue" 0
+        , viewFilter "Ripple" 0
+        , viewFilter "Noise" 0
+        ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ]
         (List.map (viewSizeChooser chosenSize) [ Small, Medium, Large ])
@@ -90,7 +109,7 @@ viewThumbnail selectedUrl thumb =
     img
         [ src (urlPrefix ++ thumb.url)
         , title (thumb.title ++ " [" ++ String.fromInt thumb.size ++ " KB]")
-        , Html.classList [ ( "selected", selectedUrl == thumb.url ) ]
+        , Attr.classList [ ( "selected", selectedUrl == thumb.url ) ]
         , onClick (ClickedPhoto thumb.url)
         ]
         []
@@ -367,3 +386,44 @@ photoDecoder =
     a String as its Result's Ok type, expectJson additionally accepts a Decoder val, and on success
     produces an Ok val result instead of Ok String.
 -}
+
+
+rangeSlider : List (Attribute msg) -> List (Html msg) -> Html msg
+rangeSlider attributes children =
+    node "range-slider" attributes children
+
+
+
+{-
+   Html.Events.on
+   The Html.Event.on lets us create a custom event handle, just as the Html.node function lets us create a custom element
+   and the Html.Attributes.property function lets us create a custom property.
+    The CustomEvent object JavaScript will dispatch for "slide" is shaped something like this:
+    {detail: {userSlidTo: 7}}
+   The detail field is what CustomEvent objects use to hold their custom information, which in our case holds a single
+   field we named userSlidTo.
+   We can use the Json.Decode.field and Json.Decod.int functions to write a decoder like so:
+
+    field "detail" (field "userSlidTo" int)
+
+    Json.Decode.at
+    There's a convenience function in Json.Decode for the case where we want to call field on another field like this:
+    Json.Decode.at. It takes a list of field strings and traverses them in order. These two decoders do the same thing:
+
+    field "detail" (field "userSlidTo" int)
+    at ["detail", "userSlidTo"] int
+-}
+
+
+onSlide : (Int -> msg) -> Attribute msg
+onSlide toMsg =
+    let
+        detailUserSlidTo : Decoder Int
+        detailUserSlidTo =
+            at [ "detail", "userSlidTo" ] int
+
+        msgDecoder : Decoder msg
+        msgDecoder =
+            Json.Decode.map toMsg detailUserSlidTo
+    in
+    on "slide" msgDecoder
