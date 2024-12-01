@@ -29,7 +29,7 @@ class RangeSlider extends HTMLElement {
 
         jsr.addEventListener("update", function(elem, value) {
             const event = new CustomEvent("slide", {
-                detail: {usersSlidTo: value}
+                detail: {userSlidTo: value}
             });
             rangeSliderNode.dispatchEvent(event);
         })

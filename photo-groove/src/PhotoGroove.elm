@@ -58,7 +58,7 @@ view model =
     div [ class "content" ] <|
         case model.status of
             Loaded photos selectedUrl ->
-                viewLoaded photos selectedUrl model.chosenSize
+                viewLoaded photos selectedUrl model
 
             Loading ->
                 []
@@ -67,34 +67,35 @@ view model =
                 [ text ("Error: " ++ errorMessage) ]
 
 
-viewFilter : String -> Int -> Html Msg
-viewFilter name magnitude =
+viewFilter : (Int -> Msg) -> String -> Int -> Html Msg
+viewFilter toMsg name magnitude =
     div [ class "filter-slider" ]
         [ label [] [ text name ]
         , rangeSlider
             [ Attr.max "11"
             , Attr.property "val" (JEncode.int magnitude)
+            , onSlide toMsg
             ]
             []
         , label [] [ text (String.fromInt magnitude) ]
         ]
 
 
-viewLoaded : List Photo -> String -> ThumbnailSize -> List (Html Msg)
-viewLoaded photos selectedUrl chosenSize =
+viewLoaded : List Photo -> String -> Model -> List (Html Msg)
+viewLoaded photos selectedUrl model =
     [ h1 [] [ text "Photo Groove" ]
     , button
         [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
     , div [ class "filters" ]
-        [ viewFilter "Hue" 0
-        , viewFilter "Ripple" 0
-        , viewFilter "Noise" 0
+        [ viewFilter SlidHue "Hue" model.hue
+        , viewFilter SlidRipple "Ripple" model.ripple
+        , viewFilter SlidNoise "Noise" model.noise
         ]
     , h3 [] [ text "Thumbnail Size:" ]
     , div [ id "choose-size" ]
-        (List.map (viewSizeChooser chosenSize) [ Small, Medium, Large ])
-    , div [ id "thumbnails", class (sizeToString chosenSize) ]
+        (List.map (viewSizeChooser model.chosenSize) [ Small, Medium, Large ])
+    , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
         (List.map (viewThumbnail selectedUrl) photos)
     , img
         [ class "large"
@@ -145,6 +146,9 @@ initialModel : Model
 initialModel =
     { status = Loading
     , chosenSize = Medium
+    , hue = 5
+    , ripple = 5
+    , noise = 5
     }
 
 
@@ -170,6 +174,9 @@ type alias Photo =
 type alias Model =
     { status : Status
     , chosenSize : ThumbnailSize
+    , hue : Int
+    , ripple : Int
+    , noise : Int
     }
 
 
@@ -179,6 +186,9 @@ type Msg
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
     | GotPhotos (Result Http.Error (List Photo))
+    | SlidHue Int
+    | SlidRipple Int
+    | SlidNoise Int
 
 
 type ThumbnailSize
@@ -308,6 +318,15 @@ update msg model =
         GotPhotos (Err httpError) ->
             ( { model | status = Errored "Server error!" }, Cmd.none )
 
+        SlidHue int ->
+            ( { model | hue = int }, Cmd.none )
+
+        SlidRipple int ->
+            ( { model | ripple = int }, Cmd.none )
+
+        SlidNoise int ->
+            ( { model | noise = int }, Cmd.none )
+
 
 selectUrl : String -> Status -> Status
 selectUrl url status =
@@ -417,13 +436,11 @@ rangeSlider attributes children =
 
 onSlide : (Int -> msg) -> Attribute msg
 onSlide toMsg =
-    let
-        detailUserSlidTo : Decoder Int
-        detailUserSlidTo =
-            at [ "detail", "userSlidTo" ] int
+    {-
+       on "slide" (Json.Decode.map toMsg (at ["detail", "userSlidTo"] int))
 
-        msgDecoder : Decoder msg
-        msgDecoder =
-            Json.Decode.map toMsg detailUserSlidTo
-    in
-    on "slide" msgDecoder
+       The above code can be written in pipeline style as below
+    -}
+    at [ "detail", "userSlidTo" ] int
+        |> Json.Decode.map toMsg
+        |> on "slide"
