@@ -1,7 +1,7 @@
-module PhotoGroove exposing (main)
+port module PhotoGroove exposing (FilterOptions, main, setFilters)
 
 import Browser
-import Html exposing (Attribute, Html, button, div, h1, h3, img, input, label, node, text)
+import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, node, text)
 import Html.Attributes as Attr exposing (checked, class, id, name, src, title, type_, value)
 import Html.Events exposing (on, onClick)
 import Http
@@ -53,6 +53,20 @@ urlPrefix =
     "https://elm-in-action.com/"
 
 
+
+{-
+   Optimized DOM Updates
+       One reason the Elm Runtime has good performance is that it skips unnecessary renders. See, browsers repaint the
+       DOM as pixels on users' screen only every so often. If the Elm Runtime changes part of the DOM, and then changes
+       it again before the next repaint, the first change will have been wasted time; only the second change will be
+       painted for the users to see.
+       Calling update function a million times in a single second doesn't necessarily call the view function the same
+       number of times. Although those million updates will result in a million potential Model changes, Elm waits until
+       the browser's next repaint to call view even once--with whatever value Model has at that moment. Invoking view
+       more frequently than that would result in DOM updates that the browser wouldn't bother to paint anyway.
+-}
+
+
 view : Model -> Html Msg
 view model =
     div [ class "content" ] <|
@@ -97,9 +111,11 @@ viewLoaded photos selectedUrl model =
         (List.map (viewSizeChooser model.chosenSize) [ Small, Medium, Large ])
     , div [ id "thumbnails", class (sizeToString model.chosenSize) ]
         (List.map (viewThumbnail selectedUrl) photos)
-    , img
-        [ class "large"
-        , src (urlPrefix ++ "large/" ++ selectedUrl)
+    , canvas
+        [ id "main-canvas"
+        , class "large"
+
+        --, src (urlPrefix ++ "large/" ++ selectedUrl)
         ]
         []
     ]
@@ -246,7 +262,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ClickedPhoto url ->
-            ( { model | status = selectUrl url model.status }, Cmd.none )
+            applyFilters { model | status = selectUrl url model.status }
 
         ClickedSize size ->
             ( { model | chosenSize = size }, Cmd.none )
@@ -283,7 +299,7 @@ update msg model =
                     ( model, Cmd.none )
 
         GotRandomPhoto photo ->
-            ( { model | status = selectUrl photo.url model.status }, Cmd.none )
+            applyFilters { model | status = selectUrl photo.url model.status }
 
         GotPhotos (Ok photos) ->
             case photos of
@@ -310,7 +326,16 @@ update msg model =
                             -- The below code
                             has been refactored out, but the comment remains for educational purposes.
                     -}
-                    ( { model | status = Loaded photos first.url }, Cmd.none )
+                    applyFilters
+                        { model
+                            | status =
+                                case List.head photos of
+                                    Just photo ->
+                                        Loaded photos photo.url
+
+                                    Nothing ->
+                                        Loaded [] ""
+                        }
 
                 [] ->
                     ( { model | status = Errored "0 photos found" }, Cmd.none )
@@ -319,13 +344,36 @@ update msg model =
             ( { model | status = Errored "Server error!" }, Cmd.none )
 
         SlidHue int ->
-            ( { model | hue = int }, Cmd.none )
+            applyFilters { model | hue = int }
 
         SlidRipple int ->
-            ( { model | ripple = int }, Cmd.none )
+            applyFilters { model | ripple = int }
 
         SlidNoise int ->
-            ( { model | noise = int }, Cmd.none )
+            applyFilters { model | noise = int }
+
+
+applyFilters : Model -> ( Model, Cmd Msg )
+applyFilters model =
+    case model.status of
+        Loading ->
+            ( model, Cmd.none )
+
+        Loaded photos selectedUrl ->
+            let
+                filters =
+                    [ { name = "Hue", amount = toFloat model.hue / 11 }
+                    , { name = "Ripple", amount = toFloat model.ripple / 11 }
+                    , { name = "Noise", amount = toFloat model.noise / 11 }
+                    ]
+
+                url =
+                    urlPrefix ++ "large/" ++ selectedUrl
+            in
+            ( model, setFilters { url = url, filters = filters } )
+
+        Errored string ->
+            ( model, Cmd.none )
 
 
 selectUrl : String -> Status -> Status
@@ -444,3 +492,62 @@ onSlide toMsg =
     at [ "detail", "userSlidTo" ] int
         |> Json.Decode.map toMsg
         |> on "slide"
+
+
+
+{-
+   Talking to JavaScript is like talking to Servers
+   Because calling any JavaScript function may result in a side effect, Elm functions cannot call JavaScript functions
+   anytime they please; this would destroy the guarantee that Elm functions have no side effects.
+   Instead, Elm talks to JavaScript the same way it talks to servers: by sending data out through a command, and
+   receiving data in through a message. This means that talking to Javascript will have some characteristics in common:
+    * Data can be sent only by using a command.
+    * Data can be received only by update, and that data must be wrapped in a message.
+    * We can translate and validate this incoming data by using decoders.
+
+   Note: In JavaScript, some effects are performed synchronously, with program execution halting until the effect completes.
+   In contrast, an Elm Cmd always represents an asynchronous effect. This mean that when we send data to Javascript, it's
+   always possible that other JavaScript code might run before data gets sent back to Elm.
+-}
+
+
+type alias FilterOptions =
+    { url : String
+    , filters : List { name : String, amount : Float }
+    }
+
+
+
+{-
+   Using a port to define a function
+   We don't write an implementation for port functions, because, the port keyword automatically writes one for us. port only
+   needs to look at the type we requested to decide what the function should do.
+
+   All port functions that send data to JavaScript are defined using a very specific pattern:
+       * The port keyword must be followed by a function name and a type annotation
+       * The type annotation must be for a function that takes one argument.
+       * The function must return Cmd msg, and nothing else-not even Cmd Msg!
+
+   Port commands never send messages:
+
+   The official documentation for Cmd.none shows that it has this type:
+
+   none: Cmd msg
+
+   A Cmd msg by itself like this is a command that produces no message after it completes.
+
+   A command that produces no messages has the type Cmd msg, a subscription (for example, Sub.none) that produces no
+   messages has the type Sub msg, and a list that has no elements--that is, [] --has the similar type List val. Because
+   their type variables have no restriction, you can use a Cmd msg anywhere you need any flavor of Cmd, just as you can
+   use an empty list anywhere you need any flavor of List.
+
+   Both Cmd.none and setFilters produce no message after completing. The difference is that Cmd.none has no effect, whereas
+   setFilters will perform the effect of sending data to JavaScript. (Specifically, it will send the FilterOptions value
+   we pass it). We can think of setFilters as a "fire and forget" command.
+
+   Although HTTP requests can fail, sending data to JavaScript cannot. We don't miss out on any error-handling opportunities
+   just because setFilters sends no messages back to update.
+-}
+
+
+port setFilters : FilterOptions -> Cmd msg
