@@ -1,4 +1,4 @@
-port module PhotoGroove exposing (FilterOptions, main, setFilters)
+port module PhotoGroove exposing (main)
 
 import Browser
 import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, node, text)
@@ -31,16 +31,28 @@ import Random
     Putting it together, we can read Program () Model Msg as "an Elm program with no flags, whose
     model type is Model and whose message type is Msg".
 -}
+{-
+   Flags are values passed from JavaScript to an Elm program's init function
+-}
 
 
-main : Program () Model Msg
+main : Program Float Model Msg
 main =
     Browser.element
-        { init = \_ -> ( initialModel, initialCmd )
+        { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
+
+
+init : Float -> ( Model, Cmd Msg )
+init flags =
+    let
+        activity =
+            "Initializing Pasta v" ++ String.fromFloat flags
+    in
+    ( { initialModel | activity = activity }, initialCmd )
 
 
 photoListUrl : String
@@ -101,6 +113,7 @@ viewLoaded photos selectedUrl model =
     , button
         [ onClick ClickedSurpriseMe ]
         [ text "Surprise Me!" ]
+    , div [ class "activity" ] [ text model.activity ]
     , div [ class "filters" ]
         [ viewFilter SlidHue "Hue" model.hue
         , viewFilter SlidRipple "Ripple" model.ripple
@@ -161,6 +174,7 @@ sizeToString size =
 initialModel : Model
 initialModel =
     { status = Loading
+    , activity = ""
     , chosenSize = Medium
     , hue = 5
     , ripple = 5
@@ -189,6 +203,7 @@ type alias Photo =
 
 type alias Model =
     { status : Status
+    , activity : String
     , chosenSize : ThumbnailSize
     , hue : Int
     , ripple : Int
@@ -201,6 +216,7 @@ type Msg
     | ClickedSize ThumbnailSize
     | ClickedSurpriseMe
     | GotRandomPhoto Photo
+    | GotActivity String
     | GotPhotos (Result Http.Error (List Photo))
     | SlidHue Int
     | SlidRipple Int
@@ -351,6 +367,9 @@ update msg model =
 
         SlidNoise int ->
             applyFilters { model | noise = int }
+
+        GotActivity activity ->
+            ( { model | activity = activity }, Cmd.none )
 
 
 applyFilters : Model -> ( Model, Cmd Msg )
@@ -551,3 +570,29 @@ type alias FilterOptions =
 
 
 port setFilters : FilterOptions -> Cmd msg
+
+
+
+{-
+   Subscriptions
+   A subscription represents a way to translate certain events outside our program into messages that get sent to our
+   update function.
+   One use for subscriptions is handling user inputs that aren't tied to a particular DOM element - example resizing of
+   the browser window.
+   There are also subscriptions that translate data from JavaScript into messages that are sent to update.
+
+   Cmd and Sub are both parameterized on the type of message they produce. We noted earlier that setFilters returns a
+   Cmd msg (as opposed to Cmd Msg) because it is a command that produces no message after it completes. In contrast,
+   activityChanges returns a Sub msg, but here msg refers to the type of message returned by the (String -> msg) function
+   we pass to activityChanges.
+
+   If we call activityChanges GotActivity, we'll get back a Sub Msg subscription.
+-}
+
+
+port activityChanges : (String -> msg) -> Sub msg
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    activityChanges GotActivity
