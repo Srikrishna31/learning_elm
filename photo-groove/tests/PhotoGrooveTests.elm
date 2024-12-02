@@ -7,7 +7,7 @@ import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
-import PhotoGroove
+import PhotoGroove exposing (..)
 import Test exposing (..)
 
 
@@ -43,10 +43,21 @@ import Test exposing (..)
 
 decoderTest : Test
 decoderTest =
-    test "title defaults to (untitled)" <|
-        \_ ->
-            [ ( "url", Encode.string "fruits.com" )
-            , ( "size", Encode.int 5 )
+    {-
+       The call to fuzz2 says that we want a fuzz test that randomly generates two values. string and int are two fuzzers
+       specifying that we want the first generated value to be a String, and the second to be an integer. Their types are
+       string: Fuzzer String and int: Fuzzer Int.
+
+       A fuzzer specifies how to randomly generate values for fuzz tests.
+       Note: Fuzz.string doesnot generate strings completely at random. It has a higher probability of generating values
+       that are likely to cause bugs: the empty string, very short strings, and very long strings. Similarly, Fuzz.int
+       prioritizes generating 0, a mix of positive and negative numbers, and a mix of very small and very large numbers.
+       Other fuzzers tend to be designed with similar priorities.
+    -}
+    fuzz2 string int "title defaults to (untitled)" <|
+        \url size ->
+            [ ( "url", Encode.string url )
+            , ( "size", Encode.int size )
             ]
                 |> Encode.object
                 |> decodeValue PhotoGroove.photoDecoder
@@ -73,3 +84,21 @@ decoderTest =
    Encode.string: String ->               Value
    Encode.object: List (String, Value) -> Value
 -}
+{-
+   Testing update functions
+    All Elm programs share some useful propeties that make them easier to test:
+        * The entire application state is represented by a single Model value.
+        * Model changes only when update receives a Msg and returns a new Model.
+        * update is a plain old function, so we can call it from tests like any other function.
+-}
+
+
+slidHueSetsHue : Test
+slidHueSetsHue =
+    fuzz int "SlidHue sets the hue" <|
+        \amount ->
+            initialModel
+                |> update (SlidHue amount)
+                |> Tuple.first
+                |> .hue
+                |> Expect.equal amount
