@@ -5,7 +5,8 @@ module PhotoGrooveTests exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
-import Json.Decode exposing (decodeString)
+import Json.Decode as Decode exposing (decodeValue)
+import Json.Encode as Encode
 import PhotoGroove
 import Test exposing (..)
 
@@ -31,6 +32,12 @@ import Test exposing (..)
    This function wrapper is important, but unit tests never need to reference the argument it receives, so we can always
    safely disregard that argument by naming it "_". Tests always expect a wrapper anonymous function, to postpone
    evaluation of the test.
+
+   Fuzz Tests
+   Elm's fuzz tests are tests that run several times with randomly generated inputs. Outside Elm, this testing style is
+   sometimes called fuzzing, generative testing, property-based testing, or Quickcheck-style testing.
+   A common way to write a fuzz test is to start by writing a unit test and then convert it to a fuzz test to help identify
+   edge cases.
 -}
 
 
@@ -38,7 +45,31 @@ decoderTest : Test
 decoderTest =
     test "title defaults to (untitled)" <|
         \_ ->
-            """{"url": "fruits.com", "size":5}"""
-                |> decodeString PhotoGroove.photoDecoder
+            [ ( "url", Encode.string "fruits.com" )
+            , ( "size", Encode.int 5 )
+            ]
+                |> Encode.object
+                |> decodeValue PhotoGroove.photoDecoder
+                {-
+                   .title is equivalent to this anonymous function: (\photo -> photo.title)
+                   All the records with named fields get a function with the same name that return their
+                   contents, which is a shorthand for the anonymous function accepting a record and returning the needed
+                   field's value.
+                -}
+                |> Result.map .title
                 |> Expect.equal
-                    (Ok { url = "fruits.com", size = 5, title = "(untitled)" })
+                    (Ok "(untitled)")
+
+
+
+{-
+   Building JSON programmatically with Json.Encode
+   Json.Encode.Value
+   Whereas the Json.Decode module centers around the Decoder abstraction, the Json.Encode module centers around the Value
+   abstraction. A Value (short for Json.Encode.Value) represents a JSON-like structure. In our case, we will use it to
+   represent actual JSON, but it can represent objects from JavaScript as well.
+
+   Encode.int : Int ->                    Value
+   Encode.string: String ->               Value
+   Encode.object: List (String, Value) -> Value
+-}
