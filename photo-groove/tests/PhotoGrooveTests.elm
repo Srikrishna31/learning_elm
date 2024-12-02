@@ -10,6 +10,7 @@ import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
 import PhotoGroove exposing (..)
 import Test exposing (..)
+import Test.Html.Event as Event
 import Test.Html.Query as Query
 import Test.Html.Selector exposing (attribute, tag, text)
 
@@ -170,14 +171,9 @@ photoFromUrl url =
 
 thumbnailsWork : Test
 thumbnailsWork =
-    fuzz (Fuzz.intRange 1 5) "URLS render as thumbnails" <|
-        \urlCount ->
+    fuzz urlFuzzer "URLS render as thumbnails" <|
+        \urls ->
             let
-                urls : List String
-                urls =
-                    List.range 1 urlCount
-                        |> List.map (\num -> String.fromInt num ++ ".png")
-
                 thumbnailChecks : List (Query.Single msg -> Expectation)
                 thumbnailChecks =
                     List.map thumbnailRendered urls
@@ -188,3 +184,49 @@ thumbnailsWork =
                 |> view
                 |> Query.fromHtml
                 |> Expect.all thumbnailChecks
+
+
+urlFuzzer : Fuzzer (List String)
+urlFuzzer =
+    Fuzz.intRange 1 5
+        |> Fuzz.map urlsFromCount
+
+
+urlsFromCount : Int -> List String
+urlsFromCount urlCount =
+    List.range 1 urlCount
+        |> List.map (\num -> String.fromInt num ++ ".png")
+
+
+
+{-
+    Choosing which photo to click
+    Generating random numbers is an effect, and elm-test tests are not permitted to run effects. What we can do instead
+    is to generate two lists at random: one list to go before the URL we'll click and another to go after it.
+   HTML.Test.Event
+   This gives us access to a function called Event.simulate that simulates user events, such as clicks, and checks
+   whether they result in the expected message being sent to update.
+-}
+
+
+clickThumbnail : Test
+clickThumbnail =
+    fuzz3 urlFuzzer string urlFuzzer "clicking a thumbnail selects it" <|
+        \urlsBefore urlToSelect urlsAfter ->
+            let
+                url =
+                    urlToSelect ++ ".jpeg"
+
+                photos =
+                    (urlsBefore ++ url :: urlsAfter)
+                        |> List.map photoFromUrl
+
+                srcToClick =
+                    urlPrefix ++ url
+            in
+            { initialModel | status = Loaded photos "" }
+                |> view
+                |> Query.fromHtml
+                |> Query.find [ tag "img", attribute (Attr.src srcToClick) ]
+                |> Event.simulate Event.click
+                |> Event.expect (ClickedPhoto url)
