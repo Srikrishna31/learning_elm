@@ -86,19 +86,38 @@ decoderTest =
 -}
 {-
    Testing update functions
-    All Elm programs share some useful propeties that make them easier to test:
+    All Elm programs share some useful properties that make them easier to test:
         * The entire application state is represented by a single Model value.
         * Model changes only when update receives a Msg and returns a new Model.
         * update is a plain old function, so we can call it from tests like any other function.
+
+    slidHueSetsHue : Test
+    slidHueSetsHue =
+        fuzz int "SlidHue sets the hue" <|
+            \amount ->
+                initialModel
+                    |> update (SlidHue amount)
+                    |> Tuple.first
+                    |> .hue
+                    |> Expect.equal amount
 -}
 
 
-slidHueSetsHue : Test
-slidHueSetsHue =
-    fuzz int "SlidHue sets the hue" <|
+sliders : Test
+sliders =
+    describe "Slider tests the desired field in the Model"
+        [ testSlider "SlidHue" SlidHue .hue
+        , testSlider "SlidRipple" SlidRipple .ripple
+        , testSlider "SlidNoise" SlidNoise .noise
+        ]
+
+
+testSlider : String -> (Int -> Msg) -> (Model -> Int) -> Test
+testSlider description toMsg amountFromModel =
+    fuzz int description <|
         \amount ->
             initialModel
-                |> update (SlidHue amount)
+                |> update (toMsg amount)
                 |> Tuple.first
-                |> .hue
+                |> amountFromModel
                 |> Expect.equal amount
