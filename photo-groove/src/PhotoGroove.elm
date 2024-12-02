@@ -1,4 +1,4 @@
-port module PhotoGroove exposing (main)
+port module PhotoGroove exposing (main, photoDecoder)
 
 import Browser
 import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, node, text)
@@ -53,11 +53,6 @@ init flags =
             "Initializing Pasta v" ++ String.fromFloat flags
     in
     ( { initialModel | activity = activity }, initialCmd )
-
-
-photoListUrl : String
-photoListUrl =
-    "https://elm-in-action.com/list-photos"
 
 
 urlPrefix : String
@@ -468,7 +463,7 @@ photoDecoder =
 
     Comparing types like this suggests how these functions are similar and how they differ. They
     both accept a function to translate a Result into a msg. Both Result types have Http.Error
-    as their Error type. Howeve, wherease expectString takes no other arguments and always produces
+    as their Error type. However, whereas expectString takes no other arguments and always produces
     a String as its Result's Ok type, expectJson additionally accepts a Decoder val, and on success
     produces an Ok val result instead of Ok String.
 -}
@@ -488,7 +483,7 @@ rangeSlider attributes children =
     {detail: {userSlidTo: 7}}
    The detail field is what CustomEvent objects use to hold their custom information, which in our case holds a single
    field we named userSlidTo.
-   We can use the Json.Decode.field and Json.Decod.int functions to write a decoder like so:
+   We can use the Json.Decode.field and Json.Decode.int functions to write a decoder like so:
 
     field "detail" (field "userSlidTo" int)
 
@@ -525,7 +520,7 @@ onSlide toMsg =
     * We can translate and validate this incoming data by using decoders.
 
    Note: In JavaScript, some effects are performed synchronously, with program execution halting until the effect completes.
-   In contrast, an Elm Cmd always represents an asynchronous effect. This mean that when we send data to Javascript, it's
+   In contrast, an Elm Cmd always represents an asynchronous effect. This means that when we send data to Javascript, it's
    always possible that other JavaScript code might run before data gets sent back to Elm.
 -}
 
