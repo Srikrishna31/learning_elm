@@ -5,10 +5,13 @@ module PhotoGrooveTests exposing (..)
 
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
+import Html.Attributes as Attr exposing (src)
 import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
 import PhotoGroove exposing (..)
 import Test exposing (..)
+import Test.Html.Query as Query
+import Test.Html.Selector exposing (attribute, tag, text)
 
 
 
@@ -121,3 +124,67 @@ testSlider description toMsg amountFromModel =
                 |> Tuple.first
                 |> amountFromModel
                 |> Expect.equal amount
+
+
+
+{-
+   Testing views
+   * Initially, we don't render any thumbnails.
+   * Once the photos load, we render a thumbnail for each of them.
+   * When you click a thumbnail, that photo becomes selected.
+
+   Querying HTML
+   Query functions make use of two types as they descend into Html:
+   * Query.Single, which represents a single DOM node
+   * Query.Multiple, which represents multiple DOM nodes.
+
+   The Query.fromHtml function begins the process of descending into an Html value, by returning a Single representing
+   the Html's root node. Below is the type of Query.fromHtml:
+
+   fromHtml: Html msg -> Query.Single msg
+-}
+
+
+noPhotosNoThumbnails : Test
+noPhotosNoThumbnails =
+    test "No thumbnails render when there are no photos to render." <|
+        \_ ->
+            initialModel
+                |> view
+                |> Query.fromHtml
+                |> Query.findAll [ tag "img" ]
+                |> Query.count (Expect.equal 0)
+
+
+thumbnailRendered : String -> Query.Single msg -> Expectation
+thumbnailRendered url query =
+    query
+        |> Query.findAll [ tag "img", attribute (Attr.src (urlPrefix ++ url)) ]
+        |> Query.count (Expect.atLeast 1)
+
+
+photoFromUrl : String -> Photo
+photoFromUrl url =
+    { url = url, size = 0, title = "" }
+
+
+thumbnailsWork : Test
+thumbnailsWork =
+    fuzz (Fuzz.intRange 1 5) "URLS render as thumbnails" <|
+        \urlCount ->
+            let
+                urls : List String
+                urls =
+                    List.range 1 urlCount
+                        |> List.map (\num -> String.fromInt num ++ ".png")
+
+                thumbnailChecks : List (Query.Single msg -> Expectation)
+                thumbnailChecks =
+                    List.map thumbnailRendered urls
+            in
+            { initialModel
+                | status = Loaded (List.map photoFromUrl urls) ""
+            }
+                |> view
+                |> Query.fromHtml
+                |> Expect.all thumbnailChecks
