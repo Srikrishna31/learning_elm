@@ -1,5 +1,9 @@
-module PhotoFolder exposing (main)
+module PhotoFolders exposing (main)
 
+import Browser
+import Html exposing (..)
+import Html.Attributes exposing (class, src)
+import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
@@ -46,3 +50,18 @@ update msg model =
 
         GotInitialModel (Err _) ->
             ( model, Cmd.none )
+
+
+view : Model -> Html Msg
+view model =
+    h1 [] [ text "The Grooviest Folders the world has ever seen" ]
+
+
+main : Program () Model Msg
+main =
+    Browser.element
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = \_ -> Sub.none
+        }
