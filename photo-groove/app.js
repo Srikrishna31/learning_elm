@@ -10103,8 +10103,42 @@ var $elm$http$Http$get = function (r) {
 	return $elm$http$Http$request(
 		{body: $elm$http$Http$emptyBody, expect: r.expect, headers: _List_Nil, method: 'GET', timeout: $elm$core$Maybe$Nothing, tracker: $elm$core$Maybe$Nothing, url: r.url});
 };
-var $author$project$PhotoFolders$initialModel = {selectedPhotoUrl: $elm$core$Maybe$Nothing};
-var $author$project$PhotoFolders$modelDecoder = $elm$json$Json$Decode$succeed($author$project$PhotoFolders$initialModel);
+var $author$project$PhotoFolders$initialModel = {photos: $elm$core$Dict$empty, selectedPhotoUrl: $elm$core$Maybe$Nothing};
+var $author$project$PhotoFolders$modelDecoder = $elm$json$Json$Decode$succeed(
+	{
+		photos: $elm$core$Dict$fromList(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'trevi',
+					{
+						relatedUrls: _List_fromArray(
+							['coli', 'fresco']),
+						size: 34,
+						title: 'Trevi',
+						url: 'trevi'
+					}),
+					_Utils_Tuple2(
+					'fresco',
+					{
+						relatedUrls: _List_fromArray(
+							['trevi']),
+						size: 46,
+						title: 'Fresco',
+						url: 'fresco'
+					}),
+					_Utils_Tuple2(
+					'coli',
+					{
+						relatedUrls: _List_fromArray(
+							['trevi', 'fresco']),
+						size: 35,
+						title: 'Coliseum',
+						url: 'coli'
+					})
+				])),
+		selectedPhotoUrl: $elm$core$Maybe$Just('trevi')
+	});
 var $author$project$PhotoFolders$init = function (_v0) {
 	return _Utils_Tuple2(
 		$author$project$PhotoFolders$initialModel,
@@ -10136,14 +10170,116 @@ var $author$project$PhotoFolders$update = F2(
 			}
 		}
 	});
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
-var $author$project$PhotoFolders$view = function (model) {
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (maybeValue.$ === 'Just') {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $elm$html$Html$h2 = _VirtualDom_node('h2');
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $elm$html$Html$img = _VirtualDom_node('img');
+var $elm$html$Html$Attributes$src = function (url) {
 	return A2(
-		$elm$html$Html$h1,
-		_List_Nil,
+		$elm$html$Html$Attributes$stringProperty,
+		'src',
+		_VirtualDom_noJavaScriptOrHtmlUri(url));
+};
+var $author$project$PhotoFolders$urlPrefix = 'https://elm-in-action.com/';
+var $author$project$PhotoFolders$ClickedPhoto = function (a) {
+	return {$: 'ClickedPhoto', a: a};
+};
+var $author$project$PhotoFolders$viewRelatedPhoto = function (url) {
+	return A2(
+		$elm$html$Html$img,
 		_List_fromArray(
 			[
-				$elm$html$Html$text('The Grooviest Folders the world has ever seen')
+				$elm$html$Html$Attributes$class('related-photo'),
+				$elm$html$Html$Events$onClick(
+				$author$project$PhotoFolders$ClickedPhoto(url)),
+				$elm$html$Html$Attributes$src($author$project$PhotoFolders$urlPrefix + ('photos/' + (url + '/thumb')))
+			]),
+		_List_Nil);
+};
+var $author$project$PhotoFolders$viewSelectedPhoto = function (photo) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('selected-photo')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h2,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(photo.title)
+					])),
+				A2(
+				$elm$html$Html$img,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$src($author$project$PhotoFolders$urlPrefix + ('photos/' + (photo.url + '/full')))
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$span,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(
+						$elm$core$String$fromInt(photo.size) + 'KB')
+					])),
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Related')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('related-photos')
+					]),
+				A2($elm$core$List$map, $author$project$PhotoFolders$viewRelatedPhoto, photo.relatedUrls))
+			]));
+};
+var $author$project$PhotoFolders$view = function (model) {
+	var photoByUrl = function (url) {
+		return A2($elm$core$Dict$get, url, model.photos);
+	};
+	var selectedPhoto = function () {
+		var _v0 = A2($elm$core$Maybe$andThen, photoByUrl, model.selectedPhotoUrl);
+		if (_v0.$ === 'Just') {
+			var photo = _v0.a;
+			return $author$project$PhotoFolders$viewSelectedPhoto(photo);
+		} else {
+			return $elm$html$Html$text('');
+		}
+	}();
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('content')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('selected-photo')
+					]),
+				_List_fromArray(
+					[selectedPhoto]))
 			]));
 };
 var $author$project$PhotoFolders$main = $elm$browser$Browser$element(
@@ -10156,4 +10292,4 @@ var $author$project$PhotoFolders$main = $elm$browser$Browser$element(
 		view: $author$project$PhotoFolders$view
 	});
 _Platform_export({'PhotoFolders':{'init':$author$project$PhotoFolders$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"PhotoFolders.Msg","aliases":{"PhotoFolders.Model":{"args":[],"type":"{ selectedPhotoUrl : Maybe.Maybe String.String }"}},"unions":{"PhotoFolders.Msg":{"args":[],"tags":{"ClickedPhoto":["String.String"],"GotInitialModel":["Result.Result Http.Error PhotoFolders.Model"]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Int":{"args":[],"tags":{"Int":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"PhotoFolders.Msg","aliases":{"PhotoFolders.Model":{"args":[],"type":"{ selectedPhotoUrl : Maybe.Maybe String.String, photos : Dict.Dict String.String PhotoFolders.Photo }"},"PhotoFolders.Photo":{"args":[],"type":"{ title : String.String, size : Basics.Int, relatedUrls : List.List String.String, url : String.String }"}},"unions":{"PhotoFolders.Msg":{"args":[],"tags":{"ClickedPhoto":["String.String"],"GotInitialModel":["Result.Result Http.Error PhotoFolders.Model"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
