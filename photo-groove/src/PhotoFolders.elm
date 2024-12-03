@@ -12,6 +12,44 @@ import Json.Decode.Pipeline exposing (required)
 
 
 {-
+   Recursive Custom Types
+
+   Fortunately, whereas type aliases give a name to an existing type, custom types actually define a brand-new type-and
+   they can refer to themselves in their own definitions. Custom types that do this are known as a recursive custom types.
+
+   Under the hood, an Elm List is structured like this custom type:
+
+   type MyList elem
+       = Empty
+       | Prepend elem (MyList elem)
+
+   When we write [1,2,3], it's essentially syntax sugar for Prepend 1 (Prepend 2 (Prepend 3 Empty)).
+
+   Defining Folder as a Recursive custom type
+   Notice that, whereas other custom types defined before had multiple variants-for example,
+   type Msg = ClickedPhoto String | ClickedSize ThumbnailSize--this custom type has only one variant. It holds plenty of
+   information, though, because that one variant contains a record: type Folder = Folder {name:String, ...}.
+
+   This is a common technique in Elm: when a type alias is the wrong fit, you can upgrade it to a custom type with a single
+   variant.It's typical when doing this to give the single variant the same name as the type itself-in this case,
+   type Folder=Folder { ... }-but we just as easily could have called it something like type Folder = SingleFolder {..}
+   instead.
+
+   This upgrade has no runtime cost when you run elm make with the --optimize flag. When Elm's compiler sees a custom type
+   with a single variant, it "unboxes" it, such that type Foo = Foo String compiles down to a plain String at runtime.
+-}
+
+
+type Folder
+    = Folder
+        { name : String
+        , photoUrls : List String
+        , subfolders : List Folder
+        }
+
+
+
+{-
       Constrained Type variables: comparable, number, appendable
    The type annotation for Dict.get is (comparable -> Dict comparable value -> Maybe value). The comparable is one of the
    exceptional type variables. Following are the reserved type variables in Elm:
