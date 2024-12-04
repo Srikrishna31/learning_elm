@@ -10109,7 +10109,7 @@ var $author$project$PhotoFolders$Folder = function (a) {
 var $author$project$PhotoFolders$initialModel = {
 	photos: $elm$core$Dict$empty,
 	root: $author$project$PhotoFolders$Folder(
-		{name: 'Loading...', photoUrls: _List_Nil, subfolders: _List_Nil}),
+		{expanded: false, name: 'Loading...', photoUrls: _List_Nil, subfolders: _List_Nil}),
 	selectedPhotoUrl: $elm$core$Maybe$Nothing
 };
 var $author$project$PhotoFolders$modelDecoder = $elm$json$Json$Decode$succeed(
@@ -10147,21 +10147,24 @@ var $author$project$PhotoFolders$modelDecoder = $elm$json$Json$Decode$succeed(
 				])),
 		root: $author$project$PhotoFolders$Folder(
 			{
+				expanded: true,
 				name: 'Photos',
 				photoUrls: _List_Nil,
 				subfolders: _List_fromArray(
 					[
 						$author$project$PhotoFolders$Folder(
 						{
+							expanded: true,
 							name: '2016',
 							photoUrls: _List_fromArray(
 								['trevi', 'coli']),
 							subfolders: _List_fromArray(
 								[
 									$author$project$PhotoFolders$Folder(
-									{name: 'outdoors', photoUrls: _List_Nil, subfolders: _List_Nil}),
+									{expanded: true, name: 'outdoors', photoUrls: _List_Nil, subfolders: _List_Nil}),
 									$author$project$PhotoFolders$Folder(
 									{
+										expanded: true,
 										name: 'indoors',
 										photoUrls: _List_fromArray(
 											['fresco']),
@@ -10171,14 +10174,15 @@ var $author$project$PhotoFolders$modelDecoder = $elm$json$Json$Decode$succeed(
 						}),
 						$author$project$PhotoFolders$Folder(
 						{
+							expanded: true,
 							name: '2016',
 							photoUrls: _List_Nil,
 							subfolders: _List_fromArray(
 								[
 									$author$project$PhotoFolders$Folder(
-									{name: 'outdoors', photoUrls: _List_Nil, subfolders: _List_Nil}),
+									{expanded: true, name: 'outdoors', photoUrls: _List_Nil, subfolders: _List_Nil}),
 									$author$project$PhotoFolders$Folder(
-									{name: 'indoors', photoUrls: _List_Nil, subfolders: _List_Nil})
+									{expanded: true, name: 'indoors', photoUrls: _List_Nil, subfolders: _List_Nil})
 								])
 						})
 					])
@@ -10196,26 +10200,59 @@ var $author$project$PhotoFolders$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$PhotoFolders$update = F2(
-	function (msg, model) {
-		if (msg.$ === 'ClickedPhoto') {
-			var url = msg.a;
-			return _Utils_Tuple2(
+var $author$project$PhotoFolders$toggleExpanded = F2(
+	function (folderPath, _v0) {
+		var folder = _v0.a;
+		if (folderPath.$ === 'End') {
+			return $author$project$PhotoFolders$Folder(
 				_Utils_update(
-					model,
-					{
-						selectedPhotoUrl: $elm$core$Maybe$Just(url)
-					}),
-				$elm$core$Platform$Cmd$none);
+					folder,
+					{expanded: !folder.expanded}));
 		} else {
-			if (msg.a.$ === 'Ok') {
-				var newModel = msg.a.a;
-				return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
-			} else {
-				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
-			}
+			var targetIndex = folderPath.a;
+			var remainingPath = folderPath.b;
+			var transform = F2(
+				function (currentIndex, currentSubfolder) {
+					return _Utils_eq(currentIndex, targetIndex) ? A2($author$project$PhotoFolders$toggleExpanded, remainingPath, currentSubfolder) : currentSubfolder;
+				});
+			var subfolders = A2($elm$core$List$indexedMap, transform, folder.subfolders);
+			return $author$project$PhotoFolders$Folder(
+				_Utils_update(
+					folder,
+					{subfolders: subfolders}));
 		}
 	});
+var $author$project$PhotoFolders$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 'ClickedPhoto':
+				var url = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							selectedPhotoUrl: $elm$core$Maybe$Just(url)
+						}),
+					$elm$core$Platform$Cmd$none);
+			case 'GotInitialModel':
+				if (msg.a.$ === 'Ok') {
+					var newModel = msg.a.a;
+					return _Utils_Tuple2(newModel, $elm$core$Platform$Cmd$none);
+				} else {
+					return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+				}
+			default:
+				var folderPath = msg.a;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							root: A2($author$project$PhotoFolders$toggleExpanded, folderPath, model.root)
+						}),
+					$elm$core$Platform$Cmd$none);
+		}
+	});
+var $author$project$PhotoFolders$End = {$: 'End'};
 var $elm$core$Maybe$andThen = F2(
 	function (callback, maybeValue) {
 		if (maybeValue.$ === 'Just') {
@@ -10226,34 +10263,78 @@ var $elm$core$Maybe$andThen = F2(
 		}
 	});
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
+var $author$project$PhotoFolders$ClickedFolder = function (a) {
+	return {$: 'ClickedFolder', a: a};
+};
+var $author$project$PhotoFolders$Subfolder = F2(
+	function (a, b) {
+		return {$: 'Subfolder', a: a, b: b};
+	});
+var $author$project$PhotoFolders$appendIndex = F2(
+	function (index, path) {
+		if (path.$ === 'End') {
+			return A2($author$project$PhotoFolders$Subfolder, index, $author$project$PhotoFolders$End);
+		} else {
+			var subfolderIndex = path.a;
+			var remainingPath = path.b;
+			return A2(
+				$author$project$PhotoFolders$Subfolder,
+				subfolderIndex,
+				A2($author$project$PhotoFolders$appendIndex, index, remainingPath));
+		}
+	});
 var $elm$html$Html$label = _VirtualDom_node('label');
-var $author$project$PhotoFolders$viewFolder = function (_v0) {
-	var folder = _v0.a;
-	var subfolders = A2($elm$core$List$map, $author$project$PhotoFolders$viewFolder, folder.subfolders);
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('folder')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$label,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text(folder.name)
-					])),
-				A2(
+var $author$project$PhotoFolders$viewFolder = F2(
+	function (path, _v0) {
+		var folder = _v0.a;
+		var viewSubFolder = F2(
+			function (index, subFolder) {
+				return A2(
+					$author$project$PhotoFolders$viewFolder,
+					A2($author$project$PhotoFolders$appendIndex, index, path),
+					subFolder);
+			});
+		var folderLabel = A2(
+			$elm$html$Html$label,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$PhotoFolders$ClickedFolder(path))
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(folder.name)
+				]));
+		if (folder.expanded) {
+			var contents = A2($elm$core$List$indexedMap, viewSubFolder, folder.subfolders);
+			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('subfolders')
+						$elm$html$Html$Attributes$class('folder expanded')
 					]),
-				subfolders)
-			]));
-};
+				_List_fromArray(
+					[
+						folderLabel,
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('contents')
+							]),
+						contents)
+					]));
+		} else {
+			return A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('folder collapsed')
+					]),
+				_List_fromArray(
+					[folderLabel]));
+		}
+	});
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $elm$html$Html$img = _VirtualDom_node('img');
@@ -10362,7 +10443,7 @@ var $author$project$PhotoFolders$view = function (model) {
 							[
 								$elm$html$Html$text('Folders')
 							])),
-						$author$project$PhotoFolders$viewFolder(model.root)
+						A2($author$project$PhotoFolders$viewFolder, $author$project$PhotoFolders$End, model.root)
 					])),
 				A2(
 				$elm$html$Html$div,
@@ -10384,4 +10465,4 @@ var $author$project$PhotoFolders$main = $elm$browser$Browser$element(
 		view: $author$project$PhotoFolders$view
 	});
 _Platform_export({'PhotoFolders':{'init':$author$project$PhotoFolders$main(
-	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"PhotoFolders.Msg","aliases":{"PhotoFolders.Model":{"args":[],"type":"{ selectedPhotoUrl : Maybe.Maybe String.String, photos : Dict.Dict String.String PhotoFolders.Photo, root : PhotoFolders.Folder }"},"PhotoFolders.Photo":{"args":[],"type":"{ title : String.String, size : Basics.Int, relatedUrls : List.List String.String, url : String.String }"}},"unions":{"PhotoFolders.Msg":{"args":[],"tags":{"ClickedPhoto":["String.String"],"GotInitialModel":["Result.Result Http.Error PhotoFolders.Model"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"PhotoFolders.Folder":{"args":[],"tags":{"Folder":["{ name : String.String, photoUrls : List.List String.String, subfolders : List.List PhotoFolders.Folder }"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));
+	$elm$json$Json$Decode$succeed(_Utils_Tuple0))({"versions":{"elm":"0.19.1"},"types":{"message":"PhotoFolders.Msg","aliases":{"PhotoFolders.Model":{"args":[],"type":"{ selectedPhotoUrl : Maybe.Maybe String.String, photos : Dict.Dict String.String PhotoFolders.Photo, root : PhotoFolders.Folder }"},"PhotoFolders.Photo":{"args":[],"type":"{ title : String.String, size : Basics.Int, relatedUrls : List.List String.String, url : String.String }"}},"unions":{"PhotoFolders.Msg":{"args":[],"tags":{"ClickedPhoto":["String.String"],"GotInitialModel":["Result.Result Http.Error PhotoFolders.Model"],"ClickedFolder":["PhotoFolders.FolderPath"]}},"Dict.Dict":{"args":["k","v"],"tags":{"RBNode_elm_builtin":["Dict.NColor","k","v","Dict.Dict k v","Dict.Dict k v"],"RBEmpty_elm_builtin":[]}},"Http.Error":{"args":[],"tags":{"BadUrl":["String.String"],"Timeout":[],"NetworkError":[],"BadStatus":["Basics.Int"],"BadBody":["String.String"]}},"PhotoFolders.Folder":{"args":[],"tags":{"Folder":["{ name : String.String, photoUrls : List.List String.String, subfolders : List.List PhotoFolders.Folder, expanded : Basics.Bool }"]}},"PhotoFolders.FolderPath":{"args":[],"tags":{"End":[],"Subfolder":["Basics.Int","PhotoFolders.FolderPath"]}},"Basics.Int":{"args":[],"tags":{"Int":[]}},"List.List":{"args":["a"],"tags":{}},"Maybe.Maybe":{"args":["a"],"tags":{"Just":["a"],"Nothing":[]}},"Result.Result":{"args":["error","value"],"tags":{"Ok":["value"],"Err":["error"]}},"String.String":{"args":[],"tags":{"String":[]}},"Basics.Bool":{"args":[],"tags":{"True":[],"False":[]}},"Dict.NColor":{"args":[],"tags":{"Red":[],"Black":[]}}}}})}});}(this));

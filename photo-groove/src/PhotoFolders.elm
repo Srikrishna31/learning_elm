@@ -45,6 +45,7 @@ type Folder
         { name : String
         , photoUrls : List String
         , subfolders : List Folder
+        , expanded : Bool
         }
 
 
@@ -91,7 +92,7 @@ initialModel : Model
 initialModel =
     { selectedPhotoUrl = Nothing
     , photos = Dict.empty
-    , root = Folder { name = "Loading...", photoUrls = [], subfolders = [] }
+    , root = Folder { name = "Loading...", photoUrls = [], subfolders = [], expanded = False }
     }
 
 
@@ -137,19 +138,23 @@ modelDecoder =
             Folder
                 { name = "Photos"
                 , photoUrls = []
+                , expanded = True
                 , subfolders =
                     [ Folder
                         { name = "2016"
                         , photoUrls = [ "trevi", "coli" ]
+                        , expanded = True
                         , subfolders =
                             [ Folder
                                 { name = "outdoors"
                                 , photoUrls = []
+                                , expanded = True
                                 , subfolders = []
                                 }
                             , Folder
                                 { name = "indoors"
                                 , photoUrls = [ "fresco" ]
+                                , expanded = True
                                 , subfolders = []
                                 }
                             ]
@@ -157,15 +162,18 @@ modelDecoder =
                     , Folder
                         { name = "2016"
                         , photoUrls = []
+                        , expanded = True
                         , subfolders =
                             [ Folder
                                 { name = "outdoors"
                                 , photoUrls = []
+                                , expanded = True
                                 , subfolders = []
                                 }
                             , Folder
                                 { name = "indoors"
                                 , photoUrls = []
+                                , expanded = True
                                 , subfolders = []
                                 }
                             ]
@@ -178,6 +186,7 @@ modelDecoder =
 type Msg
     = ClickedPhoto String
     | GotInitialModel (Result Http.Error Model)
+    | ClickedFolder FolderPath
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -191,6 +200,9 @@ update msg model =
 
         GotInitialModel (Err _) ->
             ( model, Cmd.none )
+
+        ClickedFolder folderPath ->
+            ( { model | root = toggleExpanded folderPath model.root }, Cmd.none )
 
 
 
@@ -242,23 +254,45 @@ view model =
     div [ class "content" ]
         [ div [ class "folders" ]
             [ h1 [] [ text "Folders" ]
-            , viewFolder model.root
+            , viewFolder End model.root
             ]
         , div [ class "selected-photo" ] [ selectedPhoto ]
         ]
 
 
-viewFolder : Folder -> Html Msg
-viewFolder (Folder folder) =
+viewFolder : FolderPath -> Folder -> Html Msg
+viewFolder path (Folder folder) =
     -- Inline pattern match
     let
-        subfolders =
-            List.map viewFolder folder.subfolders
+        viewSubFolder : Int -> Folder -> Html Msg
+        viewSubFolder index subFolder =
+            viewFolder (appendIndex index path) subFolder
+
+        folderLabel =
+            label [ onClick (ClickedFolder path) ] [ text folder.name ]
     in
-    div [ class "folder" ]
-        [ label [] [ text folder.name ]
-        , div [ class "subfolders" ] subfolders
-        ]
+    if folder.expanded then
+        let
+            contents =
+                List.indexedMap viewSubFolder folder.subfolders
+        in
+        div [ class "folder expanded" ]
+            [ folderLabel
+            , div [ class "contents" ] contents
+            ]
+
+    else
+        div [ class "folder collapsed" ] [ folderLabel ]
+
+
+appendIndex : Int -> FolderPath -> FolderPath
+appendIndex index path =
+    case path of
+        End ->
+            Subfolder index End
+
+        Subfolder subfolderIndex remainingPath ->
+            Subfolder subfolderIndex (appendIndex index remainingPath)
 
 
 main : Program () Model Msg
@@ -305,3 +339,54 @@ viewRelatedPhoto url =
 urlPrefix : String
 urlPrefix =
     "https://elm-in-action.com/"
+
+
+type FolderPath
+    = End
+    | Subfolder Int FolderPath
+
+
+
+{-
+      toggleExpanded takes a FolderPath and a Folder, and does one of the following:
+        * If FolderPath is End, there are no subfolders to traverse into, so toggle the expanded value on the given folder.
+        * If FolderPath is Subfolder targetIndex, look through the given root's subfolders until we find the one at position
+   targetIndex. Then call toggleExpanded again, this time passing that subfolder as the new root folder, and passing the
+   remaining FolderPath after discarding the Subfolder value we just handled.
+
+   List.indexedMap
+    Below are the types for List.map and List.indexedMap:
+
+    List.map       :        (oldVal -> newVal) -> List oldVal -> List newVal
+    List.indexedMap: (Int -> oldVal -> newVal) -> List oldVal -> List newVal
+
+    The only thing List.indexedMap does differently from List.map is that it passes an additional value to the transformation
+    function: an Int representing the element's index within the list.
+
+    If you call List.indexedMap on the list ["foo", "bar", "baz"], the transformation function will receive 0 and "foo",
+    then 1 and "bar", and finally 2 and "baz".
+-}
+
+
+toggleExpanded : FolderPath -> Folder -> Folder
+toggleExpanded folderPath (Folder folder) =
+    -- Destructuring the Folder custom type inline
+    case folderPath of
+        End ->
+            Folder { folder | expanded = not folder.expanded }
+
+        Subfolder targetIndex remainingPath ->
+            let
+                subfolders : List Folder
+                subfolders =
+                    List.indexedMap transform folder.subfolders
+
+                transform : Int -> Folder -> Folder
+                transform currentIndex currentSubfolder =
+                    if currentIndex == targetIndex then
+                        toggleExpanded remainingPath currentSubfolder
+
+                    else
+                        currentSubfolder
+            in
+            Folder { folder | subfolders = subfolders }
