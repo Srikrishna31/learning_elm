@@ -274,7 +274,9 @@ viewFolder path (Folder folder) =
     if folder.expanded then
         let
             contents =
-                List.indexedMap viewSubFolder folder.subfolders
+                List.append
+                    (List.indexedMap viewSubFolder folder.subfolders)
+                    (List.map viewPhoto folder.photoUrls)
         in
         div [ class "folder expanded" ]
             [ folderLabel
@@ -311,6 +313,12 @@ type alias Photo =
     , relatedUrls : List String
     , url : String
     }
+
+
+viewPhoto : String -> Html Msg
+viewPhoto url =
+    div [ class "photo", onClick (ClickedPhoto url) ]
+        [ text url ]
 
 
 viewSelectedPhoto : Photo -> Html Msg

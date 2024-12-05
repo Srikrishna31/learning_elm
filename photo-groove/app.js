@@ -10284,6 +10284,23 @@ var $author$project$PhotoFolders$appendIndex = F2(
 		}
 	});
 var $elm$html$Html$label = _VirtualDom_node('label');
+var $author$project$PhotoFolders$ClickedPhoto = function (a) {
+	return {$: 'ClickedPhoto', a: a};
+};
+var $author$project$PhotoFolders$viewPhoto = function (url) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('photo'),
+				$elm$html$Html$Events$onClick(
+				$author$project$PhotoFolders$ClickedPhoto(url))
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text(url)
+			]));
+};
 var $author$project$PhotoFolders$viewFolder = F2(
 	function (path, _v0) {
 		var folder = _v0.a;
@@ -10306,7 +10323,10 @@ var $author$project$PhotoFolders$viewFolder = F2(
 					$elm$html$Html$text(folder.name)
 				]));
 		if (folder.expanded) {
-			var contents = A2($elm$core$List$indexedMap, viewSubFolder, folder.subfolders);
+			var contents = A2(
+				$elm$core$List$append,
+				A2($elm$core$List$indexedMap, viewSubFolder, folder.subfolders),
+				A2($elm$core$List$map, $author$project$PhotoFolders$viewPhoto, folder.photoUrls));
 			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
@@ -10345,9 +10365,6 @@ var $elm$html$Html$Attributes$src = function (url) {
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
 var $author$project$PhotoFolders$urlPrefix = 'https://elm-in-action.com/';
-var $author$project$PhotoFolders$ClickedPhoto = function (a) {
-	return {$: 'ClickedPhoto', a: a};
-};
 var $author$project$PhotoFolders$viewRelatedPhoto = function (url) {
 	return A2(
 		$elm$html$Html$img,
