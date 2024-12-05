@@ -398,3 +398,126 @@ toggleExpanded folderPath (Folder folder) =
                         currentSubfolder
             in
             Folder { folder | subfolders = subfolders }
+
+
+
+{-
+   A type alias to represent the Photo info we get from JSON. The JsonPhoto type introduced below is an intermediate
+   representation- a value we'll use only to help us translate from one value to another. In particular, a JsonPhoto value
+   will help us get from JSON to a Photo record.
+-}
+
+
+type alias JsonPhoto =
+    { title : String
+    , size : Int
+    , relatedUrls : List String
+    }
+
+
+jsonPhotoDecoder : Decoder JsonPhoto
+jsonPhotoDecoder =
+    Decode.succeed JsonPhoto
+        |> required "title" string
+        |> required "size" int
+        |> required "related_photos" (list string)
+
+
+
+{-
+   Decode.KeyValuePairs
+
+   We can decode json keys and values using Decode.KeyValuePairs. It has following type:
+
+   keyValuePairs : Decoder val -> Decoder (List (String, val))
+
+   This gives us a decoder that translates JSON objects into key-value tuples. The key's type is always String, because
+   JSON object keys are strings by definition. The value's type depends on the Decoder we pass to the keyValuePairs
+   function.
+
+   As an example, suppose we called keyValuePairs jsonPhotoDecoder and ran the resulting decoder on our JSON sample from
+   earlier:
+
+   {"turtles.jpg": {...}, "beach.jpg": {...}, "maui.jpg":{...}}
+
+   The output would be a list of (String, JsonPhoto) tuples like so:
+   output : List (String, JsonPhoto)
+   output =
+    [ ("2turtles.jpg", {title = "Turtles & sandals", ...})
+    , ("beachday.jpg", {title = "At Chang's beach!", ...})
+    , ("day1maui.jpg", {title="First day on Maui", ...})
+    ]
+-}
+
+
+finishPhoto : ( String, JsonPhoto ) -> ( String, Photo )
+finishPhoto ( url, json ) =
+    ( url
+    , { url = url
+      , size = json.size
+      , title = json.title
+      , relatedUrls = json.relatedUrls
+      }
+    )
+
+
+fromPairs : List ( String, JsonPhoto ) -> Dict String Photo
+fromPairs pairs =
+    pairs
+        |> List.map finishPhoto
+        |> Dict.fromList
+
+
+photosDecoder : Decoder (Dict String Photo)
+photosDecoder =
+    Decode.keyValuePairs jsonPhotoDecoder
+        |> Decode.map fromPairs
+
+
+
+{-
+   Identifying a cyclic definition
+
+   Imagine the following definition:
+
+   myString: String
+   myString = List.reverse myString
+
+   Just as a type alias declaration names a type, this myString= declaration names an expression. Anytime the compiler
+   encounters myString, it will substitute the expression after the equals sign. This is where things go wrong:
+
+   List.reverse (List.reverse (List.reverse (List.reverse ...
+
+   This expansion never ends, because the compiler substitutes in List.reverse str as soon as it sees myString, then sees
+   a myString in that List.reverse myString expression, and therefore substitutes List.reverse myString into that
+   expression ... and so on forever.
+
+   Fixing the Cyclic definition by using Decode.Lazy
+
+   We can solve the problem with folderDecoder definition by using Decode.Lazy:
+
+   Decode.lazy: (() -> Decoder val) -> Decoder val
+
+   Once we use the lazy construct, we will no longer have the never-ending expansion problem, because after the compiler
+   reaches (\_ -> list folderDecoder), it stops expanding. That expression is already fully formed anonymous function,
+   which needs no further expansion.
+-}
+
+
+folderDecoder : Decoder Folder
+folderDecoder =
+    Decode.succeed folderFromJson
+        -- on success, passes decoded name, photos and subfolders to folderFromJson
+        |> required "name" string
+        |> required "photos" photosDecoder
+        |> required "subfolders" (Decode.lazy (\_ -> list folderDecoder))
+
+
+folderFromJson : String -> Dict String Photo -> List Folder -> Folder
+folderFromJson name photos subfolders =
+    Folder
+        { name = name
+        , expanded = True
+        , subfolders = subfolders
+        , photoUrls = Dict.keys photos
+        }
