@@ -106,83 +106,6 @@ init _ =
     )
 
 
-modelDecoder : Decoder Model
-modelDecoder =
-    Decode.succeed
-        { selectedPhotoUrl = Just "trevi"
-        , photos =
-            Dict.fromList
-                [ ( "trevi"
-                  , { title = "Trevi"
-                    , relatedUrls = [ "coli", "fresco" ]
-                    , size = 34
-                    , url = "trevi"
-                    }
-                  )
-                , ( "fresco"
-                  , { title = "Fresco"
-                    , relatedUrls = [ "trevi" ]
-                    , size = 46
-                    , url = "fresco"
-                    }
-                  )
-                , ( "coli"
-                  , { title = "Coliseum"
-                    , relatedUrls = [ "trevi", "fresco" ]
-                    , size = 35
-                    , url = "coli"
-                    }
-                  )
-                ]
-        , root =
-            Folder
-                { name = "Photos"
-                , photoUrls = []
-                , expanded = True
-                , subfolders =
-                    [ Folder
-                        { name = "2016"
-                        , photoUrls = [ "trevi", "coli" ]
-                        , expanded = True
-                        , subfolders =
-                            [ Folder
-                                { name = "outdoors"
-                                , photoUrls = []
-                                , expanded = True
-                                , subfolders = []
-                                }
-                            , Folder
-                                { name = "indoors"
-                                , photoUrls = [ "fresco" ]
-                                , expanded = True
-                                , subfolders = []
-                                }
-                            ]
-                        }
-                    , Folder
-                        { name = "2016"
-                        , photoUrls = []
-                        , expanded = True
-                        , subfolders =
-                            [ Folder
-                                { name = "outdoors"
-                                , photoUrls = []
-                                , expanded = True
-                                , subfolders = []
-                                }
-                            , Folder
-                                { name = "indoors"
-                                , photoUrls = []
-                                , expanded = True
-                                , subfolders = []
-                                }
-                            ]
-                        }
-                    ]
-                }
-        }
-
-
 type Msg
     = ClickedPhoto String
     | GotInitialModel (Result Http.Error Model)
@@ -198,7 +121,11 @@ update msg model =
         GotInitialModel (Ok newModel) ->
             ( newModel, Cmd.none )
 
-        GotInitialModel (Err _) ->
+        GotInitialModel (Err e) ->
+            let
+                err =
+                    Debug.log "Error receiving model" e
+            in
             ( model, Cmd.none )
 
         ClickedFolder folderPath ->
@@ -521,3 +448,78 @@ folderFromJson name photos subfolders =
         , subfolders = subfolders
         , photoUrls = Dict.keys photos
         }
+
+
+modelPhotosDecoder : Decoder (Dict String Photo)
+modelPhotosDecoder =
+    Decode.succeed modelPhotosFromJson
+        |> required "photos" photosDecoder
+        |> required "subfolders" (Decode.lazy (\_ -> list modelPhotosDecoder))
+
+
+
+{-
+   Dict.union
+
+   union: Dict comparable val -> Dict comparable val -> Dict comparable val
+
+   It iterates over the first dictionary and calls Dict.insert on each of its keys and values inserting them into the second
+   dictionary. The returned dictionary has the combined contents of both dictionaries. Because the calls to Dict.insert use
+   keys and values from the first dictionary, anytime the second dictionary already happens to have an entry for a particular
+   key, it will get overridden.
+
+   List.foldl and List.foldr
+
+   Both List.foldl and List.foldr have the same type:
+
+   (element -> state -> state) -> state -> List element -> state
+
+   * (element -> state -> state) is the update function.
+   * state is initial state
+   * List element is the list to be folded.
+
+   Fold functions work similar to Elm Architecture's update function:
+
+   Elm Architecture update: Msg -> Model -> Model
+   Fold function update: element -> state -> state
+
+   Whenever the Elm Runtime calls update, it passes a Msg and the current Model, and gets back the updates Model it will
+   use the next time it calls update. Similarly, each time a fold calls its update function, it passes an element and the
+   previous state, and gets back the updated state to use the next time it calls the update function.
+
+   The first time the fold function calls its update function, it passes the initial state as the state argument and the
+   first element in the list as the other argument. After repeating this process with the remaining elements in the list,
+   it returns the final state value. (If the list is empty, it returns the initial state immediately.)
+
+   Differences between Foldl and Foldr
+   Both foldl and foldr begin with the initial state and then call the update function on it four times. But whereas foldl
+   passes each element in its list to the update function in the same order as they appear in that list, foldr passes them
+   in the reverse order.
+-}
+
+
+modelPhotosFromJson : Dict String Photo -> List (Dict String Photo) -> Dict String Photo
+modelPhotosFromJson folderPhotos subfolderPhotos =
+    List.foldl Dict.union folderPhotos subfolderPhotos
+
+
+
+{-
+   Joining Two decoders
+   Decode.map2 function transforms the contents of a value - in this case, a Decoder value rather than the entire value.
+   The difference is that map2 takes an extra argument:
+
+   map:  (val        -> final) ->                Decoder val -> Decoder final
+   map2: (one -> two -> final) -> Decoder one -> Decoder two -> Decoder final
+
+-}
+
+
+modelDecoder : Decoder Model
+modelDecoder =
+    Decode.map2
+        (\photos root ->
+            { photos = photos, root = root, selectedPhotoUrl = Nothing }
+        )
+        modelPhotosDecoder
+        folderDecoder
