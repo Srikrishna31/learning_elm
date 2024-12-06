@@ -9682,6 +9682,8 @@ var $author$project$Main$update = F2(
 	function (msg, model) {
 		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 	});
+var $elm$virtual_dom$VirtualDom$lazy = _VirtualDom_lazy;
+var $elm$html$Html$Lazy$lazy = $elm$virtual_dom$VirtualDom$lazy;
 var $elm$html$Html$footer = _VirtualDom_node('footer');
 var $author$project$Main$viewFooter = A2(
 	$elm$html$Html$footer,
@@ -9690,9 +9692,61 @@ var $author$project$Main$viewFooter = A2(
 		[
 			$elm$html$Html$text('One is never alone with a rubber duck. -Douglas Adams')
 		]));
+var $author$project$Main$Folders = {$: 'Folders'};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$html$Html$Attributes$classList = function (classes) {
+	return $elm$html$Html$Attributes$class(
+		A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$map,
+				$elm$core$Tuple$first,
+				A2($elm$core$List$filter, $elm$core$Tuple$second, classes))));
+};
 var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $elm$html$Html$nav = _VirtualDom_node('nav');
 var $author$project$Main$viewHeader = function (page) {
+	var navLink = F2(
+		function (targetPage, _v0) {
+			var url = _v0.url;
+			var caption = _v0.caption;
+			return A2(
+				$elm$html$Html$li,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$classList(
+						_List_fromArray(
+							[
+								_Utils_Tuple2(
+								'active',
+								_Utils_eq(page, targetPage))
+							]))
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$a,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$href(url)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text(caption)
+							]))
+					]));
+		});
 	var logo = A2(
 		$elm$html$Html$h1,
 		_List_Nil,
@@ -9700,7 +9754,20 @@ var $author$project$Main$viewHeader = function (page) {
 			[
 				$elm$html$Html$text('Photo Groove')
 			]));
-	var links = A2($elm$html$Html$ul, _List_Nil, _List_Nil);
+	var links = A2(
+		$elm$html$Html$ul,
+		_List_Nil,
+		_List_fromArray(
+			[
+				A2(
+				navLink,
+				$author$project$Main$Folders,
+				{caption: 'Folders', url: '/'}),
+				A2(
+				navLink,
+				$author$project$Main$Gallery,
+				{caption: 'Gallery', url: '/gallery'})
+			]));
 	return A2(
 		$elm$html$Html$nav,
 		_List_Nil,
@@ -9712,7 +9779,7 @@ var $author$project$Main$view = function (model) {
 	return {
 		body: _List_fromArray(
 			[
-				$author$project$Main$viewHeader(model.page),
+				A2($elm$html$Html$Lazy$lazy, $author$project$Main$viewHeader, model.page),
 				content,
 				$author$project$Main$viewFooter
 			]),
