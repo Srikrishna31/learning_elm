@@ -23,7 +23,15 @@
 <body>
     <div id="app"></div>
     <script src="https://elm-in-action.com/pasta.js"></script>
-    <script src="app.js"></script>
+<!--    Loading /app.js instead of app.js
+    Without the slash, the browser will try to load the app.js file from a location relative to whatever URL is currently
+    in the address bar. This means if we visit localhost:8080/gallery, the browser will try to load localhost:8080/gallery/app.js
+    -but the file won't be there. It's actually hosted at localhost:8080/app.js (without the gallery/ part).
+
+    Fortunately, by loading the script from "/app.js" instead of "app.js", the browser will fetch the file from the same
+    (correct) location no matter what URL we're visiting.
+-->
+    <script src="/app.js"></script>
     <script>
          // const app = Elm.PhotoFolders.init({node: document.getElementById("app")})
          const app = Elm.Main.init({node: document.getElementById("app")})

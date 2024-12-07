@@ -1,9 +1,12 @@
 module Main exposing (main)
 
 import Browser exposing (Document)
+import Browser.Navigation as Nav
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
 import Html.Lazy exposing (lazy)
+import Url exposing (Url)
+import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
 
 
@@ -21,7 +24,8 @@ type alias Model =
 
 
 type Page
-    = Gallery
+    = SelectedPhoto String
+    | Gallery
     | Folders
     | NotFound
 
@@ -176,14 +180,102 @@ subscriptions model =
    is that in Browser.element, our view function must return Html Msg, whereas in Browser.document, our view function instead
    returns Document Msg. This gives our Elm application control over the entire page, whereas with Browser.element we were
    confined to a single DOM element on the page.
+
+   Using Debug.TODO
+   The Debug.todo function tells Elm's compiler, "I'm not ready to work on this part of my codebase yet, so for now pretend
+   that there is some valid code". NO matter where you put it, a call to Debug.todo will type-check, because of its type:
+
+   Debug.todo : String -> a
 -}
 
 
 main : Program () Model Msg
 main =
-    Browser.document
-        { init = \_ -> ( { page = Gallery }, Cmd.none )
+    Browser.application
+        { init = init
+        , onUrlRequest = \_ -> Debug.todo "handle URL requests"
+        , onUrlChange = \_ -> Debug.todo "handle URL changes"
         , subscriptions = subscriptions
         , update = update
         , view = view
         }
+
+
+
+{-
+   A URL is a record representing different attributes about the URL such as its protocol (for example, "http" or "https"),
+   host (eg. "elm-lang.org" or "elm-in-action.com"), and path(eg "/gallery" or "/photos/2turtles"). When our application
+   starts up, init will be passed a Url value representing the current URL in the user's address bar when the page loaded.
+
+
+    Understanding URL structure
+    Single-page applications can get a lot of information out of a URL.
+
+             Subdomain               Port            Query
+            { \/ }                  {\/ }        {    \/    }
+    https://stuff.elm-in-action.com:8042/zoo/car?stuff=things#panda
+    { ^ }         {     ^         }     {   ^  }              { ^ }
+    Protocol          Domain              Path                Path
+
+    The elm/url package gives us three modules for working with the various pieces of a URL:
+
+    * Url.Builder helps us assemble URLs from these separate ingredients.
+    * Url.Parser and Url.Parser.Query help us translate path and query portions of a URL into more helpful values.
+-}
+
+
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url key =
+    case url.path of
+        "/gallery" ->
+            ( { page = Gallery }, Cmd.none )
+
+        "/" ->
+            ( { page = Folders }, Cmd.none )
+
+        _ ->
+            ( { page = NotFound }, Cmd.none )
+
+
+
+{-
+   Defining a Parser
+    Similar to the way a JSON Decoder value describes how to translate a JSON string into a different type, this Parser
+    value describes how to translate a URL into a Page.
+    If we were decoding JSON into a Page, we would build a Decoder Page. However, our URL parser is not a Parser Page, but
+    rather a Parser (Page -> a) a.
+    To successfully build a single-page application, all we need to know is that Parser (Route -> a) -> a is the type of
+    a Parser that translates a URL into a Route.
+
+    Let's break down the implementation of below parser:
+
+    Parser.map SelectedPhoto (s "photos" </> Parser.string)
+
+    * This parser will succeed only if it is run on a URL whose path begins with the string "/photos" followed by a slash
+    and then another string with a length of atleast 1. (So the URL path "/photos/" wouldnot match, but "/photos/a" would).
+    * If it succeeds, the Parser's final output will be the String following the "photos/" part of the URL path. (So it
+    would succeed with "puppy" when parsing a path of "/photos/puppy".)
+
+    The </> operator expects a Parser value on each side, and the Parser.s function turns a hardcoded string into a parser
+    for that string. For example, the parser (s "photos" </> Parser.string </> s "other" </> s "things") would match URLs
+    like "/photos/foo/other/things".
+
+    The Parser.map SelectedPhoto part works similar to the List.map, Result.map, Maybe.map and Decode.map functions: it
+    transforms the value produced by the Parser. Without this call to Parser.map, our parser would output a plain old
+    String whenever it succeeds. Thanks to Parser.map, that String will instead be passed along to SelectedPhoto, so the
+    resulting parser will output a Page we can store in our model.
+-}
+
+
+parser : Parser (Page -> a) a
+parser =
+    Parser.map SelectedPhoto (s "photo" </> Parser.string)
+
+
+
+{-
+   Routing
+   When the user visits a particular URL in the browser, our application will be notified about the URL they visited. Then
+   it will inspect the URL and use its contents to decide which page to run. This process of determining which logic to run,
+   based on the URL the user has visited, is called routing.
+-}
