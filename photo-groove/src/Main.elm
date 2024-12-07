@@ -148,10 +148,36 @@ viewHeader page =
         -}
         navLink : Page -> { url : String, caption : String } -> Html msg
         navLink targetPage { url, caption } =
-            li [ classList [ ( "active", page == targetPage ) ] ]
+            li [ classList [ ( "active", isActive { link = targetPage, page = page } ) ] ]
                 [ a [ href url ] [ text caption ] ]
     in
     nav [] [ logo, links ]
+
+
+isActive : { link : Page, page : Page } -> Bool
+isActive { link, page } =
+    case ( link, page ) of
+        ---------------------------------
+        ( Gallery, Gallery ) ->
+            True
+
+        ( Gallery, _ ) ->
+            False
+
+        ( Folders, Folders ) ->
+            True
+
+        ( Folders, SelectedPhoto _ ) ->
+            True
+
+        ( Folders, _ ) ->
+            False
+
+        ( SelectedPhoto _, _ ) ->
+            False
+
+        ( NotFound, _ ) ->
+            False
 
 
 viewFooter : Html msg
@@ -226,15 +252,7 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    case url.path of
-        "/gallery" ->
-            ( { page = Gallery }, Cmd.none )
-
-        "/" ->
-            ( { page = Folders }, Cmd.none )
-
-        _ ->
-            ( { page = NotFound }, Cmd.none )
+    ( { page = urlToPage url }, Cmd.none )
 
 
 
@@ -264,12 +282,42 @@ init flags url key =
     transforms the value produced by the Parser. Without this call to Parser.map, our parser would output a plain old
     String whenever it succeeds. Thanks to Parser.map, that String will instead be passed along to SelectedPhoto, so the
     resulting parser will output a Page we can store in our model.
+
+   Composing Parsers with Parser.OneOf
+    * Parser.top matches with the root path. Parser.map Folders Parser.top returns a Parser that succeeds on a path of
+    "/" and outputs a Folders value.
+    * Parser.map Gallery (s "gallery"), which matches "/gallery" and outputs a Gallery value. Note that although we called
+    the Parser.s function, this time we did not need to use the </> operator.
+    * Parser.oneOf, which takes a List of parsers and tries them one at a time until it either finds a match or runs out.
+
+   There's also a Json.Decode.oneOf that works similarly. It's useful for decoding JSON fields that situationally hold
+   different types.
 -}
 
 
 parser : Parser (Page -> a) a
 parser =
-    Parser.map SelectedPhoto (s "photo" </> Parser.string)
+    Parser.oneOf
+        [ Parser.map Folders Parser.top
+        , Parser.map Gallery (s "gallery")
+        , Parser.map SelectedPhoto (s "photos" </> Parser.string)
+        ]
+
+
+
+{-
+   Here's how the parser function works: Our Parser uses Parse.oneOf to try each of three Parsers-first, one that matches
+   "/" and outputs Folders; then, one that matches "/gallery" and maps to Gallery; and finally, one that matches
+   "/photos/something" and maps to SelectedPhoto with the string after "/photos" wrapped up inside it.
+   If this parser succeeds then great! We have our Page and store it in the model. If it fails, then path was unrecognized,
+   and we return the NotFound page by default.
+-}
+
+
+urlToPage : Url -> Page
+urlToPage url =
+    Debug.log "Parsing the provided URL" Parser.parse parser url
+        |> Maybe.withDefault NotFound
 
 
 
