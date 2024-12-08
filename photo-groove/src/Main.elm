@@ -5,6 +5,8 @@ import Browser.Navigation as Nav
 import Html exposing (Html, a, footer, h1, li, nav, text, ul)
 import Html.Attributes exposing (classList, href)
 import Html.Lazy exposing (lazy)
+import PhotoFolders as Folders
+import PhotoGallery as Gallery
 import Url exposing (Url)
 import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
@@ -34,14 +36,19 @@ import Url.Parser as Parser exposing ((</>), Parser, s, string)
 
 
 type alias Model =
-    { page : Page, key : Nav.Key }
+    { page : Page, key : Nav.Key, version : Float }
 
 
 type Page
-    = SelectedPhoto String
-    | Gallery
-    | Folders
+    = GalleryPage Gallery.Model
+    | FoldersPage Folders.Model
     | NotFound
+
+
+type Route
+    = Gallery
+    | Folders
+    | SelectedPhoto String
 
 
 
@@ -160,37 +167,31 @@ viewHeader page =
            you can use the as keyword to name the original record. For example, this would give the name config to the
            record while destructuring its fields: navLink targetPage ({url, caption} as config) =.
         -}
-        navLink : Page -> { url : String, caption : String } -> Html msg
-        navLink targetPage { url, caption } =
-            li [ classList [ ( "active", isActive { link = targetPage, page = page } ) ] ]
+        navLink : Route -> { url : String, caption : String } -> Html msg
+        navLink route { url, caption } =
+            li [ classList [ ( "active", isActive { link = route, page = page } ) ] ]
                 [ a [ href url ] [ text caption ] ]
     in
     nav [] [ logo, links ]
 
 
-isActive : { link : Page, page : Page } -> Bool
+isActive : { link : Route, page : Page } -> Bool
 isActive { link, page } =
     case ( link, page ) of
         ---------------------------------
-        ( Gallery, Gallery ) ->
+        ( Gallery, GalleryPage _ ) ->
             True
 
         ( Gallery, _ ) ->
             False
 
-        ( Folders, Folders ) ->
-            True
-
-        ( Folders, SelectedPhoto _ ) ->
+        ( Folders, FoldersPage _ ) ->
             True
 
         ( Folders, _ ) ->
             False
 
         ( SelectedPhoto _, _ ) ->
-            False
-
-        ( NotFound, _ ) ->
             False
 
 
@@ -271,7 +272,7 @@ update msg model =
                     ( model, Nav.pushUrl model.key (Url.toString url) )
 
         ChangedUrl url ->
-            ( { model | page = urlToPage url }, Cmd.none )
+            ( { model | page = urlToPage model.version url }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -295,7 +296,7 @@ subscriptions model =
 -}
 
 
-main : Program () Model Msg
+main : Program Float Model Msg
 main =
     Browser.application
         { init = init
@@ -330,9 +331,9 @@ main =
 -}
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init flags url key =
-    ( { page = urlToPage url, key = key }, Cmd.none )
+init : Float -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init version url key =
+    ( { page = urlToPage version url, key = key, version = version }, Cmd.none )
 
 
 
@@ -375,7 +376,7 @@ init flags url key =
 -}
 
 
-parser : Parser (Page -> a) a
+parser : Parser (Route -> a) a
 parser =
     Parser.oneOf
         [ Parser.map Folders Parser.top
@@ -394,10 +395,20 @@ parser =
 -}
 
 
-urlToPage : Url -> Page
-urlToPage url =
-    Debug.log "Parsing the provided URL" Parser.parse parser url
-        |> Maybe.withDefault NotFound
+urlToPage : Float -> Url -> Page
+urlToPage version url =
+    case Debug.log "Parsing the provided URL" (Parser.parse parser url) of
+        Just Gallery ->
+            GalleryPage (Tuple.first (Gallery.init version))
+
+        Just Folders ->
+            FoldersPage (Tuple.first (Folders.init Nothing))
+
+        Just (SelectedPhoto fileName) ->
+            FoldersPage (Tuple.first (Folders.init (Just fileName)))
+
+        Nothing ->
+            NotFound
 
 
 

@@ -96,9 +96,9 @@ initialModel =
     }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( initialModel
+init : Maybe String -> ( Model, Cmd Msg )
+init selectedFileName =
+    ( { initialModel | selectedPhotoUrl = selectedFileName }
     , Http.get
         { url = "https://elm-in-action.com/folders/list"
         , expect = Http.expectJson GotInitialModel modelDecoder
@@ -224,14 +224,15 @@ appendIndex index path =
             Subfolder subfolderIndex (appendIndex index remainingPath)
 
 
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = \_ -> Sub.none
-        }
+
+--main : Program () Model Msg
+--main =
+--    Browser.element
+--        { init = init
+--        , view = view
+--        , update = update
+--        , subscriptions = \_ -> Sub.none
+--        }
 
 
 type alias Photo =
