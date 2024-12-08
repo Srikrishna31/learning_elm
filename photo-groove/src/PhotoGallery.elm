@@ -7,6 +7,7 @@ port module PhotoGallery exposing
     , initialModel
     , main
     , photoDecoder
+    , subscriptions
     , update
     , urlPrefix
     , view

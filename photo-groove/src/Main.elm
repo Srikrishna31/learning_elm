@@ -128,7 +128,17 @@ view : Model -> Document Msg
 view model =
     let
         content =
-            text "This isn't even my final form!"
+            case model.page of
+                FoldersPage folders ->
+                    Folders.view folders
+                        |> Html.map GotFoldersMsg
+
+                GalleryPage gallery ->
+                    Gallery.view gallery
+                        |> Html.map GotGalleryMsg
+
+                NotFound ->
+                    text "Not Found"
     in
     { title = "Photo Groove, SPA Style"
     , body =
@@ -258,6 +268,8 @@ viewFooter =
 type Msg
     = ClickedLink Browser.UrlRequest
     | ChangedUrl Url
+    | GotFoldersMsg Folders.Msg
+    | GotGalleryMsg Gallery.Msg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -274,10 +286,48 @@ update msg model =
         ChangedUrl url ->
             ( { model | page = urlToPage model.version url }, Cmd.none )
 
+        GotFoldersMsg foldersMsg ->
+            case model.page of
+                FoldersPage folders ->
+                    toFolders model (Folders.update foldersMsg folders)
+
+                _ ->
+                    ( model, Cmd.none )
+
+        GotGalleryMsg galleryMsg ->
+            case model.page of
+                GalleryPage gallery ->
+                    toGallery model (Gallery.update galleryMsg gallery)
+
+                _ ->
+                    ( model, Cmd.none )
+
+
+toFolders : Model -> ( Folders.Model, Cmd Folders.Msg ) -> ( Model, Cmd Msg )
+toFolders model ( folders, cmd ) =
+    ( { model | page = FoldersPage folders }
+      --Stores the Folder.Model in FoldersPage
+    , Cmd.map GotFoldersMsg cmd
+      -- Cmd.map works just like Html.map and Sub.map
+    )
+
+
+toGallery : Model -> ( Gallery.Model, Cmd Gallery.Msg ) -> ( Model, Cmd Msg )
+toGallery model ( gallery, cmd ) =
+    ( { model | page = GalleryPage gallery }
+    , Cmd.map GotGalleryMsg cmd
+    )
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    case model.page of
+        GalleryPage gallery ->
+            Gallery.subscriptions gallery
+                |> Sub.map GotGalleryMsg
+
+        _ ->
+            Sub.none
 
 
 
