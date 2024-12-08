@@ -37,6 +37,25 @@
          const app = Elm.Main.init({
              flags: Pasta.version,
              node: document.getElementById("app")})
+
+         app.ports.setFilters.subscribe(function(options) {
+             /*
+                 Synchronizing with the Elm Runtime
+                 The JavaScript function requestAnimationFrame allows code to run just before the browser's next repaint.
+                 Because this is when the Elm Runtime will schedule its next DOM update, we can use requestAnimationFrame
+                 to delay our call to document.getElementById("main-canvas")  until after our next view has added the <canvas>
+                 we need to the DOM.
+              */
+             requestAnimationFrame(function() {
+                 Pasta.apply(document.getElementById("main-canvas"), options);
+             });
+         });
+
+         // Pasta calls this function whenever its activity changes.
+         Pasta.addActivityListener(function(activity) {
+             console.log("Got some activity to send to Elm: ", activity);
+             app.ports.activityChanges.send(activity);
+         })
     </script>
 </body>
 </html>
