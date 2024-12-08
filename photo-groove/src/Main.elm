@@ -17,10 +17,24 @@ import Url.Parser as Parser exposing ((</>), Parser, s, string)
    the user's perspective, all the usual features of multiple pages still appear to work as normal: the URL in the address
    bar changes when clicking links, the browser's Back button still returns to the previous URL, and so on.
 -}
+{-
+   The design of Nav.Key
+   The reason Nav.Key exists is to restrict Nav.pushUrl to being used only by Elm programs started up by using Browser.application.
+   Because the only way to obtain a Nav.Key is by having init provide one, and because only Browser.application has an
+   init function that provides one, it is impossible to call Nav.pushUrl unless you originally started up by using
+   Browser.application.
+   This restriction exists because Elm's navigation APIs are designed with the assumption that they have total control
+   over the page. That's what makes it safe for them to do things like overriding the default behavior for all the links
+   on the page. If that assumption is violated-say, because we were using Browser.element to embed a small Elm application
+   inside an existing single-page application written in JavaScript-then using pushUrl could result in some nasty bugs.
+   The sole purpose of Nav.Key restriction on pushUrl is to make these bugs impossible. As such, the inner value of Nav.Key
+   doesn't matter one bit. All that matters is that it's a token proving that the Elm Runtime has been started up by using
+   Browser.application, and thus you can be confident it has full control over the page.
+-}
 
 
 type alias Model =
-    { page : Page }
+    { page : Page, key : Nav.Key }
 
 
 type Page
@@ -185,13 +199,79 @@ viewFooter =
     footer [] [ text "One is never alone with a rubber duck. -Douglas Adams" ]
 
 
+
+{-
+   Handling URL changes
+    A common design goal of single-page applications is to maintain the URL bar's normal functionality. Ideally, it seems
+    to the person using it as if they're using a multipage website, where links and the Back button work normally. The only
+    noticeable difference is that things seem pleasantly snappie, because the SPA isn't doing a full page load for each
+    new page.
+
+    The onUrlRequest and onUrlChange functions in Browser.application help us to handle the url changes.
+
+    Overriding Default Link Behavior
+    First we have onUrlRequest = ClickedLink. This says that whenever the user requests a new URL (by clicking a link),
+    Elm's runtime will send a ClickedLink message to our update function. It's like a page-wide event handler, except
+    that it goes a step further by overriding the default behavior of all links on the page.
+    With Browser.application, clicking links only sends this ClickedLink message it doesn't automatically load a new page
+    as the browser normally would. This gives us total control over what we want the application to do when the user
+    clicks a link.
+    Note: Browser.application doesnot override the "open link in new tab" functionality. It also doesn't override the
+    behavior of links with the download attribute set, because they're supposed to download things instead of navigating.
+
+    Internal and External URL requests
+    The Browser.UrlRequest value inside ClickedLink has two variants. It looks like this:
+
+    type UrlRequest
+        = External String
+        | Internal Url
+
+    Our ClickedLink message will contain an External request if the user clicked a link to a different domain. For example,
+    if they're viewing any URL whose domain is elm-in-action.com and the user clicks a link to anywhere on manning.com,
+    that would be an External request containing the exact string of the href attribute of the link they clicked.
+    ClickedLink will contain an Internal request if the user clicked a link to the same domain. So if they're viewing
+    an elm-in-action.com URL and they click a link to/foo, or to elm-in-action.com/foo, that will be an Internal request
+    containing a Url record like the one init receives.
+
+    Nav.load
+    Nav.load performs a full page load, just as a traditional multipage app would do.
+
+    Nav.pushUrl
+    Whereas Nav.load does a full page load of an entirely new page, all pushUrl does is to push the given URL onto the
+    browser's history stack. This has a few implications:
+    * The URL shown in the browser's address bar will become this one.
+    * Browser.application will send a ChangedUrl event to update, with this URL stored inside it. That's because we specified
+    ChangedUrl for our onUrlChanged handler when we setup our Browser.application.
+    * When the user clicks the Back button in the browser, this URL will now be one of the ones it goes back to. Also
+    when the user does that, Browser.application will send a ChangedUrl event to update.
+
+    Because it only manipulates the address bar, and does not directly request any page loads, we are free to display what
+    appears to be a new page-without actually doing a real page load.
+    Because both pushUrl and the browser's back button result in UrlChanged events being sent to update, we don't need
+    separate handling code for the case where the user arrived at a given URL from pushUrl compared to using the Browser's
+    back button. Once we implement handling code for the ChangedUrl message, we'll have covered both cases.
+
+-}
+
+
 type Msg
-    = NothingYet
+    = ClickedLink Browser.UrlRequest
+    | ChangedUrl Url
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        ClickedLink urlRequest ->
+            case urlRequest of
+                Browser.External href ->
+                    ( model, Nav.load href )
+
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.key (Url.toString url) )
+
+        ChangedUrl url ->
+            ( { model | page = urlToPage url }, Cmd.none )
 
 
 subscriptions : Model -> Sub Msg
@@ -219,8 +299,8 @@ main : Program () Model Msg
 main =
     Browser.application
         { init = init
-        , onUrlRequest = \_ -> Debug.todo "handle URL requests"
-        , onUrlChange = \_ -> Debug.todo "handle URL changes"
+        , onUrlRequest = ClickedLink
+        , onUrlChange = ChangedUrl
         , subscriptions = subscriptions
         , update = update
         , view = view
@@ -252,7 +332,7 @@ main =
 
 init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
 init flags url key =
-    ( { page = urlToPage url }, Cmd.none )
+    ( { page = urlToPage url, key = key }, Cmd.none )
 
 
 
