@@ -8,7 +8,7 @@ import Fuzz exposing (Fuzzer, int, list, string)
 import Html.Attributes as Attr exposing (src)
 import Json.Decode as Decode exposing (decodeValue)
 import Json.Encode as Encode
-import PhotoGroove exposing (..)
+import PhotoGallery exposing (..)
 import Test exposing (..)
 import Test.Html.Event as Event
 import Test.Html.Query as Query
@@ -64,7 +64,7 @@ decoderTest =
             , ( "size", Encode.int size )
             ]
                 |> Encode.object
-                |> decodeValue PhotoGroove.photoDecoder
+                |> decodeValue PhotoGallery.photoDecoder
                 {-
                    .title is equivalent to this anonymous function: (\photo -> photo.title)
                    All the records with named fields get a function with the same name that return their
