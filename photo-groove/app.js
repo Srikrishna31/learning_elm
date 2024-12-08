@@ -9917,12 +9917,6 @@ var $elm$core$Basics$never = function (_v0) {
 };
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Main$FoldersPage = function (a) {
-	return {$: 'FoldersPage', a: a};
-};
-var $author$project$Main$GalleryPage = function (a) {
-	return {$: 'GalleryPage', a: a};
-};
 var $author$project$Main$NotFound = {$: 'NotFound'};
 var $author$project$PhotoFolders$GotInitialModel = function (a) {
 	return {$: 'GotInitialModel', a: a};
@@ -10417,7 +10411,6 @@ var $author$project$PhotoGallery$init = function (flags) {
 			{activity: activity}),
 		$author$project$PhotoGallery$initialCmd);
 };
-var $elm$core$Debug$log = _Debug_log;
 var $elm$url$Url$Parser$State = F5(
 	function (visited, unvisited, params, frag, value) {
 		return {frag: frag, params: params, unvisited: unvisited, value: value, visited: visited};
@@ -10682,45 +10675,82 @@ var $author$project$Main$parser = $elm$url$Url$Parser$oneOf(
 				$elm$url$Url$Parser$s('photos'),
 				$elm$url$Url$Parser$string))
 		]));
-var $author$project$Main$urlToPage = F2(
-	function (version, url) {
-		var _v0 = A2(
-			$elm$core$Debug$log,
-			'Parsing the provided URL',
-			A2($elm$url$Url$Parser$parse, $author$project$Main$parser, url));
+var $author$project$Main$FoldersPage = function (a) {
+	return {$: 'FoldersPage', a: a};
+};
+var $author$project$Main$GotFoldersMsg = function (a) {
+	return {$: 'GotFoldersMsg', a: a};
+};
+var $author$project$Main$toFolders = F2(
+	function (model, _v0) {
+		var folders = _v0.a;
+		var cmd = _v0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					page: $author$project$Main$FoldersPage(folders)
+				}),
+			A2($elm$core$Platform$Cmd$map, $author$project$Main$GotFoldersMsg, cmd));
+	});
+var $author$project$Main$GalleryPage = function (a) {
+	return {$: 'GalleryPage', a: a};
+};
+var $author$project$Main$GotGalleryMsg = function (a) {
+	return {$: 'GotGalleryMsg', a: a};
+};
+var $author$project$Main$toGallery = F2(
+	function (model, _v0) {
+		var gallery = _v0.a;
+		var cmd = _v0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{
+					page: $author$project$Main$GalleryPage(gallery)
+				}),
+			A2($elm$core$Platform$Cmd$map, $author$project$Main$GotGalleryMsg, cmd));
+	});
+var $author$project$Main$updateUrl = F2(
+	function (url, model) {
+		var _v0 = A2($elm$url$Url$Parser$parse, $author$project$Main$parser, url);
 		if (_v0.$ === 'Just') {
 			switch (_v0.a.$) {
 				case 'Gallery':
 					var _v1 = _v0.a;
-					return $author$project$Main$GalleryPage(
-						$author$project$PhotoGallery$init(version).a);
+					return A2(
+						$author$project$Main$toGallery,
+						model,
+						$author$project$PhotoGallery$init(model.version));
 				case 'Folders':
 					var _v2 = _v0.a;
-					return $author$project$Main$FoldersPage(
-						$author$project$PhotoFolders$init($elm$core$Maybe$Nothing).a);
+					return A2(
+						$author$project$Main$toFolders,
+						model,
+						$author$project$PhotoFolders$init($elm$core$Maybe$Nothing));
 				default:
 					var fileName = _v0.a.a;
-					return $author$project$Main$FoldersPage(
+					return A2(
+						$author$project$Main$toFolders,
+						model,
 						$author$project$PhotoFolders$init(
-							$elm$core$Maybe$Just(fileName)).a);
+							$elm$core$Maybe$Just(fileName)));
 			}
 		} else {
-			return $author$project$Main$NotFound;
+			return _Utils_Tuple2(
+				_Utils_update(
+					model,
+					{page: $author$project$Main$NotFound}),
+				$elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Main$init = F3(
 	function (version, url, key) {
-		return _Utils_Tuple2(
-			{
-				key: key,
-				page: A2($author$project$Main$urlToPage, version, url),
-				version: version
-			},
-			$elm$core$Platform$Cmd$none);
+		return A2(
+			$author$project$Main$updateUrl,
+			url,
+			{key: key, page: $author$project$Main$NotFound, version: version});
 	});
-var $author$project$Main$GotGalleryMsg = function (a) {
-	return {$: 'GotGalleryMsg', a: a};
-};
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
 var $author$project$PhotoGallery$GotActivity = function (a) {
@@ -10744,33 +10774,6 @@ var $author$project$Main$subscriptions = function (model) {
 };
 var $elm$browser$Browser$Navigation$load = _Browser_load;
 var $elm$browser$Browser$Navigation$pushUrl = _Browser_pushUrl;
-var $author$project$Main$GotFoldersMsg = function (a) {
-	return {$: 'GotFoldersMsg', a: a};
-};
-var $author$project$Main$toFolders = F2(
-	function (model, _v0) {
-		var folders = _v0.a;
-		var cmd = _v0.b;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					page: $author$project$Main$FoldersPage(folders)
-				}),
-			A2($elm$core$Platform$Cmd$map, $author$project$Main$GotFoldersMsg, cmd));
-	});
-var $author$project$Main$toGallery = F2(
-	function (model, _v0) {
-		var gallery = _v0.a;
-		var cmd = _v0.b;
-		return _Utils_Tuple2(
-			_Utils_update(
-				model,
-				{
-					page: $author$project$Main$GalleryPage(gallery)
-				}),
-			A2($elm$core$Platform$Cmd$map, $author$project$Main$GotGalleryMsg, cmd));
-	});
 var $elm$url$Url$addPort = F2(
 	function (maybePort, starter) {
 		if (maybePort.$ === 'Nothing') {
@@ -10815,6 +10818,7 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$PhotoFolders$toggleExpanded = F2(
 	function (folderPath, _v0) {
 		var folder = _v0.a;
@@ -11279,13 +11283,7 @@ var $author$project$Main$update = F2(
 				}
 			case 'ChangedUrl':
 				var url = msg.a;
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							page: A2($author$project$Main$urlToPage, model.version, url)
-						}),
-					$elm$core$Platform$Cmd$none);
+				return A2($author$project$Main$updateUrl, url, model);
 			case 'GotFoldersMsg':
 				var foldersMsg = msg.a;
 				var _v2 = model.page;
@@ -11324,7 +11322,6 @@ var $elm$core$Maybe$andThen = F2(
 			return $elm$core$Maybe$Nothing;
 		}
 	});
-var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$PhotoFolders$ClickedFolder = function (a) {
 	return {$: 'ClickedFolder', a: a};
 };
@@ -11515,13 +11512,6 @@ var $author$project$PhotoFolders$view = function (model) {
 					]),
 				_List_fromArray(
 					[
-						A2(
-						$elm$html$Html$h1,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Folders')
-							])),
 						A2($author$project$PhotoFolders$viewFolder, $author$project$PhotoFolders$End, model.root)
 					])),
 				A2(
@@ -11715,13 +11705,6 @@ var $author$project$PhotoGallery$viewLoaded = F3(
 		return _List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h1,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Photo Groove')
-					])),
-				A2(
 				$elm$html$Html$button,
 				_List_fromArray(
 					[
@@ -11826,6 +11809,7 @@ var $author$project$Main$viewFooter = A2(
 		[
 			$elm$html$Html$text('One is never alone with a rubber duck. -Douglas Adams')
 		]));
+var $elm$html$Html$h1 = _VirtualDom_node('h1');
 var $author$project$Main$isActive = function (_v0) {
 	var link = _v0.link;
 	var page = _v0.page;
