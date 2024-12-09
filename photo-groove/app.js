@@ -9918,7 +9918,6 @@ var $elm$core$Basics$never = function (_v0) {
 var $elm$browser$Browser$application = _Browser_application;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Main$NotFound = {$: 'NotFound'};
-var $elm$core$Debug$log = _Debug_log;
 var $author$project$PhotoFolders$GotInitialModel = function (a) {
 	return {$: 'GotInitialModel', a: a};
 };
@@ -10749,7 +10748,7 @@ var $author$project$Main$init = F3(
 	function (version, url, key) {
 		return A2(
 			$author$project$Main$updateUrl,
-			A2($elm$core$Debug$log, 'Initial url: ', url),
+			url,
 			{key: key, page: $author$project$Main$NotFound, version: version});
 	});
 var $elm$core$Platform$Sub$batch = _Platform_batch;
@@ -10819,6 +10818,7 @@ var $elm$url$Url$toString = function (url) {
 					_Utils_ap(http, url.host)),
 				url.path)));
 };
+var $elm$core$Debug$log = _Debug_log;
 var $author$project$PhotoFolders$toggleExpanded = F2(
 	function (folderPath, _v0) {
 		var folder = _v0.a;
@@ -10914,7 +10914,7 @@ var $author$project$PhotoGallery$setFilters = _Platform_outgoingPort(
 					$elm$json$Json$Encode$string($.url))
 				]));
 	});
-var $author$project$PhotoGallery$urlPrefix = 'https://elm-in-action.com/';
+var $author$project$Common$urlPrefix = 'https://elm-in-action.com/';
 var $author$project$PhotoGallery$applyFilters = function (model) {
 	var _v0 = model.status;
 	switch (_v0.$) {
@@ -10923,7 +10923,7 @@ var $author$project$PhotoGallery$applyFilters = function (model) {
 		case 'Loaded':
 			var photos = _v0.a;
 			var selectedUrl = _v0.b;
-			var url = $author$project$PhotoGallery$urlPrefix + ('large/' + selectedUrl);
+			var url = $author$project$Common$urlPrefix + ('large/' + selectedUrl);
 			var filters = _List_fromArray(
 				[
 					{amount: model.hue / 11, name: 'Hue'},
@@ -11428,7 +11428,6 @@ var $elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $author$project$PhotoFolders$urlPrefix = 'https://elm-in-action.com/';
 var $author$project$PhotoFolders$viewRelatedPhoto = function (url) {
 	return A2(
 		$elm$html$Html$img,
@@ -11437,7 +11436,7 @@ var $author$project$PhotoFolders$viewRelatedPhoto = function (url) {
 				$elm$html$Html$Attributes$class('related-photo'),
 				$elm$html$Html$Events$onClick(
 				$author$project$PhotoFolders$ClickedPhoto(url)),
-				$elm$html$Html$Attributes$src($author$project$PhotoFolders$urlPrefix + ('photos/' + (url + '/thumb')))
+				$elm$html$Html$Attributes$src($author$project$Common$urlPrefix + ('photos/' + (url + '/thumb')))
 			]),
 		_List_Nil);
 };
@@ -11461,8 +11460,7 @@ var $author$project$PhotoFolders$viewSelectedPhoto = function (photo) {
 				$elm$html$Html$img,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$src(
-						A2($elm$core$Debug$log, 'Selected Photo Url', $author$project$PhotoFolders$urlPrefix + ('photos/' + (photo.url + '/full'))))
+						$elm$html$Html$Attributes$src($author$project$Common$urlPrefix + ('photos/' + (photo.url + '/full')))
 					]),
 				_List_Nil),
 				A2(
@@ -11691,7 +11689,7 @@ var $author$project$PhotoGallery$viewThumbnail = F2(
 			_List_fromArray(
 				[
 					$elm$html$Html$Attributes$src(
-					_Utils_ap($author$project$PhotoGallery$urlPrefix, thumb.url)),
+					_Utils_ap($author$project$Common$urlPrefix, thumb.url)),
 					$elm$html$Html$Attributes$title(
 					thumb.title + (' [' + ($elm$core$String$fromInt(thumb.size) + ' KB]'))),
 					$elm$html$Html$Attributes$classList(
@@ -11902,25 +11900,33 @@ var $author$project$Main$viewHeader = function (page) {
 			[logo, links]));
 };
 var $author$project$Main$view = function (model) {
-	var content = function () {
-		var _v0 = model.page;
-		switch (_v0.$) {
+	var _v0 = function () {
+		var _v1 = model.page;
+		switch (_v1.$) {
 			case 'FoldersPage':
-				var folders = _v0.a;
-				return A2(
-					$elm$html$Html$map,
-					$author$project$Main$GotFoldersMsg,
-					$author$project$PhotoFolders$view(folders));
+				var folders = _v1.a;
+				return _Utils_Tuple2(
+					'Groove: Photo Folders',
+					A2(
+						$elm$html$Html$map,
+						$author$project$Main$GotFoldersMsg,
+						$author$project$PhotoFolders$view(folders)));
 			case 'GalleryPage':
-				var gallery = _v0.a;
-				return A2(
-					$elm$html$Html$map,
-					$author$project$Main$GotGalleryMsg,
-					$author$project$PhotoGallery$view(gallery));
+				var gallery = _v1.a;
+				return _Utils_Tuple2(
+					'Groove: Photo Gallery',
+					A2(
+						$elm$html$Html$map,
+						$author$project$Main$GotGalleryMsg,
+						$author$project$PhotoGallery$view(gallery)));
 			default:
-				return $elm$html$Html$text('Not Found');
+				return _Utils_Tuple2(
+					'Groove: Page not found',
+					$elm$html$Html$text('Not Found'));
 		}
 	}();
+	var title = _v0.a;
+	var content = _v0.b;
 	return {
 		body: _List_fromArray(
 			[
@@ -11928,7 +11934,7 @@ var $author$project$Main$view = function (model) {
 				content,
 				$author$project$Main$viewFooter
 			]),
-		title: 'Photo Groove, SPA Style'
+		title: title
 	};
 };
 var $author$project$Main$main = $elm$browser$Browser$application(

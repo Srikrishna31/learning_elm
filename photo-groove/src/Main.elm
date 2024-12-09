@@ -127,20 +127,24 @@ type Route
 view : Model -> Document Msg
 view model =
     let
-        content =
+        ( title, content ) =
             case model.page of
                 FoldersPage folders ->
-                    Folders.view folders
+                    ( "Groove: Photo Folders"
+                    , Folders.view folders
                         |> Html.map GotFoldersMsg
+                    )
 
                 GalleryPage gallery ->
-                    Gallery.view gallery
+                    ( "Groove: Photo Gallery"
+                    , Gallery.view gallery
                         |> Html.map GotGalleryMsg
+                    )
 
                 NotFound ->
-                    text "Not Found"
+                    ( "Groove: Page not found", text "Not Found" )
     in
-    { title = "Photo Groove, SPA Style"
+    { title = title
     , body =
         [ lazy viewHeader model.page
         , content
