@@ -9,11 +9,11 @@ port module PhotoGallery exposing
     , photoDecoder
     , subscriptions
     , update
-    , urlPrefix
     , view
     )
 
 import Browser
+import Common exposing (urlPrefix)
 import Html exposing (Attribute, Html, button, canvas, div, h1, h3, img, input, label, node, text)
 import Html.Attributes as Attr exposing (checked, class, id, name, src, title, type_, value)
 import Html.Events exposing (on, onClick)
@@ -66,11 +66,6 @@ init flags =
             "Initializing Pasta v" ++ String.fromFloat flags
     in
     ( { initialModel | activity = activity }, initialCmd )
-
-
-urlPrefix : String
-urlPrefix =
-    "https://elm-in-action.com/"
 
 
 

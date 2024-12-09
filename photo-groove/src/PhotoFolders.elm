@@ -1,6 +1,7 @@
 module PhotoFolders exposing (Model, Msg, init, update, view)
 
 import Browser
+import Common exposing (urlPrefix)
 import Dict exposing (Dict)
 import Html exposing (..)
 import Html.Attributes exposing (class, href, src)
@@ -269,11 +270,6 @@ viewRelatedPhoto url =
         , src (urlPrefix ++ "photos/" ++ url ++ "/thumb")
         ]
         []
-
-
-urlPrefix : String
-urlPrefix =
-    "https://elm-in-action.com/"
 
 
 type FolderPath

@@ -3,6 +3,7 @@
 
 module PhotoGrooveTests exposing (..)
 
+import Common exposing (urlPrefix)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Html.Attributes as Attr exposing (src)
