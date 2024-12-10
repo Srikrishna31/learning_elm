@@ -16,8 +16,12 @@ type Plans
     = Plans (List Plan)
 
 
+type alias NodeType =
+    String
+
+
 type alias CommonFields =
-    { nodeType : String
+    { nodeType : NodeType
     , plans : Plans
     , relationName : String
     , schema : String
