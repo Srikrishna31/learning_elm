@@ -13,6 +13,11 @@ lightCharcoal =
     rgb255 136 138 133
 
 
+darkCharcoal : Color
+darkCharcoal =
+    rgb255 56 58 53
+
+
 green : Color
 green =
     rgb255 0 255 0
