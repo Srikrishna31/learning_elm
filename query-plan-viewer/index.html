@@ -15500,7 +15500,7 @@ var $mdgriffith$elm_ui$Element$rgb255 = F3(
 	function (red, green, blue) {
 		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
 	});
-var $author$project$Main$lightGrey = A3($mdgriffith$elm_ui$Element$rgb255, 150, 150, 150);
+var $author$project$Color$lightGrey = A3($mdgriffith$elm_ui$Element$rgb255, 150, 150, 150);
 var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
 	function (a, b, c, d, e) {
 		return {$: 'PaddingStyle', a: a, b: b, c: c, d: d, e: e};
@@ -15844,7 +15844,7 @@ var $author$project$Main$detailPanelContent = function (plan) {
 						$mdgriffith$elm_ui$Element$Font$bold,
 						$mdgriffith$elm_ui$Element$Border$widthEach(
 						{bottom: 1, left: 0, right: 0, top: 0}),
-						$mdgriffith$elm_ui$Element$Border$color($author$project$Main$lightGrey)
+						$mdgriffith$elm_ui$Element$Border$color($author$project$Color$lightGrey)
 					]),
 				$mdgriffith$elm_ui$Element$text(name)));
 	};
@@ -15941,7 +15941,7 @@ var $author$project$Main$detailPanelContent = function (plan) {
 	}
 };
 var $mdgriffith$elm_ui$Element$fillPortion = $mdgriffith$elm_ui$Internal$Model$Fill;
-var $author$project$Main$grey = A3($mdgriffith$elm_ui$Element$rgb255, 100, 100, 100);
+var $author$project$Color$grey = A3($mdgriffith$elm_ui$Element$rgb255, 100, 100, 100);
 var $mdgriffith$elm_ui$Internal$Model$Max = F2(
 	function (a, b) {
 		return {$: 'Max', a: a, b: b};
@@ -15981,8 +15981,8 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			clr));
 };
 var $mdgriffith$elm_ui$Element$Font$italic = $mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.italic);
-var $author$project$Main$lightBlue = A3($mdgriffith$elm_ui$Element$rgb255, 0, 100, 225);
-var $author$project$Main$lightYellow = A3($mdgriffith$elm_ui$Element$rgb255, 255, 200, 0);
+var $author$project$Color$lightBlue = A3($mdgriffith$elm_ui$Element$rgb255, 0, 100, 225);
+var $author$project$Color$lightYellow = A3($mdgriffith$elm_ui$Element$rgb255, 255, 200, 0);
 var $mdgriffith$elm_ui$Internal$Model$Hover = {$: 'Hover'};
 var $mdgriffith$elm_ui$Internal$Model$PseudoSelector = F2(
 	function (a, b) {
@@ -16167,11 +16167,11 @@ var $author$project$Main$planNodeTree = function (plan) {
 						[
 							$mdgriffith$elm_ui$Element$Border$widthEach(
 							{bottom: 1, left: 0, right: 0, top: 0}),
-							$mdgriffith$elm_ui$Element$Border$color($author$project$Main$lightBlue),
+							$mdgriffith$elm_ui$Element$Border$color($author$project$Color$lightBlue),
 							$mdgriffith$elm_ui$Element$mouseOver(
 							_List_fromArray(
 								[
-									$mdgriffith$elm_ui$Element$Background$color($author$project$Main$lightYellow)
+									$mdgriffith$elm_ui$Element$Background$color($author$project$Color$lightYellow)
 								])),
 							$mdgriffith$elm_ui$Element$padding(4),
 							$mdgriffith$elm_ui$Element$Events$onMouseEnter(
@@ -16325,7 +16325,7 @@ var $author$project$Main$displayPage = function (model) {
 						$mdgriffith$elm_ui$Element$padding(5),
 						$mdgriffith$elm_ui$Element$Border$widthEach(
 						{bottom: 0, left: 1, right: 0, top: 0}),
-						$mdgriffith$elm_ui$Element$Border$color($author$project$Main$grey)
+						$mdgriffith$elm_ui$Element$Border$color($author$project$Color$grey)
 					]),
 				details)
 			]));
@@ -16473,15 +16473,15 @@ var $mdgriffith$elm_ui$Element$Font$color = function (fontColor) {
 			'color',
 			fontColor));
 };
-var $author$project$Main$darkGreen = A3($mdgriffith$elm_ui$Element$rgb255, 0, 150, 0);
-var $author$project$Main$green = A3($mdgriffith$elm_ui$Element$rgb255, 0, 255, 0);
+var $author$project$Color$darkGreen = A3($mdgriffith$elm_ui$Element$rgb255, 0, 150, 0);
+var $author$project$Color$green = A3($mdgriffith$elm_ui$Element$rgb255, 0, 255, 0);
 var $mdgriffith$elm_ui$Element$Input$Above = {$: 'Above'};
 var $mdgriffith$elm_ui$Element$Input$Label = F3(
 	function (a, b, c) {
 		return {$: 'Label', a: a, b: b, c: c};
 	});
 var $mdgriffith$elm_ui$Element$Input$labelAbove = $mdgriffith$elm_ui$Element$Input$Label($mdgriffith$elm_ui$Element$Input$Above);
-var $author$project$Main$lightCharcoal = A3($mdgriffith$elm_ui$Element$rgb255, 136, 138, 133);
+var $author$project$Color$lightCharcoal = A3($mdgriffith$elm_ui$Element$rgb255, 136, 138, 133);
 var $mdgriffith$elm_ui$Element$Input$TextArea = {$: 'TextArea'};
 var $mdgriffith$elm_ui$Internal$Model$LivePolite = {$: 'LivePolite'};
 var $mdgriffith$elm_ui$Element$Region$announce = $mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$LivePolite);
@@ -17359,7 +17359,7 @@ var $mdgriffith$elm_ui$Element$spacingXY = F2(
 				x,
 				y));
 	});
-var $author$project$Main$white = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
+var $author$project$Color$white = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $author$project$Main$inputPage = function (model) {
 	return A2(
 		$mdgriffith$elm_ui$Element$column,
@@ -17380,7 +17380,7 @@ var $author$project$Main$inputPage = function (model) {
 						$mdgriffith$elm_ui$Element$px(300)),
 						$mdgriffith$elm_ui$Element$Border$width(1),
 						$mdgriffith$elm_ui$Element$Border$rounded(3),
-						$mdgriffith$elm_ui$Element$Border$color($author$project$Main$lightCharcoal),
+						$mdgriffith$elm_ui$Element$Border$color($author$project$Color$lightCharcoal),
 						$mdgriffith$elm_ui$Element$padding(3)
 					]),
 				{
@@ -17397,13 +17397,13 @@ var $author$project$Main$inputPage = function (model) {
 				$mdgriffith$elm_ui$Element$Input$button,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$Background$color($author$project$Main$green),
-						$mdgriffith$elm_ui$Element$Border$color($author$project$Main$darkGreen),
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Color$green),
+						$mdgriffith$elm_ui$Element$Border$color($author$project$Color$darkGreen),
 						$mdgriffith$elm_ui$Element$Border$rounded(3),
 						$mdgriffith$elm_ui$Element$Border$widthEach(
 						{bottom: 3, left: 0, right: 0, top: 0}),
 						$mdgriffith$elm_ui$Element$Font$bold,
-						$mdgriffith$elm_ui$Element$Font$color($author$project$Main$white),
+						$mdgriffith$elm_ui$Element$Font$color($author$project$Color$white),
 						A2($mdgriffith$elm_ui$Element$paddingXY, 20, 6),
 						$mdgriffith$elm_ui$Element$alignRight,
 						$mdgriffith$elm_ui$Element$width(
@@ -17679,7 +17679,7 @@ var $mdgriffith$elm_ui$Element$layout = $mdgriffith$elm_ui$Element$layoutWith(
 	{options: _List_Nil});
 var $mdgriffith$elm_ui$Internal$Model$Left = {$: 'Left'};
 var $mdgriffith$elm_ui$Element$alignLeft = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$Left);
-var $author$project$Main$blue = A3($mdgriffith$elm_ui$Element$rgb255, 52, 101, 164);
+var $author$project$Color$blue = A3($mdgriffith$elm_ui$Element$rgb255, 52, 101, 164);
 var $author$project$Main$navBar = A2(
 	$mdgriffith$elm_ui$Element$row,
 	_List_fromArray(
@@ -17688,7 +17688,7 @@ var $author$project$Main$navBar = A2(
 			A2($mdgriffith$elm_ui$Element$paddingXY, 60, 10),
 			$mdgriffith$elm_ui$Element$Border$widthEach(
 			{bottom: 5, left: 0, right: 0, top: 0}),
-			$mdgriffith$elm_ui$Element$Border$color($author$project$Main$blue)
+			$mdgriffith$elm_ui$Element$Border$color($author$project$Color$blue)
 		]),
 	_List_fromArray(
 		[
