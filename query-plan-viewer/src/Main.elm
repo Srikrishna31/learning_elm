@@ -9,7 +9,9 @@ import Element.Border as Border
 import Element.Events exposing (onClick, onMouseEnter, onMouseLeave)
 import Element.Font as Font
 import Element.Input as Input
+import Http exposing (Body)
 import Json.Decode
+import Json.Encode
 import PlanParsers.Json as P exposing (..)
 
 
@@ -17,6 +19,7 @@ type Page
     = InputPage
     | DisplayPage
     | LoginPage
+    | SavedPlansPage
 
 
 type Msg
@@ -30,6 +33,10 @@ type Msg
     | ChangePassword String
     | ChangeUserName String
     | StartLogin
+    | FinishLogin (Result Http.Error String)
+    | RequestSavedPlans
+    | FinishSavedPlans (Result Http.Error (List SavedPlan))
+    | ShowPlan String
 
 
 type alias Model =
@@ -40,11 +47,18 @@ type alias Model =
     , userName : String
     , password : String
     , lastError : String
+    , sessionId : Maybe String
+    , savedPlans : List SavedPlan
     }
 
 
 type alias Flags =
     ()
+
+
+serverUrl : String
+serverUrl =
+    ""
 
 
 init : Flags -> ( Model, Cmd Msg )
@@ -131,6 +145,8 @@ init _ =
       , userName = ""
       , password = ""
       , lastError = ""
+      , sessionId = Nothing
+      , savedPlans = []
       }
     , Cmd.none
     )
@@ -180,7 +196,110 @@ update msg model =
             ( { model | userName = newUser }, Cmd.none )
 
         StartLogin ->
+            ( model, login model.userName model.password )
+
+        FinishLogin (Ok sessionId) ->
+            ( { model | sessionId = Just sessionId, currPage = InputPage }, Cmd.none )
+
+        FinishLogin (Err error) ->
+            ( { model | lastError = httpErrorString error }, Cmd.none )
+
+        RequestSavedPlans ->
+            ( { model | currPage = SavedPlansPage }, getSavedPlans model.sessionId )
+
+        FinishSavedPlans (Ok savedPlans) ->
+            ( { model | savedPlans = savedPlans }, Cmd.none )
+
+        FinishSavedPlans (Err error) ->
+            ( { model | lastError = httpErrorString error }, Cmd.none )
+
+        ShowPlan string ->
             ( model, Cmd.none )
+
+
+
+{-
+   Even though it's a GET request, we have to use Http.request rather than Http.get because this request requires a custom
+   HTTP header with the session ID. The request function takes a record with various parameters.
+-}
+
+
+getSavedPlans : Maybe String -> Cmd Msg
+getSavedPlans sessionId =
+    Http.request
+        { method = "GET"
+        , headers =
+            [ Http.header "SessionId" <| Maybe.withDefault "" sessionId ]
+        , url = serverUrl ++ "plans"
+        , body = Http.emptyBody
+        , timeout = Nothing
+        , tracker = Nothing
+        , expect = Http.expectJson FinishSavedPlans decodeSavedPlans
+        }
+
+
+
+{-
+   Commands
+   Commands provide a way to carry out asynchronous operations with side effects. When you issue a command by returning it
+   from the update function, it causes the Elm runtime to kick off the corresponding operation and subsequently return the
+   result back to your program via a message.
+
+   As normal functions in Elm are pure, there's no way to express something like making a call to a server or generating a
+   random number in a regular function, because every call to such a function might return a different value. Instead, anything
+   that has side effects is done via commands.
+
+   The update function returns a command in a tuple with the changed model.
+
+   Server requests are made by sending particular commands to the Elm runtime. In order to make requests, we need to use the
+   elm/http package from the Elm core library.
+   Http.post returns a command that will generate a message once the request is complete. The http package provides functions
+   such as get, post and a more general-purpose request to generate commands that trigger HTTP requests.
+   The expect field in the argument determines how the response will be handled, and is a value of type Expect msg. The http
+   package provides several functions to construct these values: expectString, expectJson, expectBytes and expectWhatever
+   (which ignores the response):
+
+   expectJson: (Result Error a -> msg) -> Decoder a -> Expect msg
+-}
+
+
+login : String -> String -> Cmd Msg
+login userName password =
+    let
+        body =
+            Http.jsonBody <|
+                Json.Encode.object
+                    [ ( "userName", Json.Encode.string userName )
+                    , ( "password", Json.Encode.string password )
+                    ]
+
+        responseDecoder =
+            Json.Decode.field "sessionId" Json.Decode.string
+    in
+    Http.post
+        { url = serverUrl ++ "login"
+        , body = body
+        , expect = Http.expectJson FinishLogin responseDecoder
+        }
+
+
+httpErrorString : Http.Error -> String
+httpErrorString err =
+    case err of
+        Http.BadBody message ->
+            "Unable to handle response: " ++ message
+
+        Http.BadUrl url ->
+            "Invalid URL: " ++ url
+
+        Http.Timeout ->
+            "Request Timed out"
+
+        Http.NetworkError ->
+            "Network Error"
+
+        Http.BadStatus statusCode ->
+            "Server error: " ++ String.fromInt statusCode
 
 
 
@@ -200,6 +319,9 @@ view model =
 
                 LoginPage ->
                     loginPage model
+
+                SavedPlansPage ->
+                    savedPlansPage model
     in
     { title = "VisExp"
     , body =
@@ -486,6 +608,61 @@ loginPage model =
             }
         , el Attr.error <| text model.lastError
         ]
+
+
+savedPlansPage : Model -> Element Msg
+savedPlansPage model =
+    let
+        annotateVersion name planVersion =
+            { version = planVersion.version
+            , planText = planVersion.planText
+            , createdAt = planVersion.createdAt
+            , name = name
+            }
+
+        annotateVersions savedPlan =
+            List.map (annotateVersion savedPlan.name) savedPlan.versions
+
+        tableAttrs =
+            [ width (px 800)
+            , paddingEach { top = 10, bottom = 50, left = 10, right = 10 }
+            , spacingXY 10 10
+            , centerX
+            ]
+
+        headerAttrs =
+            [ Font.bold
+            , Background.color Color.lightGrey
+            , Border.color Color.darkCharcoal
+            , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+            , centerX
+            ]
+    in
+    table tableAttrs
+        { data = List.concatMap annotateVersions model.savedPlans
+        , columns =
+            [ { header = el headerAttrs <| text "Plan name"
+              , width = fill
+              , view =
+                    \plan ->
+                        el
+                            [ Font.underline
+                            , mouseOver [ Font.color lightCharcoal ]
+                            , onClick <| ShowPlan plan.planText
+                            ]
+                        <|
+                            text plan.name
+              }
+            , { header = el headerAttrs <| text "Creation time"
+              , width = fill
+              , view = .createdAt >> text
+              }
+            , { header = el headerAttrs <| text "Version"
+              , width = fill
+              , view = .version >> String.fromInt >> text
+              }
+            ]
+        }
 
 
 main : Program Flags Model Msg

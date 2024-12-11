@@ -183,3 +183,35 @@ decodeSortNode =
 decodeGenericNode : Decode.Decoder Plan
 decodeGenericNode =
     Decode.map PGeneric decodeCommonFields
+
+
+type alias PlanVersion =
+    { version : Int
+    , createdAt : String
+    , planText : String
+    }
+
+
+type alias SavedPlan =
+    { id : String
+    , name : String
+    , versions : List PlanVersion
+    }
+
+
+decodePlanVersion : Decode.Decoder PlanVersion
+decodePlanVersion =
+    Decode.succeed PlanVersion
+        |> required "version" Decode.int
+        |> required "createdAt" Decode.string
+        |> required "planText" Decode.string
+
+
+decodeSavedPlans : Decode.Decoder (List SavedPlan)
+decodeSavedPlans =
+    Decode.list
+        (Decode.succeed SavedPlan
+            |> required "id" Decode.string
+            |> required "name" Decode.string
+            |> required "versions" (Decode.list decodePlanVersion)
+        )
