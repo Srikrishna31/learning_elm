@@ -16,6 +16,7 @@ import PlanParsers.Json as P exposing (..)
 type Page
     = InputPage
     | DisplayPage
+    | LoginPage
 
 
 type Msg
@@ -26,6 +27,9 @@ type Msg
     | ToggleMenu
     | CreatePlan
     | RequestLogin
+    | ChangePassword String
+    | ChangeUserName String
+    | StartLogin
 
 
 type alias Model =
@@ -33,6 +37,9 @@ type alias Model =
     , currPlanText : String
     , selectedNode : Maybe Plan
     , isMenuOpen : Bool
+    , userName : String
+    , password : String
+    , lastError : String
     }
 
 
@@ -121,6 +128,9 @@ init _ =
       """
       , selectedNode = Nothing
       , isMenuOpen = False
+      , userName = ""
+      , password = ""
+      , lastError = ""
       }
     , Cmd.none
     )
@@ -161,6 +171,15 @@ update msg model =
             ( model, Cmd.none )
 
         RequestLogin ->
+            ( { model | currPage = LoginPage, password = "", userName = "" }, Cmd.none )
+
+        ChangePassword newPassword ->
+            ( { model | password = newPassword }, Cmd.none )
+
+        ChangeUserName newUser ->
+            ( { model | userName = newUser }, Cmd.none )
+
+        StartLogin ->
             ( model, Cmd.none )
 
 
@@ -178,6 +197,9 @@ view model =
 
                 DisplayPage ->
                     displayPage model
+
+                LoginPage ->
+                    loginPage model
     in
     { title = "VisExp"
     , body =
@@ -439,6 +461,30 @@ navBar =
             { onPress = Just ToggleMenu
             , label = el [ centerX ] <| text "Menu"
             }
+        ]
+
+
+loginPage : Model -> Element Msg
+loginPage model =
+    column [ paddingXY 0 20, spacingXY 0 10, width (px 300), centerX ]
+        [ Input.username Attr.input
+            { onChange = ChangeUserName
+            , text = model.userName
+            , label = Input.labelAbove [] <| text "User Name:"
+            , placeholder = Nothing
+            }
+        , Input.currentPassword Attr.input
+            { onChange = ChangePassword
+            , text = model.password
+            , label = Input.labelAbove [] <| text "Password:"
+            , placeholder = Nothing
+            , show = False
+            }
+        , Input.button Attr.greenButton
+            { onPress = Just StartLogin
+            , label = el [ centerX ] <| text "Login"
+            }
+        , el Attr.error <| text model.lastError
         ]
 
 

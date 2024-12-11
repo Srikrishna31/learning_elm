@@ -27,3 +27,13 @@ greyButton =
     , Border.widthEach { bottom = 1, right = 1, top = 0, left = 0 }
     , Font.bold
     ]
+
+
+input : List (Attribute msg)
+input =
+    [ Border.width 1, Border.rounded 3, Border.color lightCharcoal, padding 3 ]
+
+
+error : List (Attribute msg)
+error =
+    [ Font.color red ]

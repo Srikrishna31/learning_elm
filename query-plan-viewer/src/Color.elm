@@ -23,6 +23,11 @@ green =
     rgb255 0 255 0
 
 
+red : Color
+red =
+    rgb255 255 0 0
+
+
 white : Color
 white =
     rgb255 255 255 255
