@@ -4,6 +4,7 @@ import Browser
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
+import Element.Events exposing (onMouseEnter, onMouseLeave)
 import Element.Font as Font
 import Element.Input as Input
 import Json.Decode
@@ -18,11 +19,14 @@ type Page
 type Msg
     = SubmitPlan
     | ChangePlanText String
+    | MouseEnteredPlanNode Plan
+    | MouseLeftPlanNode Plan
 
 
 type alias Model =
     { currPage : Page
     , currPlanText : String
+    , selectedNode : Maybe Plan
     }
 
 
@@ -34,6 +38,7 @@ init : Flags -> ( Model, Cmd Msg )
 init _ =
     ( { currPage = InputPage
       , currPlanText = ""
+      , selectedNode = Nothing
       }
     , Cmd.none
     )
@@ -60,6 +65,12 @@ update msg model =
 
         SubmitPlan ->
             ( { model | currPage = DisplayPage }, Cmd.none )
+
+        MouseEnteredPlanNode plan ->
+            ( { model | selectedNode = Just plan }, Cmd.none )
+
+        MouseLeftPlanNode commonFields ->
+            ( { model | selectedNode = Nothing }, Cmd.none )
 
 
 
@@ -163,8 +174,99 @@ displayPage model =
 
                 Err err ->
                     [ text <| Json.Decode.errorToString err ]
+
+        details =
+            case model.selectedNode of
+                Nothing ->
+                    [ text "" ]
+
+                Just plan ->
+                    detailPanelContent plan
     in
-    column [] tree
+    row [ width fill, paddingEach { top = 20, left = 0, right = 0, bottom = 0 } ]
+        [ column [ width <| fillPortion 7, height fill, alignTop ] tree
+        , column
+            [ width (fillPortion 3 |> maximum 500)
+            , height fill
+            , alignTop
+            , padding 5
+            , Border.widthEach { left = 1, right = 0, top = 0, bottom = 0 }
+            , Border.color grey
+            ]
+          <|
+            details
+        ]
+
+
+detailPanelContent : Plan -> List (Element Msg)
+detailPanelContent plan =
+    let
+        attr : String -> String -> Element Msg
+        attr name value =
+            wrappedRow [ width fill ]
+                [ el
+                    [ width (px 200)
+                    , paddingEach { right = 10, left = 10, top = 3, bottom = 3 }
+                    , alignTop
+                    ]
+                  <|
+                    text name
+                , paragraph [ width fill, Font.bold, scrollbarX ] [ text value ]
+                ]
+
+        header : String -> Element Msg
+        header name =
+            el [ paddingEach { top = 10, bottom = 5, left = 10, right = 0 } ] <|
+                el
+                    [ Font.bold
+                    , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                    , Border.color lightGrey
+                    ]
+                <|
+                    text name
+
+        commonAttrs : CommonFields -> List (Element Msg)
+        commonAttrs common =
+            [ attr "Startup cost" <| String.fromFloat common.startupCost
+            , attr "Total Cost" <| String.fromFloat common.totalCost
+            , attr "Schema" common.schema
+            ]
+    in
+    case plan of
+        PCte cteNode ->
+            commonAttrs cteNode.common
+
+        PGeneric commonFields ->
+            commonAttrs commonFields
+
+        PResult resultNode ->
+            commonAttrs resultNode.common
+
+        PSeqScan seqScanNode ->
+            commonAttrs seqScanNode.common
+                ++ [ header "Filter"
+                   , attr "Filter" seqScanNode.filter
+                   , attr "Width" <| String.fromInt seqScanNode.rowsRemovedByFilter
+                   ]
+
+        PSort sortNode ->
+            commonAttrs sortNode.common
+                ++ [ header "Sort"
+                   , attr "Sort Key" <| String.join ", " sortNode.sortKey
+                   , attr "Sort Method" sortNode.sortMethod
+                   , attr "Sort Space Type" sortNode.sortSpaceType
+                   , attr "Sort Space Used" <| String.fromInt sortNode.sortSpaceUsed
+                   ]
+
+
+lightGrey : Color
+lightGrey =
+    rgb255 150 150 150
+
+
+grey : Color
+grey =
+    rgb255 100 100 100
 
 
 lightBlue : Color
@@ -191,12 +293,15 @@ planNodeTree plan =
         nodeTypeEl nodeType =
             el [ Font.bold ] <| text nodeType
 
+        treeNode : { treeNode | common : CommonFields } -> List (Element Msg) -> List (Element Msg)
         treeNode node nodeDetails =
             [ el
                 [ Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
                 , Border.color lightBlue
                 , mouseOver [ Background.color lightYellow ]
                 , padding 4
+                , onMouseEnter <| MouseEnteredPlanNode plan
+                , onMouseLeave <| MouseLeftPlanNode plan
                 ]
               <|
                 paragraph [] (nodeTypeEl node.common.nodeType :: nodeDetails)
