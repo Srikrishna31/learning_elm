@@ -37,6 +37,7 @@ type Msg
     | RequestSavedPlans
     | FinishSavedPlans (Result Http.Error (List SavedPlan))
     | ShowPlan String
+    | RequestLogout
 
 
 type alias Model =
@@ -213,8 +214,11 @@ update msg model =
         FinishSavedPlans (Err error) ->
             ( { model | lastError = httpErrorString error }, Cmd.none )
 
-        ShowPlan string ->
-            ( model, Cmd.none )
+        ShowPlan planText ->
+            ( { model | currPlanText = planText, currPage = DisplayPage }, Cmd.none )
+
+        RequestLogout ->
+            init ()
 
 
 
@@ -373,9 +377,16 @@ menuPanel model =
     let
         items : List (Element Msg)
         items =
-            [ el [ pointer, onClick CreatePlan ] <| text "New Plan"
-            , el [ pointer, onClick RequestLogin ] <| text "Login"
-            ]
+            [ el [ pointer, onClick CreatePlan ] <| text "New Plan" ]
+                ++ (case model.sessionId of
+                        Just _ ->
+                            [ el [ pointer, onClick RequestSavedPlans ] <| text "Saved plans"
+                            , el [ pointer, onClick RequestLogout ] <| text "Logout"
+                            ]
+
+                        Nothing ->
+                            [ el [ pointer, onClick RequestLogin ] <| text "Login" ]
+                   )
 
         panel : Element Msg
         panel =
