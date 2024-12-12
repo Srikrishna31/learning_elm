@@ -10,11 +10,11 @@ import Element.Border as Border
 import Element.Events exposing (onClick, onMouseEnter, onMouseLeave)
 import Element.Font as Font
 import Element.Input as Input
-import Html.Attributes exposing (id)
 import Http exposing (Body)
 import Json.Decode
 import Json.Encode
 import PlanParsers.Json as P exposing (..)
+import PlanTree
 import Ports exposing (dumpModel, saveSessionId)
 import Time
 
@@ -496,161 +496,18 @@ menuPanel model =
 displayPage : Model -> Element Msg
 displayPage model =
     let
-        tree =
-            case Json.Decode.decodeString decodePlanJson model.currPlanText of
-                Ok planJson ->
-                    planNodeTree planJson.plan
-
-                Err err ->
-                    [ text <| Json.Decode.errorToString err ]
-
-        details =
-            case model.selectedNode of
-                Nothing ->
-                    [ text "" ]
-
-                Just plan ->
-                    detailPanelContent plan
+        planTreeConfig : PlanTree.Config Msg
+        planTreeConfig =
+            { onMouseEnteredNode = MouseEnteredPlanNode
+            , onMouseLeftNode = MouseLeftPlanNode
+            }
     in
-    row [ width fill, paddingEach { top = 20, left = 0, right = 0, bottom = 0 } ]
-        [ column [ width <| fillPortion 7, height fill, alignTop ] tree
-        , column
-            [ width (fillPortion 3 |> maximum 500)
-            , height fill
-            , alignTop
-            , padding 5
-            , Border.widthEach { left = 1, right = 0, top = 0, bottom = 0 }
-            , Border.color grey
-            ]
-          <|
-            details
-        ]
+    case Json.Decode.decodeString decodePlanJson model.currPlanText of
+        Ok planJson ->
+            PlanTree.render planTreeConfig planJson model.selectedNode
 
-
-detailPanelContent : Plan -> List (Element Msg)
-detailPanelContent plan =
-    let
-        attr : String -> String -> Element Msg
-        attr name value =
-            wrappedRow [ width fill ]
-                [ el
-                    [ width (px 200)
-                    , paddingEach { right = 10, left = 10, top = 3, bottom = 3 }
-                    , alignTop
-                    ]
-                  <|
-                    text name
-                , paragraph [ width fill, Font.bold, scrollbarX ] [ text value ]
-                ]
-
-        header : String -> Element Msg
-        header name =
-            el [ paddingEach { top = 10, bottom = 5, left = 10, right = 0 } ] <|
-                el
-                    [ Font.bold
-                    , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                    , Border.color lightGrey
-                    ]
-                <|
-                    text name
-
-        commonAttrs : CommonFields -> List (Element Msg)
-        commonAttrs common =
-            [ attr "Startup cost" <| String.fromFloat common.startupCost
-            , attr "Total Cost" <| String.fromFloat common.totalCost
-            , attr "Schema" common.schema
-            ]
-    in
-    case plan of
-        PCte cteNode ->
-            commonAttrs cteNode.common
-
-        PGeneric commonFields ->
-            commonAttrs commonFields
-
-        PResult resultNode ->
-            commonAttrs resultNode.common
-
-        PSeqScan seqScanNode ->
-            commonAttrs seqScanNode.common
-                ++ [ header "Filter"
-                   , attr "Filter" seqScanNode.filter
-                   , attr "Width" <| String.fromInt seqScanNode.rowsRemovedByFilter
-                   ]
-
-        PSort sortNode ->
-            commonAttrs sortNode.common
-                ++ [ header "Sort"
-                   , attr "Sort Key" <| String.join ", " sortNode.sortKey
-                   , attr "Sort Method" sortNode.sortMethod
-                   , attr "Sort Space Type" sortNode.sortSpaceType
-                   , attr "Sort Space Used" <| String.fromInt sortNode.sortSpaceUsed
-                   ]
-
-
-
-{-
-   planNodeTree and childNodeTree are mutually recursive, so the end result of calling planNodeTree on the root node is that
-   the whole plan tree gets rendered as elm-ui elements
--}
-
-
-planNodeTree : Plan -> List (Element Msg)
-planNodeTree plan =
-    let
-        nodeTypeEl : NodeType -> Element Msg
-        nodeTypeEl nodeType =
-            el [ Font.bold ] <| text nodeType
-
-        treeNode : { treeNode | common : CommonFields } -> List (Element Msg) -> List (Element Msg)
-        treeNode node nodeDetails =
-            [ el
-                [ Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                , Border.color lightBlue
-                , mouseOver [ Background.color lightYellow ]
-                , padding 4
-                , onMouseEnter <| MouseEnteredPlanNode plan
-                , onMouseLeave <| MouseLeftPlanNode plan
-                ]
-              <|
-                paragraph [] (nodeTypeEl node.common.nodeType :: nodeDetails)
-            , childNodeTree node.common.plans
-            ]
-    in
-    case plan of
-        PCte cteNode ->
-            treeNode cteNode
-                [ text " on "
-                , el [ Font.italic ] <| text cteNode.cteName
-                , text <| " (" ++ cteNode.alias_ ++ ")"
-                ]
-
-        PGeneric genericNode ->
-            treeNode { common = genericNode }
-                []
-
-        PResult resultNode ->
-            treeNode resultNode
-                []
-
-        PSeqScan seqScanNode ->
-            treeNode seqScanNode
-                [ text " on "
-                , el [ Font.italic ] <| text seqScanNode.relationName
-                , text <| " (" ++ seqScanNode.alias_ ++ ")"
-                ]
-
-        PSort sortNode ->
-            treeNode sortNode
-                [ text " on "
-                , el [ Font.italic ] <| text <| String.join ", " sortNode.sortKey
-                ]
-
-
-childNodeTree : Plans -> Element Msg
-childNodeTree (Plans plans) =
-    column [ paddingEach { left = 20, right = 0, top = 0, bottom = 0 } ] <|
-        List.concatMap planNodeTree plans
+        Err err ->
+            el [] <| text <| Json.Decode.errorToString err
 
 
 navBar : Element Msg
