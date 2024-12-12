@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Attr
 import Browser
+import Browser.Events exposing (onKeyPress)
 import Color exposing (blue, darkGreen, green, grey, lightBlue, lightCharcoal, lightGrey, lightYellow, white)
 import Element exposing (..)
 import Element.Background as Background
@@ -9,6 +10,7 @@ import Element.Border as Border
 import Element.Events exposing (onClick, onMouseEnter, onMouseLeave)
 import Element.Font as Font
 import Element.Input as Input
+import Html.Attributes exposing (id)
 import Http exposing (Body)
 import Json.Decode
 import Json.Encode
@@ -162,6 +164,10 @@ init flags =
 
 -- SUBSCRIPTIONS
 -- Sub.batch allows us to combine multiple subscriptions into a single subscription
+{-
+   onKeyPress requires a JSON decoder that will extract the relevant information from the event value. The event value is a
+   JSON representation of JavaScript KeyBoardEvent.
+-}
 
 
 subscriptions : Model -> Sub Msg
@@ -169,7 +175,38 @@ subscriptions model =
     Sub.batch
         [ dumpModel DumpModel
         , Time.every (100 * 1000) SendHeartBeat
+        , onKeyPress <| keyDecoder model
         ]
+
+
+keyDecoder : Model -> Json.Decode.Decoder Msg
+keyDecoder model =
+    Json.Decode.map2 Tuple.pair
+        (Json.Decode.field "altKey" Json.Decode.bool)
+        (Json.Decode.field "shiftKey" Json.Decode.bool)
+        |> Json.Decode.andThen
+            (\altAndShiftFlags ->
+                case altAndShiftFlags of
+                    ( True, True ) ->
+                        Json.Decode.field "code" Json.Decode.string
+                            |> Json.Decode.map (keyToMsg model)
+
+                    _ ->
+                        Json.Decode.succeed NoOp
+            )
+
+
+keyToMsg : Model -> String -> Msg
+keyToMsg model s =
+    case ( s, model.sessionId ) of
+        ( "s", Just id ) ->
+            RequestSavedPlans
+
+        ( "n", _ ) ->
+            CreatePlan
+
+        _ ->
+            NoOp
 
 
 
