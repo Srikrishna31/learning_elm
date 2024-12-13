@@ -1,22 +1,24 @@
 module Main exposing (main)
 
 import Attr
+import Auth exposing (Msg(..))
 import Browser
 import Browser.Events exposing (onKeyPress)
-import Color exposing (blue, darkGreen, green, grey, lightBlue, lightCharcoal, lightGrey, lightYellow, white)
+import Color exposing (blue, lightCharcoal)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
-import Element.Events exposing (onClick, onMouseEnter, onMouseLeave)
+import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Input as Input
 import Http exposing (Body)
 import Json.Decode
 import Json.Encode
-import PlanParsers.Json as P exposing (..)
+import PlanParsers.Json exposing (..)
 import PlanTree
 import Ports exposing (dumpModel, saveSessionId)
 import Time
+import Utils exposing (httpErrorString)
 
 
 type Page
@@ -34,29 +36,23 @@ type Msg
     | ToggleMenu
     | CreatePlan
     | RequestLogin
-    | ChangePassword String
-    | ChangeUserName String
-    | StartLogin
-    | FinishLogin (Result Http.Error String)
+    | Auth Auth.Msg
     | RequestSavedPlans
     | FinishSavedPlans (Result Http.Error (List SavedPlan))
     | ShowPlan String
     | RequestLogout
     | DumpModel ()
-    | SendHeartBeat Time.Posix
     | NoOp
 
 
 type alias Model =
-    { currPage : Page
+    { auth : Auth.Model
+    , currPage : Page
     , currPlanText : String
     , selectedNode : Maybe Plan
     , isMenuOpen : Bool
-    , userName : String
-    , password : String
-    , lastError : String
-    , sessionId : Maybe String
     , savedPlans : List SavedPlan
+    , lastError : String
     }
 
 
@@ -72,7 +68,8 @@ serverUrl =
 
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { currPage = InputPage
+    ( { auth = Auth.init flags.sessionId
+      , currPage = InputPage
       , currPlanText =
             """
       {                                                           
@@ -151,11 +148,8 @@ init flags =
       """
       , selectedNode = Nothing
       , isMenuOpen = False
-      , userName = ""
-      , password = ""
-      , lastError = ""
-      , sessionId = flags.sessionId
       , savedPlans = []
+      , lastError = ""
       }
     , Cmd.none
     )
@@ -174,7 +168,7 @@ subscriptions : Model -> Sub Msg
 subscriptions model =
     Sub.batch
         [ dumpModel DumpModel
-        , Time.every (100 * 1000) SendHeartBeat
+        , Time.every (100 * 1000) <| Auth << Auth.SendHeartBeat
         , onKeyPress <| keyDecoder model
         ]
 
@@ -198,8 +192,8 @@ keyDecoder model =
 
 keyToMsg : Model -> String -> Msg
 keyToMsg model s =
-    case ( s, model.sessionId ) of
-        ( "s", Just id ) ->
+    case ( s, model.auth.sessionId ) of
+        ( "s", Just _ ) ->
             RequestSavedPlans
 
         ( "n", _ ) ->
@@ -225,7 +219,7 @@ update msg model =
         MouseEnteredPlanNode plan ->
             ( { model | selectedNode = Just plan }, Cmd.none )
 
-        MouseLeftPlanNode commonFields ->
+        MouseLeftPlanNode _ ->
             ( { model | selectedNode = Nothing }, Cmd.none )
 
         ToggleMenu ->
@@ -235,27 +229,10 @@ update msg model =
             ( model, Cmd.none )
 
         RequestLogin ->
-            ( { model | currPage = LoginPage, password = "", userName = "" }, Cmd.none )
-
-        ChangePassword newPassword ->
-            ( { model | password = newPassword }, Cmd.none )
-
-        ChangeUserName newUser ->
-            ( { model | userName = newUser }, Cmd.none )
-
-        StartLogin ->
-            ( model, login model.userName model.password )
-
-        FinishLogin (Ok sessionId) ->
-            ( { model | sessionId = Just sessionId, currPage = InputPage }
-            , saveSessionId <| Just sessionId
-            )
-
-        FinishLogin (Err error) ->
-            ( { model | lastError = httpErrorString error }, Cmd.none )
+            ( { model | currPage = LoginPage }, Cmd.none )
 
         RequestSavedPlans ->
-            ( { model | currPage = SavedPlansPage }, getSavedPlans model.sessionId )
+            ( { model | currPage = SavedPlansPage }, getSavedPlans model.auth.sessionId )
 
         FinishSavedPlans (Ok savedPlans) ->
             ( { model | savedPlans = savedPlans }, Cmd.none )
@@ -272,25 +249,24 @@ update msg model =
         DumpModel () ->
             ( Debug.log "model" model, Cmd.none )
 
-        SendHeartBeat _ ->
-            ( model, sendHeartBeat model.sessionId )
-
         NoOp ->
             ( model, Cmd.none )
 
+        Auth authMsg ->
+            let
+                ( authModel, authCmd ) =
+                    Auth.update serverUrl authMsg model.auth
 
-sendHeartBeat : Maybe String -> Cmd Msg
-sendHeartBeat sessionId =
-    Http.request
-        { method = "POST"
-        , headers =
-            [ Http.header "SessionId" <| Maybe.withDefault "" sessionId ]
-        , url = serverUrl ++ "heartbeat"
-        , body = Http.emptyBody
-        , timeout = Nothing
-        , tracker = Nothing
-        , expect = Http.expectWhatever <| always NoOp
-        }
+                currPage : Page
+                currPage =
+                    case authMsg of
+                        Auth.FinishLogin (Ok _) ->
+                            InputPage
+
+                        _ ->
+                            model.currPage
+            in
+            ( { model | auth = authModel, currPage = currPage }, Cmd.map Auth authCmd )
 
 
 
@@ -315,76 +291,13 @@ getSavedPlans sessionId =
 
 
 
-{-
-   Commands
-   Commands provide a way to carry out asynchronous operations with side effects. When you issue a command by returning it
-   from the update function, it causes the Elm runtime to kick off the corresponding operation and subsequently return the
-   result back to your program via a message.
-
-   As normal functions in Elm are pure, there's no way to express something like making a call to a server or generating a
-   random number in a regular function, because every call to such a function might return a different value. Instead, anything
-   that has side effects is done via commands.
-
-   The update function returns a command in a tuple with the changed model.
-
-   Server requests are made by sending particular commands to the Elm runtime. In order to make requests, we need to use the
-   elm/http package from the Elm core library.
-   Http.post returns a command that will generate a message once the request is complete. The http package provides functions
-   such as get, post and a more general-purpose request to generate commands that trigger HTTP requests.
-   The expect field in the argument determines how the response will be handled, and is a value of type Expect msg. The http
-   package provides several functions to construct these values: expectString, expectJson, expectBytes and expectWhatever
-   (which ignores the response):
-
-   expectJson: (Result Error a -> msg) -> Decoder a -> Expect msg
--}
-
-
-login : String -> String -> Cmd Msg
-login userName password =
-    let
-        body =
-            Http.jsonBody <|
-                Json.Encode.object
-                    [ ( "userName", Json.Encode.string userName )
-                    , ( "password", Json.Encode.string password )
-                    ]
-
-        responseDecoder =
-            Json.Decode.field "sessionId" Json.Decode.string
-    in
-    Http.post
-        { url = serverUrl ++ "login"
-        , body = body
-        , expect = Http.expectJson FinishLogin responseDecoder
-        }
-
-
-httpErrorString : Http.Error -> String
-httpErrorString err =
-    case err of
-        Http.BadBody message ->
-            "Unable to handle response: " ++ message
-
-        Http.BadUrl url ->
-            "Invalid URL: " ++ url
-
-        Http.Timeout ->
-            "Request Timed out"
-
-        Http.NetworkError ->
-            "Network Error"
-
-        Http.BadStatus statusCode ->
-            "Server error: " ++ String.fromInt statusCode
-
-
-
 -- VIEW
 
 
 view : Model -> Browser.Document Msg
 view model =
     let
+        content : Element Msg
         content =
             case model.currPage of
                 InputPage ->
@@ -450,7 +363,7 @@ menuPanel model =
         items : List (Element Msg)
         items =
             [ el [ pointer, onClick CreatePlan ] <| text "New Plan" ]
-                ++ (case model.sessionId of
+                ++ (case model.auth.sessionId of
                         Just _ ->
                             [ el [ pointer, onClick RequestSavedPlans ] <| text "Saved plans"
                             , el [ pointer, onClick RequestLogout ] <| text "Logout"
@@ -530,20 +443,20 @@ loginPage : Model -> Element Msg
 loginPage model =
     column [ paddingXY 0 20, spacingXY 0 10, width (px 300), centerX ]
         [ Input.username Attr.input
-            { onChange = ChangeUserName
-            , text = model.userName
+            { onChange = Auth << Auth.ChangeUserName
+            , text = model.auth.userName
             , label = Input.labelAbove [] <| text "User Name:"
             , placeholder = Nothing
             }
         , Input.currentPassword Attr.input
-            { onChange = ChangePassword
-            , text = model.password
+            { onChange = Auth << Auth.ChangePassword
+            , text = model.auth.password
             , label = Input.labelAbove [] <| text "Password:"
             , placeholder = Nothing
             , show = False
             }
         , Input.button Attr.greenButton
-            { onPress = Just StartLogin
+            { onPress = Just <| Auth Auth.StartLogin
             , label = el [ centerX ] <| text "Login"
             }
         , el Attr.error <| text model.lastError
