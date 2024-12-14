@@ -14,10 +14,12 @@ import Element.Input as Input
 import Http exposing (Body)
 import Json.Decode
 import Json.Encode
+import Pages.Registration as Registration
 import PlanParsers.Json exposing (..)
 import PlanTree
 import Ports exposing (dumpModel, saveSessionId)
 import Time
+import Types exposing (AppState, initAppState)
 import Utils exposing (httpErrorString)
 
 
@@ -26,6 +28,7 @@ type Page
     | DisplayPage
     | LoginPage
     | SavedPlansPage
+    | RegistrationPage Registration.Model
 
 
 type Msg
@@ -43,16 +46,15 @@ type Msg
     | RequestLogout
     | DumpModel ()
     | NoOp
+    | Register Registration.Msg
+    | RequestRegistration
 
 
 type alias Model =
-    { auth : Auth.Model
+    { appState : AppState
     , currPage : Page
-    , currPlanText : String
     , selectedNode : Maybe Plan
-    , isMenuOpen : Bool
     , savedPlans : List SavedPlan
-    , lastError : String
     }
 
 
@@ -61,95 +63,12 @@ type alias Flags =
     }
 
 
-serverUrl : String
-serverUrl =
-    ""
-
-
 init : Flags -> ( Model, Cmd Msg )
 init flags =
-    ( { auth = Auth.init flags.sessionId
+    ( { appState = initAppState flags.sessionId
       , currPage = InputPage
-      , currPlanText =
-            """
-      {                                                           
-        "Plan": {                                                 
-          "Node Type": "Hash Join",                               
-          "Parallel Aware": false,                                
-          "Join Type": "Inner",                                   
-          "Startup Cost": 1.04,                                   
-          "Total Cost": 2.11,                                     
-          "Plan Rows": 2,                                         
-          "Plan Width": 176,                                      
-          "Actual Startup Time": 0.061,                           
-          "Actual Total Time": 0.066,                             
-          "Actual Rows": 8,                                       
-          "Actual Loops": 1,                                      
-          "Hash Cond": "(zones.project_id = projects.project_id)",
-          "Plans": [                                              
-              {                                                     
-              "Node Type": "Seq Scan",                            
-              "Parent Relationship": "Outer",                     
-              "Parallel Aware": false,                            
-              "Relation Name": "zones",                           
-              "Alias": "zones",                                   
-              "Startup Cost": 0.00,                               
-              "Total Cost": 1.03,                                 
-              "Plan Rows": 3,                                     
-              "Plan Width": 112,                                  
-              "Actual Startup Time": 0.013,                       
-              "Actual Total Time": 0.015,                         
-              "Actual Rows": 4,                                   
-              "Actual Loops": 1                                   
-              },                                                    
-              {                                                     
-              "Node Type": "Hash",                                
-              "Parent Relationship": "Inner",                     
-              "Parallel Aware": false,                            
-              "Startup Cost": 1.02,                               
-              "Total Cost": 1.02,                                 
-              "Plan Rows": 2,                                     
-              "Plan Width": 72,                                   
-              "Actual Startup Time": 0.013,                       
-              "Actual Total Time": 0.013,                         
-              "Actual Rows": 4,                                   
-              "Actual Loops": 1,                                  
-              "Hash Buckets": 1024,                               
-              "Original Hash Buckets": 1024,                      
-              "Hash Batches": 1,                                  
-              "Original Hash Batches": 1,                         
-              "Peak Memory Usage": 9,                             
-              "Plans": [                                          
-                  {                                                 
-                  "Node Type": "Seq Scan",                        
-                  "Parent Relationship": "Outer",                 
-                  "Parallel Aware": false,                        
-                  "Relation Name": "projects",                    
-                  "Alias": "projects",                            
-                  "Startup Cost": 0.00,                           
-                  "Total Cost": 1.02,                             
-                  "Plan Rows": 2,                                 
-                  "Plan Width": 72,                               
-                  "Actual Startup Time": 0.004,                   
-                  "Actual Total Time": 0.005,                     
-                  "Actual Rows": 4,                               
-                  "Actual Loops": 1                               
-                  }                                                 
-              ]                                                   
-              }                                                     
-          ]                                                       
-        },                                                        
-        "Planning Time": 0.174,                                   
-        "Triggers": [                                             
-        ],                                                        
-        "Execution Time": 0.169                                   
-      }                                                           
-
-      """
       , selectedNode = Nothing
-      , isMenuOpen = False
       , savedPlans = []
-      , lastError = ""
       }
     , Cmd.none
     )
@@ -192,7 +111,7 @@ keyDecoder model =
 
 keyToMsg : Model -> String -> Msg
 keyToMsg model s =
-    case ( s, model.auth.sessionId ) of
+    case ( s, model.appState.auth.sessionId ) of
         ( "s", Just _ ) ->
             RequestSavedPlans
 
@@ -208,54 +127,55 @@ keyToMsg model s =
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ChangePlanText s ->
-            ( { model | currPlanText = s }, Cmd.none )
+update msg ({ appState } as model) =
+    case ( msg, model.currPage ) of
+        ( ChangePlanText s, InputPage ) ->
+            ( { model | appState = { appState | currPlanText = s } }, Cmd.none )
 
-        SubmitPlan ->
+        ( SubmitPlan, InputPage ) ->
             ( { model | currPage = DisplayPage }, Cmd.none )
 
-        MouseEnteredPlanNode plan ->
+        ( MouseEnteredPlanNode plan, _ ) ->
             ( { model | selectedNode = Just plan }, Cmd.none )
 
-        MouseLeftPlanNode _ ->
+        ( MouseLeftPlanNode _, _ ) ->
             ( { model | selectedNode = Nothing }, Cmd.none )
 
-        ToggleMenu ->
-            ( { model | isMenuOpen = not model.isMenuOpen }, Cmd.none )
+        ( ToggleMenu, _ ) ->
+            ( { model | appState = { appState | isMenuOpen = not appState.isMenuOpen } }, Cmd.none )
 
-        CreatePlan ->
+        ( CreatePlan, _ ) ->
             ( model, Cmd.none )
 
-        RequestLogin ->
+        -- Login page can be requested from any page via
+        ( RequestLogin, _ ) ->
             ( { model | currPage = LoginPage }, Cmd.none )
 
-        RequestSavedPlans ->
-            ( { model | currPage = SavedPlansPage }, getSavedPlans model.auth.sessionId )
+        ( RequestSavedPlans, _ ) ->
+            ( { model | currPage = SavedPlansPage }, getSavedPlans model.appState.serverUrl model.appState.auth.sessionId )
 
-        FinishSavedPlans (Ok savedPlans) ->
+        ( FinishSavedPlans (Ok savedPlans), _ ) ->
             ( { model | savedPlans = savedPlans }, Cmd.none )
 
-        FinishSavedPlans (Err error) ->
-            ( { model | lastError = httpErrorString error }, Cmd.none )
+        ( FinishSavedPlans (Err error), _ ) ->
+            ( { model | appState = { appState | lastError = httpErrorString error } }, Cmd.none )
 
-        ShowPlan planText ->
-            ( { model | currPlanText = planText, currPage = DisplayPage }, Cmd.none )
+        ( ShowPlan planText, _ ) ->
+            ( { model | appState = { appState | currPlanText = planText }, currPage = DisplayPage }, Cmd.none )
 
-        RequestLogout ->
+        ( RequestLogout, _ ) ->
             init { sessionId = Nothing }
 
-        DumpModel () ->
+        ( DumpModel (), _ ) ->
             ( Debug.log "model" model, Cmd.none )
 
-        NoOp ->
+        ( NoOp, _ ) ->
             ( model, Cmd.none )
 
-        Auth authMsg ->
+        ( Auth authMsg, _ ) ->
             let
                 ( authModel, authCmd ) =
-                    Auth.update serverUrl authMsg model.auth
+                    Auth.update appState.serverUrl authMsg model.appState.auth
 
                 currPage : Page
                 currPage =
@@ -266,7 +186,28 @@ update msg model =
                         _ ->
                             model.currPage
             in
-            ( { model | auth = authModel, currPage = currPage }, Cmd.map Auth authCmd )
+            ( { model | appState = { appState | auth = authModel }, currPage = currPage }, Cmd.map Auth authCmd )
+
+        ( Register regMsg, RegistrationPage pageModel ) ->
+            let
+                ( newAppState, regModel, regCmd ) =
+                    Registration.update regMsg model.appState pageModel
+
+                newCurrPage =
+                    case regMsg of
+                        Registration.FinishRegistration (Ok _) ->
+                            InputPage
+
+                        _ ->
+                            RegistrationPage regModel
+            in
+            ( { model | appState = newAppState, currPage = newCurrPage }, Cmd.map Register regCmd )
+
+        ( RequestRegistration, _ ) ->
+            ( { model | currPage = RegistrationPage Registration.init }, Cmd.none )
+
+        ( _, _ ) ->
+            ( model, Cmd.none )
 
 
 
@@ -276,8 +217,8 @@ update msg model =
 -}
 
 
-getSavedPlans : Maybe String -> Cmd Msg
-getSavedPlans sessionId =
+getSavedPlans : String -> Maybe String -> Cmd Msg
+getSavedPlans serverUrl sessionId =
     Http.request
         { method = "GET"
         , headers =
@@ -311,6 +252,10 @@ view model =
 
                 SavedPlansPage ->
                     savedPlansPage model
+
+                RegistrationPage pageModel ->
+                    Registration.page pageModel
+                        |> Element.map Register
     in
     { title = "VisExp"
     , body =
@@ -338,7 +283,7 @@ inputPage model =
             , padding 3
             ]
             { onChange = ChangePlanText
-            , text = model.currPlanText
+            , text = model.appState.currPlanText
             , placeholder = Nothing
             , label =
                 Input.labelAbove [] <|
@@ -363,7 +308,7 @@ menuPanel model =
         items : List (Element Msg)
         items =
             [ el [ pointer, onClick CreatePlan ] <| text "New Plan" ]
-                ++ (case model.auth.sessionId of
+                ++ (case model.appState.auth.sessionId of
                         Just _ ->
                             [ el [ pointer, onClick RequestSavedPlans ] <| text "Saved plans"
                             , el [ pointer, onClick RequestLogout ] <| text "Logout"
@@ -399,7 +344,7 @@ menuPanel model =
         overlay =
             el [ width <| fillPortion 4, height fill, onClick ToggleMenu ] none
     in
-    if model.isMenuOpen then
+    if model.appState.isMenuOpen then
         row [ width fill, height fill ] [ overlay, panel ]
 
     else
@@ -415,7 +360,7 @@ displayPage model =
             , onMouseLeftNode = MouseLeftPlanNode
             }
     in
-    case Json.Decode.decodeString decodePlanJson model.currPlanText of
+    case Json.Decode.decodeString decodePlanJson model.appState.currPlanText of
         Ok planJson ->
             PlanTree.render planTreeConfig planJson model.selectedNode
 
@@ -444,13 +389,13 @@ loginPage model =
     column [ paddingXY 0 20, spacingXY 0 10, width (px 300), centerX ]
         [ Input.username Attr.input
             { onChange = Auth << Auth.ChangeUserName
-            , text = model.auth.userName
+            , text = model.appState.auth.userName
             , label = Input.labelAbove [] <| text "User Name:"
             , placeholder = Nothing
             }
         , Input.currentPassword Attr.input
             { onChange = Auth << Auth.ChangePassword
-            , text = model.auth.password
+            , text = model.appState.auth.password
             , label = Input.labelAbove [] <| text "Password:"
             , placeholder = Nothing
             , show = False
@@ -459,7 +404,7 @@ loginPage model =
             { onPress = Just <| Auth Auth.StartLogin
             , label = el [ centerX ] <| text "Login"
             }
-        , el Attr.error <| text model.lastError
+        , el Attr.error <| text model.appState.lastError
         ]
 
 
