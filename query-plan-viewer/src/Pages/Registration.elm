@@ -8,6 +8,7 @@ import Http
 import Json.Decode
 import Json.Encode
 import Ports exposing (saveSessionId)
+import Validate exposing (..)
 
 
 type PageMsg
@@ -78,7 +79,15 @@ update msg { serverUrl } model =
             ( { model | platform = Just platform }, Cmd.none, DoNothing )
 
         StartRegistration ->
-            ( model, register serverUrl model.userName model.password, DoNothing )
+            case validate validator model of
+                Ok validModel ->
+                    ( fromValid validModel
+                    , register serverUrl model.userName model.password
+                    , DoNothing
+                    )
+
+                Err errors ->
+                    ( { model | errors = errors }, Cmd.none, DoNothing )
 
         ToggleAcceptTerms val ->
             ( { model | hasAcceptedTerms = val }, Cmd.none, DoNothing )
@@ -156,3 +165,29 @@ page model =
             }
         ]
             ++ List.map (text >> el Attr.error) model.errors
+
+
+validator : Validator String Model
+validator =
+    Validate.all
+        [ Validate.ifInvalidEmail .userName
+            (\_ -> "Please enter a valid email address.")
+        , Validate.ifBlank .password "Password can't be blank."
+        , Validate.fromErrors
+            (\model ->
+                if model.password == model.repeatPassword then
+                    []
+
+                else
+                    [ "Passwords must match." ]
+            )
+        , Validate.fromErrors
+            (\model ->
+                if model.platform /= Nothing then
+                    []
+
+                else
+                    [ "Pleas select a platform." ]
+            )
+        , Validate.ifFalse .hasAcceptedTerms "Please accept the terms."
+        ]
