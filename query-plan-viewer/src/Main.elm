@@ -190,18 +190,29 @@ update msg ({ appState } as model) =
 
         ( Register regMsg, RegistrationPage pageModel ) ->
             let
-                ( newAppState, regModel, regCmd ) =
+                ( regModel, regCmd, pageMsg ) =
                     Registration.update regMsg model.appState pageModel
 
-                newCurrPage =
-                    case regMsg of
-                        Registration.FinishRegistration (Ok _) ->
-                            InputPage
+                newModel =
+                    case pageMsg of
+                        Registration.FinishSuccessfully id ->
+                            let
+                                auth =
+                                    appState.auth
+                            in
+                            { appState =
+                                { appState
+                                    | auth = { auth | sessionId = Just id }
+                                }
+                            , currPage = InputPage
+                            , selectedNode = model.selectedNode
+                            , savedPlans = model.savedPlans
+                            }
 
-                        _ ->
-                            RegistrationPage regModel
+                        Registration.DoNothing ->
+                            { model | currPage = RegistrationPage regModel }
             in
-            ( { model | appState = newAppState, currPage = newCurrPage }, Cmd.map Register regCmd )
+            ( newModel, Cmd.map Register regCmd )
 
         ( RequestRegistration, _ ) ->
             ( { model | currPage = RegistrationPage Registration.init }, Cmd.none )

@@ -1,4 +1,4 @@
-module Pages.Registration exposing (Model, Msg(..), Platform(..), init, page, update)
+module Pages.Registration exposing (Model, Msg(..), PageMsg(..), Platform(..), init, page, update)
 
 import Attr
 import Debug exposing (toString)
@@ -8,7 +8,11 @@ import Http
 import Json.Decode
 import Json.Encode
 import Ports exposing (saveSessionId)
-import Types exposing (AppState)
+
+
+type PageMsg
+    = DoNothing
+    | FinishSuccessfully String
 
 
 type Msg
@@ -49,39 +53,35 @@ init =
     }
 
 
-type alias AppStateSubset a =
-    { a | serverUrl : String, sessionId : Maybe String }
-
-
-update : Msg -> AppState -> Model -> ( AppState, Model, Cmd Msg )
-update msg ({ auth } as appState) model =
+update : Msg -> { a | serverUrl : String } -> Model -> ( Model, Cmd Msg, PageMsg )
+update msg { serverUrl } model =
     case msg of
         ChangePassword p ->
-            ( appState, { model | password = p }, Cmd.none )
+            ( { model | password = p }, Cmd.none, DoNothing )
 
         ChangeRepeatPassword p ->
-            ( appState, { model | repeatPassword = p }, Cmd.none )
+            ( { model | repeatPassword = p }, Cmd.none, DoNothing )
 
         ChangeUserName u ->
-            ( appState, { model | userName = u }, Cmd.none )
+            ( { model | userName = u }, Cmd.none, DoNothing )
 
         FinishRegistration (Ok sessionId) ->
-            ( { appState | auth = { auth | sessionId = Just sessionId } }
-            , model
+            ( model
             , saveSessionId <| Just sessionId
+            , FinishSuccessfully sessionId
             )
 
         FinishRegistration (Err err) ->
-            ( appState, { model | errors = [ toString err ] }, Cmd.none )
+            ( { model | errors = [ toString err ] }, Cmd.none, DoNothing )
 
         SelectPlatform platform ->
-            ( appState, { model | platform = Just platform }, Cmd.none )
+            ( { model | platform = Just platform }, Cmd.none, DoNothing )
 
         StartRegistration ->
-            ( appState, model, register appState.serverUrl model.userName model.password )
+            ( model, register serverUrl model.userName model.password, DoNothing )
 
         ToggleAcceptTerms val ->
-            ( appState, { model | hasAcceptedTerms = val }, Cmd.none )
+            ( { model | hasAcceptedTerms = val }, Cmd.none, DoNothing )
 
 
 register : String -> String -> String -> Cmd Msg
