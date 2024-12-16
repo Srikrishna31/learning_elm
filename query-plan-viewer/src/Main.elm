@@ -14,6 +14,7 @@ import Element.Input as Input
 import Http exposing (Body)
 import Json.Decode
 import Json.Encode
+import Pages.Display as Display
 import Pages.Registration as Registration
 import PlanParsers.Json exposing (..)
 import PlanTree
@@ -25,7 +26,7 @@ import Utils exposing (httpErrorString)
 
 type Page
     = InputPage
-    | DisplayPage
+    | DisplayPage Display.Model
     | LoginPage
     | SavedPlansPage
     | RegistrationPage Registration.Model
@@ -34,8 +35,6 @@ type Page
 type Msg
     = SubmitPlan
     | ChangePlanText String
-    | MouseEnteredPlanNode Plan
-    | MouseLeftPlanNode Plan
     | ToggleMenu
     | CreatePlan
     | RequestLogin
@@ -48,6 +47,7 @@ type Msg
     | NoOp
     | Register Registration.Msg
     | RequestRegistration
+    | DisplayMsg Display.Msg
 
 
 type alias Model =
@@ -133,13 +133,14 @@ update msg ({ appState } as model) =
             ( { model | appState = { appState | currPlanText = s } }, Cmd.none )
 
         ( SubmitPlan, InputPage ) ->
-            ( { model | currPage = DisplayPage }, Cmd.none )
+            ( { model | currPage = DisplayPage Display.init }, Cmd.none )
 
-        ( MouseEnteredPlanNode plan, _ ) ->
-            ( { model | selectedNode = Just plan }, Cmd.none )
-
-        ( MouseLeftPlanNode _, _ ) ->
-            ( { model | selectedNode = Nothing }, Cmd.none )
+        ( DisplayMsg dispMsg, DisplayPage pageModel ) ->
+            let
+                newPageModel =
+                    Display.update dispMsg pageModel
+            in
+            ( { model | currPage = DisplayPage newPageModel }, Cmd.none )
 
         ( ToggleMenu, _ ) ->
             ( { model | appState = { appState | isMenuOpen = not appState.isMenuOpen } }, Cmd.none )
@@ -160,9 +161,9 @@ update msg ({ appState } as model) =
         ( FinishSavedPlans (Err error), _ ) ->
             ( { model | appState = { appState | lastError = httpErrorString error } }, Cmd.none )
 
-        ( ShowPlan planText, _ ) ->
-            ( { model | appState = { appState | currPlanText = planText }, currPage = DisplayPage }, Cmd.none )
-
+        --( ShowPlan planText, _ ) ->
+        --    ( { model | appState = { appState | currPlanText = planText }, currPage = DisplayPage }, Cmd.none )
+        --
         ( RequestLogout, _ ) ->
             init { sessionId = Nothing }
 
@@ -255,8 +256,9 @@ view model =
                 InputPage ->
                     inputPage model
 
-                DisplayPage ->
-                    displayPage model
+                DisplayPage pageModel ->
+                    Display.page model.appState pageModel
+                        |> Element.map DisplayMsg
 
                 LoginPage ->
                     loginPage model
@@ -360,23 +362,6 @@ menuPanel model =
 
     else
         none
-
-
-displayPage : Model -> Element Msg
-displayPage model =
-    let
-        planTreeConfig : PlanTree.Config Msg
-        planTreeConfig =
-            { onMouseEnteredNode = MouseEnteredPlanNode
-            , onMouseLeftNode = MouseLeftPlanNode
-            }
-    in
-    case Json.Decode.decodeString decodePlanJson model.appState.currPlanText of
-        Ok planJson ->
-            PlanTree.render planTreeConfig planJson model.selectedNode
-
-        Err err ->
-            el [] <| text <| Json.Decode.errorToString err
 
 
 navBar : Element Msg
