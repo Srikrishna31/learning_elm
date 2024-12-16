@@ -11,24 +11,21 @@ import Element.Border as Border
 import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Input as Input
-import Http exposing (Body)
 import Json.Decode
-import Json.Encode
 import Pages.Display as Display
 import Pages.Registration as Registration
+import Pages.SavedPlans as SavedPlans
 import PlanParsers.Json exposing (..)
-import PlanTree
-import Ports exposing (dumpModel, saveSessionId)
+import Ports exposing (dumpModel)
 import Time
 import Types exposing (AppState, initAppState)
-import Utils exposing (httpErrorString)
 
 
 type Page
     = InputPage
     | DisplayPage Display.Model
     | LoginPage
-    | SavedPlansPage
+    | SavedPlansPage SavedPlans.Model
     | RegistrationPage Registration.Model
 
 
@@ -40,8 +37,7 @@ type Msg
     | RequestLogin
     | Auth Auth.Msg
     | RequestSavedPlans
-    | FinishSavedPlans (Result Http.Error (List SavedPlan))
-    | ShowPlan String
+    | SavedPlansMsg SavedPlans.Msg
     | RequestLogout
     | DumpModel ()
     | NoOp
@@ -137,6 +133,7 @@ update msg ({ appState } as model) =
 
         ( DisplayMsg dispMsg, DisplayPage pageModel ) ->
             let
+                newPageModel : Display.Model
                 newPageModel =
                     Display.update dispMsg pageModel
             in
@@ -153,17 +150,33 @@ update msg ({ appState } as model) =
             ( { model | currPage = LoginPage }, Cmd.none )
 
         ( RequestSavedPlans, _ ) ->
-            ( { model | currPage = SavedPlansPage }, getSavedPlans model.appState.serverUrl model.appState.auth.sessionId )
+            let
+                ( pageModel, pageCmd ) =
+                    SavedPlans.init appState.serverUrl appState.auth.sessionId
+            in
+            ( { model | currPage = SavedPlansPage pageModel }
+            , Cmd.map SavedPlansMsg pageCmd
+            )
 
-        ( FinishSavedPlans (Ok savedPlans), _ ) ->
-            ( { model | savedPlans = savedPlans }, Cmd.none )
+        ( SavedPlansMsg pageMsg, SavedPlansPage pageModel ) ->
+            let
+                ( newPageModel, outMsg ) =
+                    SavedPlans.update pageMsg pageModel
 
-        ( FinishSavedPlans (Err error), _ ) ->
-            ( { model | appState = { appState | lastError = httpErrorString error } }, Cmd.none )
+                newModel : Model
+                newModel =
+                    case outMsg of
+                        SavedPlans.DisplayPlan planText ->
+                            { model
+                                | appState = { appState | currPlanText = planText }
+                                , currPage = DisplayPage Display.init
+                            }
 
-        --( ShowPlan planText, _ ) ->
-        --    ( { model | appState = { appState | currPlanText = planText }, currPage = DisplayPage }, Cmd.none )
-        --
+                        _ ->
+                            { model | currPage = SavedPlansPage newPageModel }
+            in
+            ( newModel, Cmd.none )
+
         ( RequestLogout, _ ) ->
             init { sessionId = Nothing }
 
@@ -194,6 +207,7 @@ update msg ({ appState } as model) =
                 ( regModel, regCmd, pageMsg ) =
                     Registration.update regMsg model.appState pageModel
 
+                newModel : Model
                 newModel =
                     case pageMsg of
                         Registration.FinishSuccessfully id ->
@@ -223,27 +237,6 @@ update msg ({ appState } as model) =
 
 
 
-{-
-   Even though it's a GET request, we have to use Http.request rather than Http.get because this request requires a custom
-   HTTP header with the session ID. The request function takes a record with various parameters.
--}
-
-
-getSavedPlans : String -> Maybe String -> Cmd Msg
-getSavedPlans serverUrl sessionId =
-    Http.request
-        { method = "GET"
-        , headers =
-            [ Http.header "SessionId" <| Maybe.withDefault "" sessionId ]
-        , url = serverUrl ++ "plans"
-        , body = Http.emptyBody
-        , timeout = Nothing
-        , tracker = Nothing
-        , expect = Http.expectJson FinishSavedPlans decodeSavedPlans
-        }
-
-
-
 -- VIEW
 
 
@@ -254,7 +247,7 @@ view model =
         content =
             case model.currPage of
                 InputPage ->
-                    inputPage model
+                    inputPage model.appState
 
                 DisplayPage pageModel ->
                     Display.page model.appState pageModel
@@ -263,8 +256,8 @@ view model =
                 LoginPage ->
                     loginPage model
 
-                SavedPlansPage ->
-                    savedPlansPage model
+                SavedPlansPage pageModel ->
+                    SavedPlans.page pageModel |> Element.map SavedPlansMsg
 
                 RegistrationPage pageModel ->
                     Registration.page pageModel
@@ -281,8 +274,8 @@ view model =
     }
 
 
-inputPage : Model -> Element Msg
-inputPage model =
+inputPage : AppState -> Element Msg
+inputPage appState =
     column
         [ width (px 800)
         , spacingXY 0 10
@@ -296,7 +289,7 @@ inputPage model =
             , padding 3
             ]
             { onChange = ChangePlanText
-            , text = model.appState.currPlanText
+            , text = appState.currPlanText
             , placeholder = Nothing
             , label =
                 Input.labelAbove [] <|
@@ -328,7 +321,9 @@ menuPanel model =
                             ]
 
                         Nothing ->
-                            [ el [ pointer, onClick RequestLogin ] <| text "Login" ]
+                            [ el [ pointer, onClick RequestLogin ] <| text "Login"
+                            , el [ pointer, onClick RequestRegistration ] <| text "Register"
+                            ]
                    )
 
         panel : Element Msg
@@ -402,61 +397,6 @@ loginPage model =
             }
         , el Attr.error <| text model.appState.lastError
         ]
-
-
-savedPlansPage : Model -> Element Msg
-savedPlansPage model =
-    let
-        annotateVersion name planVersion =
-            { version = planVersion.version
-            , planText = planVersion.planText
-            , createdAt = planVersion.createdAt
-            , name = name
-            }
-
-        annotateVersions savedPlan =
-            List.map (annotateVersion savedPlan.name) savedPlan.versions
-
-        tableAttrs =
-            [ width (px 800)
-            , paddingEach { top = 10, bottom = 50, left = 10, right = 10 }
-            , spacingXY 10 10
-            , centerX
-            ]
-
-        headerAttrs =
-            [ Font.bold
-            , Background.color Color.lightGrey
-            , Border.color Color.darkCharcoal
-            , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-            , centerX
-            ]
-    in
-    table tableAttrs
-        { data = List.concatMap annotateVersions model.savedPlans
-        , columns =
-            [ { header = el headerAttrs <| text "Plan name"
-              , width = fill
-              , view =
-                    \plan ->
-                        el
-                            [ Font.underline
-                            , mouseOver [ Font.color lightCharcoal ]
-                            , onClick <| ShowPlan plan.planText
-                            ]
-                        <|
-                            text plan.name
-              }
-            , { header = el headerAttrs <| text "Creation time"
-              , width = fill
-              , view = .createdAt >> text
-              }
-            , { header = el headerAttrs <| text "Version"
-              , width = fill
-              , view = .version >> String.fromInt >> text
-              }
-            ]
-        }
 
 
 main : Program Flags Model Msg
