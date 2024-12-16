@@ -1,5 +1,6 @@
 module Pages.SavedPlans exposing (Model, Msg(..), PageMsg(..), getSavedPlans, init, page, update)
 
+import Auth exposing (SessionId)
 import Color exposing (..)
 import Element exposing (..)
 import Element.Background as Background
@@ -27,7 +28,7 @@ type alias Model =
     }
 
 
-init : String -> Maybe String -> ( Model, Cmd Msg )
+init : String -> SessionId -> ( Model, Cmd Msg )
 init serverUrl sessionId =
     ( { lastError = "", savedPlans = [] }, getSavedPlans serverUrl sessionId )
 
@@ -39,12 +40,12 @@ init serverUrl sessionId =
 -}
 
 
-getSavedPlans : String -> Maybe String -> Cmd Msg
+getSavedPlans : String -> SessionId -> Cmd Msg
 getSavedPlans serverUrl sessionId =
     Http.request
         { method = "GET"
         , headers =
-            [ Http.header "SessionId" <| Maybe.withDefault "" sessionId ]
+            [ Http.header "SessionId" sessionId ]
         , url = serverUrl ++ "plans"
         , body = Http.emptyBody
         , timeout = Nothing

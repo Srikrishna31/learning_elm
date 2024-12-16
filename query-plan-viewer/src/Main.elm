@@ -36,7 +36,7 @@ type Msg
     | CreatePlan
     | RequestLogin
     | Auth Auth.Msg
-    | RequestSavedPlans
+    | RequestSavedPlans Auth.SessionId
     | SavedPlansMsg SavedPlans.Msg
     | RequestLogout
     | DumpModel ()
@@ -108,8 +108,8 @@ keyDecoder model =
 keyToMsg : Model -> String -> Msg
 keyToMsg model s =
     case ( s, model.appState.auth.sessionId ) of
-        ( "s", Just _ ) ->
-            RequestSavedPlans
+        ( "s", Just sessionId ) ->
+            RequestSavedPlans sessionId
 
         ( "n", _ ) ->
             CreatePlan
@@ -149,10 +149,10 @@ update msg ({ appState } as model) =
         ( RequestLogin, _ ) ->
             ( { model | currPage = LoginPage }, Cmd.none )
 
-        ( RequestSavedPlans, _ ) ->
+        ( RequestSavedPlans sessionId, _ ) ->
             let
                 ( pageModel, pageCmd ) =
-                    SavedPlans.init appState.serverUrl appState.auth.sessionId
+                    SavedPlans.init appState.serverUrl sessionId
             in
             ( { model | currPage = SavedPlansPage pageModel }
             , Cmd.map SavedPlansMsg pageCmd
@@ -315,8 +315,8 @@ menuPanel model =
         items =
             [ el [ pointer, onClick CreatePlan ] <| text "New Plan" ]
                 ++ (case model.appState.auth.sessionId of
-                        Just _ ->
-                            [ el [ pointer, onClick RequestSavedPlans ] <| text "Saved plans"
+                        Just sessionId ->
+                            [ el [ pointer, onClick <| RequestSavedPlans sessionId ] <| text "Saved plans"
                             , el [ pointer, onClick RequestLogout ] <| text "Logout"
                             ]
 

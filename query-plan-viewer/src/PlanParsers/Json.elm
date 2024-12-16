@@ -1,4 +1,14 @@
-module PlanParsers.Json exposing (..)
+{-
+   Opaque Types
+   Opaque types are constructed with the help of module boundaries. They are especially useful when you create packages.
+   The reason is that they give some flexibility to change the implementation details of the package without changing the
+   interface. This is helpful in a situation involving some sort of public API. However, it's often a good idea to use them
+   in non-package code as well, especially when the application gets larger and multiple developers are involved. It's easier
+   to enforce rules via the type system than to rely on documentation.
+-}
+
+
+module PlanParsers.Json exposing (CommonFields, NodeType, Plan(..), PlanJson, Plans(..), ResultNode, SavedPlan, decodePlanJson, decodeSavedPlans)
 
 import Json.Decode as Decode
 import Json.Decode.Pipeline exposing (..)

@@ -1,4 +1,4 @@
-module Auth exposing (Flags, Model, Msg(..), init, update)
+module Auth exposing (Flags, Model, Msg(..), SessionId, init, update)
 
 import Http
 import Json.Decode
@@ -10,6 +10,10 @@ import Utils exposing (httpErrorString)
 
 type alias Flags =
     Maybe String
+
+
+type alias SessionId =
+    String
 
 
 type Msg
@@ -83,7 +87,7 @@ login serverUrl userName password =
         }
 
 
-sendHeartBeat : String -> Maybe String -> Cmd Msg
+sendHeartBeat : String -> Maybe SessionId -> Cmd Msg
 sendHeartBeat serverUrl sessionId =
     Http.request
         { method = "POST"
