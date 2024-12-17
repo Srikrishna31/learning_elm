@@ -9,6 +9,9 @@
     <script src = "/app.js"></script>
 </head>
 <body>
+<script src="js/custom-elements.min.js"></script>
+<script src="js/shadydom.min.js"></script>
+<script src="js/ace-editor.js" type="module"></script>
 <script>
   let app = Elm.Main.init(
       {flags: {sessionId: localStorage.getItem("sessionId")}
@@ -19,6 +22,19 @@
       else
           localStorage.setItem("sessionId", sessionId);
   });
+  editor.getSession().on("change", (event) =>{
+      this.textContext = this.editor.getSession().getValue();
+      element.dispatchEvent(new CustomEvent("change",
+          {bubbles: true, composed: true, detail: event}));
+  });
+  window.customElements.define("ace-editor",
+      class AceEditor extends HTMLElement {
+        getEditorValue() {
+            return this.textContent;
+        }
+      }
+  );
+
 </script>
 </body>
 </html>

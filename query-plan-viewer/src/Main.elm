@@ -11,6 +11,9 @@ import Element.Border as Border
 import Element.Events exposing (onClick)
 import Element.Font as Font
 import Element.Input as Input
+import Html
+import Html.Attributes as HtmlAttr exposing (attribute)
+import Html.Events
 import Json.Decode
 import Pages.Display as Display
 import Pages.Registration as Registration
@@ -276,26 +279,27 @@ view model =
 
 inputPage : AppState -> Element Msg
 inputPage appState =
+    let
+        onChange =
+            Json.Decode.string
+                |> Json.Decode.at [ "target", "editorValue" ]
+                |> Json.Decode.map ChangePlanText
+                |> Html.Events.on "change"
+    in
     column
         [ width (px 800)
         , spacingXY 0 10
         , centerX
         ]
-        [ Input.multiline
-            [ height (px 300)
-            , Border.width 1
-            , Border.rounded 3
-            , Border.color lightCharcoal
-            , padding 3
-            ]
-            { onChange = ChangePlanText
-            , text = appState.currPlanText
-            , placeholder = Nothing
-            , label =
-                Input.labelAbove [] <|
-                    text "Paste the EXPLAIN output in JSON format:"
-            , spellcheck = False
-            }
+        [ text "Paste the EXPLAIN output in JSON format:"
+        , el [ width fill, height fill, htmlAttribute onChange ] <|
+            html <|
+                Html.node "ace-editor"
+                    [ attribute "mode" "ace/mode/json"
+                    , attribute "wrapmode" "true"
+                    , HtmlAttr.style "height" "300px"
+                    ]
+                    []
         , Input.button
             (Attr.greenButton
                 ++ [ width (px 200)
