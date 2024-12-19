@@ -1,6 +1,5 @@
 module Main exposing (main)
 
-import Browser
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -197,4 +196,110 @@ chatPanel channel messages =
         [ header
         , messagePanel
         , footer
+        , textWithAlpha
+        ]
+
+
+
+{-
+   Layout basics
+    * el - the basic building block of layouts with one child element (often text)
+    * text - a text element without wrapping
+    * none - an empty element
+
+   To group elements together, you can use:
+
+       * row - arranges its child elements side by side
+       * column - stacks its child elements vertically
+       * wrappedRow - arranges its child elements side by side but wraps them if they use up too much space(similar to
+         inline-block in CSS).
+
+   Padding and spacing
+       You can specify internal padding for an element, and you can also specify the spacing between its child elements.
+       The padding attribute can be specified in three ways:
+
+       * padding pads the content of an element with a given number of pixels on each side.
+       * paddingXY allows you to specify horizontal and vertical padding separately
+       * paddingEach is for when  you need different paddings on each side.
+
+   For spacing between elements, in most cases you just use spacing but with layouts like wrappedRow and textColumn,
+   you may want to set different horizontal and vertical spacing with spacingXY.
+   There is als the spaceEvenly attribute, which will distribute the children within the parent element with equal spacing
+   between them.
+
+   Sizing
+
+   There are several ways of specifying element dimensions:
+    * px for a fixed number of pixels
+    * fill to fill the available space or share it evenly with other elements set to fill space
+    * fillPortion to fill the specified portion of element
+    * shrink to make the size of the element match the size of its contents.
+
+    Child elements can overflow the parent. Child element's don't expand the dimensions of the parent. Additionally, you
+    can constrain width and height by using maximum and minimum functions.
+
+    Transparency
+    Sometimes, you may need to hide an element without affecting the surrounding layout. In that case, you can use the
+    transparent attribute. A transparent element is supposed to stop receiving input, however as of v1.1.7, due to a bug
+    the element continues to receive input, so you need to disable input handling yourself, eg by setting onPress=Nothing.
+
+    It's also possible to set the opacity of an element using the alpha attribute.
+
+-}
+
+
+transparentButton : Element msg
+transparentButton =
+    Input.button
+        [ transparent True
+        , padding 20
+        , Border.width 2
+        , Border.color <| rgb255 0x50 0x50 0x50
+        ]
+        { onPress = Nothing
+        , label = text "Button"
+        }
+
+
+textWithAlpha : Element msg
+textWithAlpha =
+    column [ width fill ]
+        [ el [ width fill, height <| px 30, Background.color bluish ] <|
+            text "First element"
+        , el [ alpha 0.5, width fill, height <| px 30, Background.color bluish ] <|
+            text "Second element - alpha 0.5"
+        , el [ width fill, height <| px 30, Background.color bluish ] <|
+            text "Third element"
+        ]
+
+
+bluish : Color
+bluish =
+    rgb255 0 125 220
+
+
+exampleLayout =
+    --Center in available space
+    row [ width fill ]
+        [ el [] <| text "no align"
+        , el [ centerX ] <| text "centerX"
+        , el [] <| text "no align"
+        , el [] <| text "no align"
+        ]
+
+
+box : List (Attribute msg) -> Element msg -> Element msg
+box attrs elem =
+    row (attrs ++ [ width fill ]) [ elem ]
+
+
+exampleLayout1 =
+    --Center relative to the parent element
+    row [ width fill ]
+        [ el [ width <| fillPortion 2 ] <| box [] <| text "no align"
+        , el [ width <| fillPortion 1 ] <| box [ centerX ] <| text "centerX"
+        , row [ width <| fillPortion 2 ]
+            [ box [ alignRight ] <| text "alignRight"
+            , box [] <| text "no align"
+            ]
         ]
