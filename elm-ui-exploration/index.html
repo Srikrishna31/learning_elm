@@ -4455,7 +4455,21 @@ var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
 			return 3;
 	}
 };
-var $mdgriffith$elm_ui$Internal$Model$Above = {$: 'Above'};
+var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
+	return {$: 'AlignY', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$Top = {$: 'Top'};
+var $mdgriffith$elm_ui$Element$alignTop = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$Top);
+var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
+	function (a, b, c, d) {
+		return {$: 'Rgba', a: a, b: b, c: c, d: d};
+	});
+var $mdgriffith$elm_ui$Element$rgba255 = F4(
+	function (red, green, blue, a) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, a);
+	});
+var $author$project$Colors$background = A4($mdgriffith$elm_ui$Element$rgba255, 114, 159, 207, 0.4);
+var $mdgriffith$elm_ui$Internal$Model$Behind = {$: 'Behind'};
 var $mdgriffith$elm_ui$Internal$Model$Nearby = F2(
 	function (a, b) {
 		return {$: 'Nearby', a: a, b: b};
@@ -4469,18 +4483,16 @@ var $mdgriffith$elm_ui$Element$createNearby = F2(
 			return A2($mdgriffith$elm_ui$Internal$Model$Nearby, loc, element);
 		}
 	});
-var $mdgriffith$elm_ui$Element$above = function (element) {
-	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$Above, element);
+var $mdgriffith$elm_ui$Element$behindContent = function (element) {
+	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$Behind, element);
 };
-var $mdgriffith$elm_ui$Internal$Model$AlignY = function (a) {
-	return {$: 'AlignY', a: a};
+var $mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
+	return {$: 'AlignX', a: a};
 };
-var $mdgriffith$elm_ui$Internal$Model$Top = {$: 'Top'};
-var $mdgriffith$elm_ui$Element$alignTop = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$Top);
-var $mdgriffith$elm_ui$Internal$Model$Below = {$: 'Below'};
-var $mdgriffith$elm_ui$Element$below = function (element) {
-	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$Below, element);
-};
+var $mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
+var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$CenterX);
+var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
+var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
 var $mdgriffith$elm_ui$Internal$Model$Colored = F3(
 	function (a, b, c) {
 		return {$: 'Colored', a: a, b: b, c: c};
@@ -10227,6 +10239,21 @@ var $mdgriffith$elm_ui$Element$el = F2(
 				_List_fromArray(
 					[child])));
 	});
+var $mdgriffith$elm_ui$Internal$Model$Fill = function (a) {
+	return {$: 'Fill', a: a};
+};
+var $mdgriffith$elm_ui$Element$fill = $mdgriffith$elm_ui$Internal$Model$Fill(1);
+var $mdgriffith$elm_ui$Internal$Model$InFront = {$: 'InFront'};
+var $mdgriffith$elm_ui$Element$inFront = function (element) {
+	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$InFront, element);
+};
+var $mdgriffith$elm_ui$Element$rgb255 = F3(
+	function (red, green, blue) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
+	});
+var $author$project$Colors$lightAquaBlue = A3($mdgriffith$elm_ui$Element$rgb255, 117, 179, 201);
+var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
+var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
 var $mdgriffith$elm_ui$Internal$Model$PaddingStyle = F5(
 	function (a, b, c, d, e) {
 		return {$: 'PaddingStyle', a: a, b: b, c: c, d: d, e: e};
@@ -10245,15 +10272,51 @@ var $mdgriffith$elm_ui$Element$padding = function (x) {
 			f,
 			f));
 };
-var $mdgriffith$elm_ui$Internal$Model$Rgba = F4(
-	function (a, b, c, d) {
-		return {$: 'Rgba', a: a, b: b, c: c, d: d};
+var $mdgriffith$elm_ui$Internal$Model$Describe = function (a) {
+	return {$: 'Describe', a: a};
+};
+var $mdgriffith$elm_ui$Internal$Model$Paragraph = {$: 'Paragraph'};
+var $mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
+	function (a, b, c) {
+		return {$: 'SpacingStyle', a: a, b: b, c: c};
 	});
-var $mdgriffith$elm_ui$Element$rgb255 = F3(
-	function (red, green, blue) {
-		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
+var $mdgriffith$elm_ui$Internal$Flag$spacing = $mdgriffith$elm_ui$Internal$Flag$flag(3);
+var $mdgriffith$elm_ui$Internal$Model$spacingName = F2(
+	function (x, y) {
+		return 'spacing-' + ($elm$core$String$fromInt(x) + ('-' + $elm$core$String$fromInt(y)));
 	});
-var $author$project$Colors$preferredBlue = A3($mdgriffith$elm_ui$Element$rgb255, 114, 159, 207);
+var $mdgriffith$elm_ui$Element$spacing = function (x) {
+	return A2(
+		$mdgriffith$elm_ui$Internal$Model$StyleClass,
+		$mdgriffith$elm_ui$Internal$Flag$spacing,
+		A3(
+			$mdgriffith$elm_ui$Internal$Model$SpacingStyle,
+			A2($mdgriffith$elm_ui$Internal$Model$spacingName, x, x),
+			x,
+			x));
+};
+var $mdgriffith$elm_ui$Element$paragraph = F2(
+	function (attrs, children) {
+		return A4(
+			$mdgriffith$elm_ui$Internal$Model$element,
+			$mdgriffith$elm_ui$Internal$Model$asParagraph,
+			$mdgriffith$elm_ui$Internal$Model$div,
+			A2(
+				$elm$core$List$cons,
+				$mdgriffith$elm_ui$Internal$Model$Describe($mdgriffith$elm_ui$Internal$Model$Paragraph),
+				A2(
+					$elm$core$List$cons,
+					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
+					A2(
+						$elm$core$List$cons,
+						$mdgriffith$elm_ui$Element$spacing(5),
+						attrs))),
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
+	});
+var $mdgriffith$elm_ui$Internal$Model$Px = function (a) {
+	return {$: 'Px', a: a};
+};
+var $mdgriffith$elm_ui$Element$px = $mdgriffith$elm_ui$Internal$Model$Px;
 var $mdgriffith$elm_ui$Internal$Flag$borderRound = $mdgriffith$elm_ui$Internal$Flag$flag(17);
 var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 	return A2(
@@ -10264,6 +10327,13 @@ var $mdgriffith$elm_ui$Element$Border$rounded = function (radius) {
 			'br-' + $elm$core$String$fromInt(radius),
 			'border-radius',
 			$elm$core$String$fromInt(radius) + 'px'));
+};
+var $author$project$Main$sampleText = '\n    The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz \n \n    prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex \n\n    nymphs. Waltz, bad nymph, for quick jigs vex! Fox nymphs grab quick-jived \n\n    waltz. Brick quiz whangs jumpy vex fraught vixens jump; dozy fowl quack. \n\n    Quick wafting zephyrs vex bold Jim; zephyrs blow, vexing daft Jim. Sex- \n\n    charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two \n\n    driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! \n\n    "Now fax quiz Jack!" my brave ghost pled.  \n\n    ';
+var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
+	return {$: 'Text', a: a};
+};
+var $mdgriffith$elm_ui$Element$text = function (content) {
+	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
 var $author$project$Colors$white = A3($mdgriffith$elm_ui$Element$rgb255, 255, 255, 255);
 var $mdgriffith$elm_ui$Internal$Model$BorderWidth = F5(
@@ -10282,30 +10352,50 @@ var $mdgriffith$elm_ui$Element$Border$width = function (v) {
 			v,
 			v));
 };
-var $author$project$Main$box = function (attrs) {
-	return $mdgriffith$elm_ui$Element$el(
-		_Utils_ap(
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Background$color($author$project$Colors$white),
-					$mdgriffith$elm_ui$Element$padding(10),
-					$mdgriffith$elm_ui$Element$Border$rounded(6),
-					$mdgriffith$elm_ui$Element$Border$width(3),
-					$mdgriffith$elm_ui$Element$Border$color($author$project$Colors$preferredBlue)
-				]),
-			attrs));
-};
-var $mdgriffith$elm_ui$Internal$Model$AlignX = function (a) {
-	return {$: 'AlignX', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$CenterX = {$: 'CenterX'};
-var $mdgriffith$elm_ui$Element$centerX = $mdgriffith$elm_ui$Internal$Model$AlignX($mdgriffith$elm_ui$Internal$Model$CenterX);
-var $mdgriffith$elm_ui$Internal$Model$CenterY = {$: 'CenterY'};
-var $mdgriffith$elm_ui$Element$centerY = $mdgriffith$elm_ui$Internal$Model$AlignY($mdgriffith$elm_ui$Internal$Model$CenterY);
-var $mdgriffith$elm_ui$Internal$Model$Fill = function (a) {
-	return {$: 'Fill', a: a};
-};
-var $mdgriffith$elm_ui$Element$fill = $mdgriffith$elm_ui$Internal$Model$Fill(1);
+var $author$project$Main$elementBehindExample = A2(
+	$mdgriffith$elm_ui$Element$el,
+	_List_fromArray(
+		[
+			$mdgriffith$elm_ui$Element$inFront(
+			A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$centerX,
+						$mdgriffith$elm_ui$Element$centerY,
+						$mdgriffith$elm_ui$Element$padding(20),
+						$mdgriffith$elm_ui$Element$Border$width(4),
+						$mdgriffith$elm_ui$Element$Border$color($author$project$Colors$lightAquaBlue),
+						$mdgriffith$elm_ui$Element$Border$rounded(6),
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Colors$white)
+					]),
+				$mdgriffith$elm_ui$Element$text('inFront'))),
+			$mdgriffith$elm_ui$Element$behindContent(
+			A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[
+						$mdgriffith$elm_ui$Element$alignTop,
+						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
+						$mdgriffith$elm_ui$Element$width(
+						$mdgriffith$elm_ui$Element$px(200)),
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Colors$white)
+					]),
+				$mdgriffith$elm_ui$Element$none)),
+			$mdgriffith$elm_ui$Element$centerX,
+			$mdgriffith$elm_ui$Element$centerY,
+			$mdgriffith$elm_ui$Element$Border$width(10),
+			$mdgriffith$elm_ui$Element$Border$color($author$project$Colors$lightAquaBlue),
+			$mdgriffith$elm_ui$Element$Border$rounded(6),
+			$mdgriffith$elm_ui$Element$Background$color($author$project$Colors$background)
+		]),
+	A2(
+		$mdgriffith$elm_ui$Element$paragraph,
+		_List_Nil,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$text($author$project$Main$sampleText)
+			])));
 var $mdgriffith$elm_ui$Internal$Model$Attr = function (a) {
 	return {$: 'Attr', a: a};
 };
@@ -10570,20 +10660,6 @@ var $mdgriffith$elm_ui$Element$layoutWith = F3(
 	});
 var $mdgriffith$elm_ui$Element$layout = $mdgriffith$elm_ui$Element$layoutWith(
 	{options: _List_Nil});
-var $mdgriffith$elm_ui$Internal$Model$OnLeft = {$: 'OnLeft'};
-var $mdgriffith$elm_ui$Element$onLeft = function (element) {
-	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$OnLeft, element);
-};
-var $mdgriffith$elm_ui$Internal$Model$OnRight = {$: 'OnRight'};
-var $mdgriffith$elm_ui$Element$onRight = function (element) {
-	return A2($mdgriffith$elm_ui$Element$createNearby, $mdgriffith$elm_ui$Internal$Model$OnRight, element);
-};
-var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
-	return {$: 'Text', a: a};
-};
-var $mdgriffith$elm_ui$Element$text = function (content) {
-	return $mdgriffith$elm_ui$Internal$Model$Text(content);
-};
 var $author$project$Main$main = A2(
 	$mdgriffith$elm_ui$Element$layout,
 	_List_fromArray(
@@ -10591,44 +10667,7 @@ var $author$project$Main$main = A2(
 			$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
 			$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
 		]),
-	A2(
-		$mdgriffith$elm_ui$Element$el,
-		_List_fromArray(
-			[
-				$mdgriffith$elm_ui$Element$centerX,
-				$mdgriffith$elm_ui$Element$centerY,
-				$mdgriffith$elm_ui$Element$above(
-				A2(
-					$author$project$Main$box,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$centerX]),
-					$mdgriffith$elm_ui$Element$text('above'))),
-				$mdgriffith$elm_ui$Element$below(
-				A2(
-					$author$project$Main$box,
-					_List_Nil,
-					$mdgriffith$elm_ui$Element$text('below'))),
-				$mdgriffith$elm_ui$Element$onRight(
-				A2(
-					$author$project$Main$box,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$alignTop]),
-					$mdgriffith$elm_ui$Element$text('onRight'))),
-				$mdgriffith$elm_ui$Element$onLeft(
-				A2(
-					$author$project$Main$box,
-					_List_fromArray(
-						[$mdgriffith$elm_ui$Element$centerY]),
-					$mdgriffith$elm_ui$Element$text('onLeft')))
-			]),
-		A2(
-			$author$project$Main$box,
-			_List_fromArray(
-				[
-					$mdgriffith$elm_ui$Element$Border$width(10),
-					$mdgriffith$elm_ui$Element$padding(20)
-				]),
-			$mdgriffith$elm_ui$Element$text('Main'))));
+	$author$project$Main$elementBehindExample);
 _Platform_export({'Main':{'init':_VirtualDom_init($author$project$Main$main)(0)(0)}});}(this));
 
   var app = Elm.Main.init({ node: document.getElementById("elm") });

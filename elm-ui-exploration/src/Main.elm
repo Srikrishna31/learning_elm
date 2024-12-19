@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Colors exposing (background, blue, bluish, grey, lightCharcoal, lightGrey, preferredBlue, white)
+import Colors exposing (background, blue, bluish, borderGrey, grey, lightAquaBlue, lightCharcoal, lightGrey, preferredBlue, softGreen, white)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -33,7 +33,7 @@ menu =
             , height <| px 40
             , Border.width 2
             , Border.rounded 6
-            , Border.color <| rgb255 0xC0 0xC0 0xC0
+            , Border.color borderGrey
             ]
             none
         , el [ alignRight ] <| text "Services"
@@ -98,21 +98,36 @@ main =
     layout
         [ width fill, height fill ]
     <|
-        el
-            [ centerX
-            , centerY
-            , above <| box [ centerX ] <| text "above"
-            , below <| box [] <| text "below"
-            , onRight <| box [ alignTop ] <| text "onRight"
-            , onLeft <| box [ centerY ] <| text "onLeft"
+        --fourSideElementsLayout
+        --chatLayout
+        elementBehindExample
+
+
+fourSideElementsLayout : Element msg
+fourSideElementsLayout =
+    el
+        [ centerX
+        , centerY
+        , above <| box [ centerX ] <| text "above"
+        , below <| box [] <| text "below"
+        , onRight <| box [ alignTop ] <| text "onRight"
+        , onLeft <| box [ centerY ] <| text "onLeft"
+        ]
+    <|
+        box
+            [ Border.width 10
+            , padding 20
             ]
         <|
-            box
-                [ Border.width 10
-                , padding 20
-                ]
-            <|
-                text "Main"
+            text "Main"
+
+
+chatLayout : Element msg
+chatLayout =
+    row [ height fill, width fill ]
+        [ channelPanel channelList "elm-ui"
+        , chatPanel "elm-ui" messageList
+        ]
 
 
 
@@ -129,7 +144,7 @@ channelPanel : List String -> String -> Element msg
 channelPanel channels activeChannel =
     let
         activeChannelAttrs =
-            [ Background.color <| rgb255 117 179 201, Font.bold ]
+            [ Background.color lightAquaBlue, Font.bold ]
 
         channelAttrs =
             [ paddingXY 15 5, width fill ]
@@ -163,7 +178,7 @@ chatPanel channel messages =
                 [ width fill
                 , paddingXY 20 5
                 , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
-                , Border.color <| rgb255 200 200 200
+                , Border.color lightGrey
                 ]
                 [ el [] <| text ("#" ++ channel)
                 , Input.button
@@ -171,7 +186,7 @@ chatPanel channel messages =
                     , alignRight
                     , Border.width 1
                     , Border.rounded 3
-                    , Border.color <| rgb255 200 200 200
+                    , Border.color lightGrey
                     ]
                     { onPress = Nothing
                     , label = text "Search"
@@ -202,7 +217,7 @@ chatPanel channel messages =
                         [ padding 5
                         , Border.widthEach { right = 2, left = 0, top = 0, bottom = 0 }
                         , Border.color lightGrey
-                        , mouseOver [ Background.color <| rgb255 86 182 139 ]
+                        , mouseOver [ Background.color softGreen ]
                         ]
                       <|
                         text "+"
@@ -367,7 +382,7 @@ elementBehindExample =
                 , centerY
                 , padding 20
                 , Border.width 4
-                , Border.color blue
+                , Border.color lightAquaBlue
                 , Border.rounded 6
                 , Background.color white
                 ]
@@ -384,7 +399,7 @@ elementBehindExample =
         , centerX
         , centerY
         , Border.width 10
-        , Border.color blue
+        , Border.color lightAquaBlue
         , Border.rounded 6
         , Background.color background
         ]

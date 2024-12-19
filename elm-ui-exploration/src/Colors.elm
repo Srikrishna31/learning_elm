@@ -41,3 +41,18 @@ background =
 preferredBlue : Color
 preferredBlue =
     rgb255 0x72 0x9F 0xCF
+
+
+softGreen : Color
+softGreen =
+    rgb255 86 182 139
+
+
+lightAquaBlue : Color
+lightAquaBlue =
+    rgb255 117 179 201
+
+
+borderGrey : Color
+borderGrey =
+    rgb255 0xC0 0xC0 0xC0
