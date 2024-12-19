@@ -103,7 +103,8 @@ main =
     --fourSideElementsLayout
     --shiftedElements
     --rotatedElements
-    scaledElements
+    --scaledElements
+    debuggingLayout
 
 
 chatLayout : Html msg
@@ -521,3 +522,64 @@ scaledElements =
         [ width <| px 800, padding 50, height fill, scale 0.5 ]
     <|
         rotatedElementsWithoutLayout
+
+
+
+{-
+   Responsive Layouts
+
+   elm-ui provides one helper function to help determine what kind of viewport you're dealing with: classifyDevice. This
+   function takes a record with width and height fields specifying the size of the viewport in pixels, and returns a Device
+   record which tells you the device class (phone, tablet, desktop or "big desktop") and screen orientation (portrait or
+   landscape).
+   Alternatively, you can simply subscribe to window resize events, and write conditional view code directly based on
+   dimensions:
+
+   import Browser.Events exposing (onResize)
+
+   subscriptions : Model -> Sub Msg
+   subscriptions _ =
+       onResize UserResizedWindow
+
+   update: Msg -> Model -> (Model, Cmd Msg)
+   update msg model =
+       case msg of
+           ...
+           UserResizedWindow width height ->
+               ({model | windowSize = {height = height, width = width} }, Cmd.none)
+           ...
+
+   A nuance with responsive layouts is that in order to render the appropriate layout, you need to know the viewport size
+   when the app first loads. To achieve that, you need to pass in dimensions via flags:
+
+   <script>
+   let app = Elm.Main.init({
+        flags: {
+            windowHeight: window.innerHeight,
+            windwoWidth: window.innerWidth
+            }
+         });
+   </script>
+
+
+   Debugging
+
+   Sometimes you'll have an issue with your layout where it's not clear how elements are sized. In those situations, you
+   can use the explain attribute to highlight element borders:
+
+   This attribute makes borders visible on the element it's applied to as well as its immediate children. You have to pass
+   it Debug.todo, which is a trick to make it impmossible to leave explain in release builds.
+-}
+
+
+debuggingLayout : Html msg
+debuggingLayout =
+    layout [ explain Debug.todo, width fill, height fill, inFront menu ] <|
+        el [ centerX, centerY, padding 50 ] <|
+            wrappedRow [ explain Debug.todo, spacing 20 ]
+                [ box [] <| text "About"
+                , box [] <| text "Resume"
+                , box [] <| text "Articles"
+                , box [] <| text "Projects"
+                , box [] <| text "Blog"
+                ]
