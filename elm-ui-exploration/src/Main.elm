@@ -2,6 +2,7 @@ module Main exposing (main)
 
 import Browser
 import Element exposing (..)
+import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html exposing (Html)
@@ -40,14 +41,34 @@ menu =
         ]
 
 
+main : Html msg
 main =
     layout
-        [ width fill, height fill, inFront menu ]
+        [ width fill, height fill ]
     <|
-        el [ centerX, centerY, padding 50 ] <|
-            paragraph
-                [ Font.size 48, Font.center ]
-                [ text "Welcome to"
-                , el [ Font.italic ] <| text "this"
-                , text " page!"
-                ]
+        row [ height fill, width fill ]
+            [ channelPanel
+            , chatPanel
+            ]
+
+
+
+-- The total number of parts that the parent width is divided into is the sum of all fillPortion part counts across
+-- the sibling elements
+
+
+channelPanel : Element msg
+channelPanel =
+    column
+        [ height fill
+        , width <| fillPortion 1
+        , Background.color <| rgb255 92 99 118
+        , Font.color <| rgb255 255 255 255
+        ]
+        [ text "channels" ]
+
+
+chatPanel : Element msg
+chatPanel =
+    column [ height fill, width <| fillPortion 5 ]
+        [ text "chat" ]
