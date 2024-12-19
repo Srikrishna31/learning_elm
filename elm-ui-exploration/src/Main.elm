@@ -7,6 +7,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
+import PageElements
+import Utils exposing (generalLayout, layoutWithPadding, scaledLayoutWithFixedWidth)
 
 
 
@@ -104,14 +106,16 @@ main =
     --shiftedElements
     --rotatedElements
     --scaledElements
-    debuggingLayout
+    --debuggingLayout
+    --PageElements.linkWithImage
+    --PageElements.scaledImage
+    --PageElements.circularBorderImage
+    PageElements.imageTiles
 
 
 chatLayout : Html msg
 chatLayout =
-    layout
-        [ width fill, height fill ]
-    <|
+    generalLayout <|
         row [ height fill, width fill ]
             [ channelPanel channelList "elm-ui"
             , chatPanel "elm-ui" messageList
@@ -324,9 +328,7 @@ textWithAlpha =
 
 exampleLayout : Html msg
 exampleLayout =
-    layout
-        [ width fill, height fill ]
-    <|
+    generalLayout <|
         --Center in available space
         row [ width fill ]
             [ el [] <| text "no align"
@@ -338,9 +340,7 @@ exampleLayout =
 
 exampleLayout1 : Html msg
 exampleLayout1 =
-    layout
-        [ width fill, height fill ]
-    <|
+    generalLayout <|
         --Center relative to the parent element
         row [ width fill ]
             [ el [ width <| fillPortion 2 ] <| box [] <| text "no align"
@@ -368,9 +368,7 @@ exampleLayout1 =
 
 fourSideElementsLayout : Html msg
 fourSideElementsLayout =
-    layout
-        [ width fill, height fill ]
-    <|
+    generalLayout <|
         el
             [ centerX
             , centerY
@@ -402,9 +400,7 @@ box attrs =
 
 elementBehindExample : Html msg
 elementBehindExample =
-    layout
-        [ width fill, height fill ]
-    <|
+    generalLayout <|
         el
             [ inFront <|
                 el
@@ -469,9 +465,7 @@ sampleText =
 
 shiftedElements : Html msg
 shiftedElements =
-    layout
-        [ width fill, padding 50, height fill ]
-    <|
+    layoutWithPadding <|
         column [ width fill ]
             [ el [ width fill, height <| px 30, Background.color transparentBluish ] none
             , el
@@ -518,9 +512,7 @@ rotatedElements =
 
 scaledElements : Html msg
 scaledElements =
-    layout
-        [ width <| px 800, padding 50, height fill, scale 0.5 ]
-    <|
+    scaledLayoutWithFixedWidth <|
         rotatedElementsWithoutLayout
 
 
