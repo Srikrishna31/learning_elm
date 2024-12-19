@@ -1,5 +1,6 @@
 module Main exposing (main)
 
+import Colors exposing (background, blue, bluish, grey, lightCharcoal, lightGrey, preferredBlue, white)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -97,13 +98,29 @@ main =
     layout
         [ width fill, height fill ]
     <|
-        row [ height fill, width fill ]
-            [ channelPanel channelList "elm-ui"
-            , chatPanel "elm-ui" messageList
+        el
+            [ centerX
+            , centerY
+            , above <| box [ centerX ] <| text "above"
+            , below <| box [] <| text "below"
+            , onRight <| box [ alignTop ] <| text "onRight"
+            , onLeft <| box [ centerY ] <| text "onLeft"
             ]
+        <|
+            box
+                [ Border.width 10
+                , padding 20
+                ]
+            <|
+                text "Main"
 
 
 
+--row [ height fill, width fill ]
+--    --[ channelPanel channelList "elm-ui"
+--    --, chatPanel "elm-ui" messageList
+--    [ elementBehindExample
+--    ]
 -- The total number of parts that the parent width is divided into is the sum of all fillPortion part counts across
 -- the sibling elements
 
@@ -131,8 +148,8 @@ channelPanel channels activeChannel =
     column
         [ height fill
         , width <| fillPortion 1
-        , Background.color <| rgb255 92 99 118
-        , Font.color <| rgb255 255 255 255
+        , Background.color lightCharcoal
+        , Font.color white
         ]
     <|
         List.map channelEl channels
@@ -179,17 +196,17 @@ chatPanel channel messages =
                     , width fill
                     , Border.width 2
                     , Border.rounded 4
-                    , Border.color <| rgb255 200 200 200
+                    , Border.color lightGrey
                     ]
                     [ el
                         [ padding 5
                         , Border.widthEach { right = 2, left = 0, top = 0, bottom = 0 }
-                        , Border.color <| rgb255 200 200 200
+                        , Border.color lightGrey
                         , mouseOver [ Background.color <| rgb255 86 182 139 ]
                         ]
                       <|
                         text "+"
-                    , el [ Background.color <| rgb255 255 255 255 ] none
+                    , el [ Background.color white ] none
                     ]
     in
     column [ height fill, width <| fillPortion 5 ]
@@ -254,7 +271,7 @@ transparentButton =
         [ transparent True
         , padding 20
         , Border.width 2
-        , Border.color <| rgb255 0x50 0x50 0x50
+        , Border.color grey
         ]
         { onPress = Nothing
         , label = text "Button"
@@ -273,9 +290,31 @@ textWithAlpha =
         ]
 
 
-bluish : Color
-bluish =
-    rgb255 0 125 220
+
+{-
+   Alignment
+
+   For horizontal alignment, we have:
+
+   * alignLeft
+   * centerX
+   * alignRight
+
+   For vertical alignment, we have:
+
+   * alignTop
+   * centerY
+   * alignBottom
+
+   An element can have both horizontal and vertical alignment. An element with an alignment towards one of the sides of
+   the parent (eg. alignRight) will push other elements which are closer to that boundary.
+   Centering an element horizontally or vertically means centering it in the available space rather than in the parent
+   container.
+
+   Centering relative to the parent element requires an extra level of nesting. First you have to break up the elements
+   into groups which are sized symmetrically around the central element. Then, you can align the elements inside those
+   groups as appropriate, with centerX applied to the element inside the central container.
+-}
 
 
 exampleLayout =
@@ -289,8 +328,15 @@ exampleLayout =
 
 
 box : List (Attribute msg) -> Element msg -> Element msg
-box attrs elem =
-    row (attrs ++ [ width fill ]) [ elem ]
+box attrs =
+    el <|
+        [ Background.color white
+        , padding 10
+        , Border.rounded 6
+        , Border.width 3
+        , Border.color preferredBlue
+        ]
+            ++ attrs
 
 
 exampleLayout1 =
@@ -303,3 +349,66 @@ exampleLayout1 =
             , box [] <| text "no align"
             ]
         ]
+
+
+
+{-
+   Placing elements near, above or below other elements
+
+
+-}
+
+
+elementBehindExample =
+    el
+        [ inFront <|
+            el
+                [ centerX
+                , centerY
+                , padding 20
+                , Border.width 4
+                , Border.color blue
+                , Border.rounded 6
+                , Background.color white
+                ]
+            <|
+                text "inFront"
+        , behindContent <|
+            el
+                [ alignTop
+                , height fill
+                , width <| px 200
+                , Background.color white
+                ]
+                none
+        , centerX
+        , centerY
+        , Border.width 10
+        , Border.color blue
+        , Border.rounded 6
+        , Background.color background
+        ]
+    <|
+        paragraph [] [ text sampleText ]
+
+
+sampleText : String
+sampleText =
+    """
+    The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz 
+ 
+    prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex 
+
+    nymphs. Waltz, bad nymph, for quick jigs vex! Fox nymphs grab quick-jived 
+
+    waltz. Brick quiz whangs jumpy vex fraught vixens jump; dozy fowl quack. 
+
+    Quick wafting zephyrs vex bold Jim; zephyrs blow, vexing daft Jim. Sex- 
+
+    charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two 
+
+    driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! 
+
+    "Now fax quiz Jack!" my brave ghost pled.  
+
+    """
