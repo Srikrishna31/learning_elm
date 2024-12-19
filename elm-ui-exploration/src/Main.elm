@@ -1,6 +1,6 @@
 module Main exposing (main)
 
-import Colors exposing (background, blue, bluish, borderGrey, grey, lightAquaBlue, lightCharcoal, lightGrey, preferredBlue, softGreen, white)
+import Colors exposing (background, blue, bluish, borderGrey, grey, lightAquaBlue, lightCharcoal, lightGrey, preferredBlue, softGreen, transparentBluish, white)
 import Element exposing (..)
 import Element.Background as Background
 import Element.Border as Border
@@ -101,7 +101,9 @@ main =
     --exampleLayout
     --exampleLayout
     --fourSideElementsLayout
-    shiftedElements
+    --shiftedElements
+    --rotatedElements
+    scaledElements
 
 
 chatLayout : Html msg
@@ -470,15 +472,52 @@ shiftedElements =
         [ width fill, padding 50, height fill ]
     <|
         column [ width fill ]
-            [ el [ width fill, height <| px 30, Background.color bluish ] none
+            [ el [ width fill, height <| px 30, Background.color transparentBluish ] none
             , el
                 [ moveLeft 10
                 , moveUp 20
                 , width fill
                 , height <| px 30
-                , Background.color bluish
+                , Background.color transparentBluish
                 ]
               <|
                 text "moveLeft 10, moveUp 20"
-            , el [ width fill, height <| px 30, Background.color bluish ] <| none
+            , el [ width fill, height <| px 30, Background.color transparentBluish ] <| none
             ]
+
+
+rotatedElementsWithoutLayout : Element msg
+rotatedElementsWithoutLayout =
+    column [ width fill ]
+        [ el [ width fill, height <| px 30, Background.color transparentBluish ] none
+        , el
+            [ rotate -0.2
+            , width fill
+            , height <| px 30
+            , Background.color transparentBluish
+            ]
+          <|
+            text "rotate -0.2"
+        , el [ width fill, height <| px 30, Background.color transparentBluish ] none
+        ]
+
+
+rotatedElements : Html msg
+rotatedElements =
+    layout
+        [ width <| px 800, padding 50, height fill ]
+    <|
+        rotatedElementsWithoutLayout
+
+
+
+-- When scaling up (using values greater than 1), the element may become blurry, so you may be better off using the
+-- larger version of the element as the "original" and scaling that down, rather than going the other way and scaling up.
+
+
+scaledElements : Html msg
+scaledElements =
+    layout
+        [ width <| px 800, padding 50, height fill, scale 0.5 ]
+    <|
+        rotatedElementsWithoutLayout

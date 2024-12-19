@@ -56,3 +56,8 @@ lightAquaBlue =
 borderGrey : Color
 borderGrey =
     rgb255 0xC0 0xC0 0xC0
+
+
+transparentBluish : Color
+transparentBluish =
+    rgba255 0 125 223 0.4
