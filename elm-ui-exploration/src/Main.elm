@@ -95,47 +95,27 @@ channelList =
 
 main : Html msg
 main =
+    --chatLayout
+    --exampleLayout1
+    --elementBehindExample
+    --exampleLayout
+    --exampleLayout
+    --fourSideElementsLayout
+    shiftedElements
+
+
+chatLayout : Html msg
+chatLayout =
     layout
         [ width fill, height fill ]
     <|
-        --fourSideElementsLayout
-        --chatLayout
-        elementBehindExample
-
-
-fourSideElementsLayout : Element msg
-fourSideElementsLayout =
-    el
-        [ centerX
-        , centerY
-        , above <| box [ centerX ] <| text "above"
-        , below <| box [] <| text "below"
-        , onRight <| box [ alignTop ] <| text "onRight"
-        , onLeft <| box [ centerY ] <| text "onLeft"
-        ]
-    <|
-        box
-            [ Border.width 10
-            , padding 20
+        row [ height fill, width fill ]
+            [ channelPanel channelList "elm-ui"
+            , chatPanel "elm-ui" messageList
             ]
-        <|
-            text "Main"
-
-
-chatLayout : Element msg
-chatLayout =
-    row [ height fill, width fill ]
-        [ channelPanel channelList "elm-ui"
-        , chatPanel "elm-ui" messageList
-        ]
 
 
 
---row [ height fill, width fill ]
---    --[ channelPanel channelList "elm-ui"
---    --, chatPanel "elm-ui" messageList
---    [ elementBehindExample
---    ]
 -- The total number of parts that the parent width is divided into is the sum of all fillPortion part counts across
 -- the sibling elements
 
@@ -143,12 +123,15 @@ chatLayout =
 channelPanel : List String -> String -> Element msg
 channelPanel channels activeChannel =
     let
+        activeChannelAttrs : List (Attribute msg)
         activeChannelAttrs =
             [ Background.color lightAquaBlue, Font.bold ]
 
+        channelAttrs : List (Attribute msg)
         channelAttrs =
             [ paddingXY 15 5, width fill ]
 
+        channelEl : String -> Element msg
         channelEl channel =
             el
                 (if channel == activeChannel then
@@ -173,6 +156,7 @@ channelPanel channels activeChannel =
 chatPanel : String -> List Message -> Element msg
 chatPanel channel messages =
     let
+        header : Element msg
         header =
             row
                 [ width fill
@@ -193,6 +177,7 @@ chatPanel channel messages =
                     }
                 ]
 
+        messageEntry : Message -> Element msg
         messageEntry message =
             column [ width fill, spacingXY 0 5 ]
                 [ row [ spacingXY 10 0 ]
@@ -200,10 +185,12 @@ chatPanel channel messages =
                 , paragraph [] [ text message.text ]
                 ]
 
+        messagePanel : Element msg
         messagePanel =
             column [ padding 10, spacingXY 0 20, scrollbarY ] <|
                 List.map messageEntry messages
 
+        footer : Element msg
         footer =
             el [ alignBottom, padding 20, width fill ] <|
                 row
@@ -332,14 +319,70 @@ textWithAlpha =
 -}
 
 
+exampleLayout : Html msg
 exampleLayout =
-    --Center in available space
-    row [ width fill ]
-        [ el [] <| text "no align"
-        , el [ centerX ] <| text "centerX"
-        , el [] <| text "no align"
-        , el [] <| text "no align"
-        ]
+    layout
+        [ width fill, height fill ]
+    <|
+        --Center in available space
+        row [ width fill ]
+            [ el [] <| text "no align"
+            , el [ centerX ] <| text "centerX"
+            , el [] <| text "no align"
+            , el [] <| text "no align"
+            ]
+
+
+exampleLayout1 : Html msg
+exampleLayout1 =
+    layout
+        [ width fill, height fill ]
+    <|
+        --Center relative to the parent element
+        row [ width fill ]
+            [ el [ width <| fillPortion 2 ] <| box [] <| text "no align"
+            , el [ width <| fillPortion 1 ] <| box [ centerX ] <| text "centerX"
+            , row [ width <| fillPortion 2 ]
+                [ box [ alignRight ] <| text "alignRight"
+                , box [] <| text "no align"
+                ]
+            ]
+
+
+
+{-
+   Placing elements near, above or below other elements
+
+   Adjacent placement is achieved by way of converting elements into attributes. Elements can additionally be positioned
+   on any of the four sides of an element.
+   As with elements placed above or behind content, the adjacent elements can have their own attributes (eg centerX)
+   applied to position them relative to the main element.
+   Attributes with adjacent elements can be nested: for example, an element given to onLeft can have its own onLeft
+   attribute, which can be useful for deeply nested menus or other hierarchically organized elements.
+
+-}
+
+
+fourSideElementsLayout : Html msg
+fourSideElementsLayout =
+    layout
+        [ width fill, height fill ]
+    <|
+        el
+            [ centerX
+            , centerY
+            , above <| box [ centerX ] <| text "above"
+            , below <| box [] <| text "below"
+            , onRight <| box [ alignTop ] <| text "onRight"
+            , onLeft <| box [ centerY ] <| text "onLeft"
+            ]
+        <|
+            box
+                [ Border.width 10
+                , padding 20
+                ]
+            <|
+                text "Main"
 
 
 box : List (Attribute msg) -> Element msg -> Element msg
@@ -354,57 +397,41 @@ box attrs =
             ++ attrs
 
 
-exampleLayout1 =
-    --Center relative to the parent element
-    row [ width fill ]
-        [ el [ width <| fillPortion 2 ] <| box [] <| text "no align"
-        , el [ width <| fillPortion 1 ] <| box [ centerX ] <| text "centerX"
-        , row [ width <| fillPortion 2 ]
-            [ box [ alignRight ] <| text "alignRight"
-            , box [] <| text "no align"
-            ]
-        ]
-
-
-
-{-
-   Placing elements near, above or below other elements
-
-
--}
-
-
+elementBehindExample : Html msg
 elementBehindExample =
-    el
-        [ inFront <|
-            el
-                [ centerX
-                , centerY
-                , padding 20
-                , Border.width 4
-                , Border.color lightAquaBlue
-                , Border.rounded 6
-                , Background.color white
-                ]
-            <|
-                text "inFront"
-        , behindContent <|
-            el
-                [ alignTop
-                , height fill
-                , width <| px 200
-                , Background.color white
-                ]
-                none
-        , centerX
-        , centerY
-        , Border.width 10
-        , Border.color lightAquaBlue
-        , Border.rounded 6
-        , Background.color background
-        ]
+    layout
+        [ width fill, height fill ]
     <|
-        paragraph [] [ text sampleText ]
+        el
+            [ inFront <|
+                el
+                    [ centerX
+                    , centerY
+                    , padding 20
+                    , Border.width 4
+                    , Border.color lightAquaBlue
+                    , Border.rounded 6
+                    , Background.color white
+                    ]
+                <|
+                    text "inFront"
+            , behindContent <|
+                el
+                    [ alignTop
+                    , height fill
+                    , width <| px 200
+                    , Background.color white
+                    ]
+                    none
+            , centerX
+            , centerY
+            , Border.width 10
+            , Border.color lightAquaBlue
+            , Border.rounded 6
+            , Background.color background
+            ]
+        <|
+            paragraph [] [ text sampleText ]
 
 
 sampleText : String
@@ -427,3 +454,31 @@ sampleText =
     "Now fax quiz Jack!" my brave ghost pled.  
 
     """
+
+
+
+{-
+   Translation, rotation and scaling
+
+   The placement of any element can be "adjusted" by applying a horizontal or vertical offset, rotating or scaling it.
+-}
+
+
+shiftedElements : Html msg
+shiftedElements =
+    layout
+        [ width fill, padding 50, height fill ]
+    <|
+        column [ width fill ]
+            [ el [ width fill, height <| px 30, Background.color bluish ] none
+            , el
+                [ moveLeft 10
+                , moveUp 20
+                , width fill
+                , height <| px 30
+                , Background.color bluish
+                ]
+              <|
+                text "moveLeft 10, moveUp 20"
+            , el [ width fill, height <| px 30, Background.color bluish ] <| none
+            ]
