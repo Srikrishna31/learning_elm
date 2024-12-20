@@ -38,6 +38,11 @@ background =
     rgba255 0x72 0x9F 0xCF 0.4
 
 
+lightBackground : Color
+lightBackground =
+    rgba255 0x72 0x9F 0xCF 0.1
+
+
 preferredBlue : Color
 preferredBlue =
     rgb255 0x72 0x9F 0xCF

@@ -1,6 +1,6 @@
 module PageElements exposing (..)
 
-import Colors exposing (black, blue, bluish, borderGrey, checkBoxColor, green, grey, orange, red, white)
+import Colors exposing (black, blue, bluish, borderGrey, checkBoxColor, green, grey, lightBackground, orange, preferredBlue, red, white)
 import Element exposing (Attribute, Color, Element, alpha, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, row, shrink, spacing, table, text, width)
 import Element.Background as Background
 import Element.Border as Border
@@ -329,11 +329,13 @@ imageButton =
 type Msg
     = UserTypedText String
     | UserToggledCheckbox Bool
+    | UserChoseDirection Direction
 
 
 type alias Model =
     { text : String
     , isChecked : Bool
+    , selectedOption : Maybe Direction
     }
 
 
@@ -341,6 +343,7 @@ init : Model
 init =
     { text = ""
     , isChecked = True
+    , selectedOption = Nothing
     }
 
 
@@ -469,3 +472,98 @@ labelledCheckBoxIcon isChecked =
 
             else
                 [ knob, el [ centerX ] <| text "Off" ]
+
+
+
+{-
+   Radio buttons
+   Creating radio selectors is quite similar to checkboxes, except you always have to provide a set of options rather than
+   creating individual radio buttons:
+-}
+
+
+type Direction
+    = Up
+    | Down
+    | Left
+    | Right
+
+
+simpleRadioButton : Html Msg
+simpleRadioButton =
+    layoutWithPadding <|
+        Input.radio
+            [ padding 10
+            , spacing 20
+            ]
+            { onChange = UserChoseDirection
+            , selected = init.selectedOption
+            , label = Input.labelAbove [] <| text "Radio selection"
+            , options =
+                [ Input.option Down <| text "Down"
+                , Input.option Up <| text "Up"
+                , Input.option Left <| text "Left"
+                , Input.option Right <| text "Right"
+                ]
+            }
+
+
+
+{-
+   Radio buttons can be arranged in a row by switching from Input.radio to Input.radioRow which takes the same arguments.
+   You can customize the rendering of radio buttons by using Input.optionWith in place of Input.option:
+   Rather than taking an Element msg value as its second argument, Input.optionWith takes a function OptionState -> Element msg.
+   An OptionState value can be Idle, Focused or Selected, allowing you to display different states of the radio button.
+-}
+
+
+simpleRowRadioButton : Html Msg
+simpleRowRadioButton =
+    layoutWithPadding <|
+        Input.radioRow
+            [ padding 10
+            , spacing 30
+            ]
+            { onChange = UserChoseDirection
+            , selected = init.selectedOption
+            , label = Input.labelAbove [] <| text "Radio selection with a custom look"
+            , options =
+                [ Input.optionWith Down <| radioOption "Down"
+                , Input.optionWith Up <| radioOption "Up"
+                , Input.optionWith Left <| radioOption "Left"
+                , Input.optionWith Right <| radioOption "Right"
+                ]
+            }
+
+
+radioOption : String -> Input.OptionState -> Element msg
+radioOption label state =
+    row [ spacing 10 ]
+        [ el
+            [ width <| px 30
+            , height <| px 30
+            , centerY
+            , padding 4
+            , Border.rounded 6
+            , Border.width 2
+            , Border.color borderGrey
+            ]
+          <|
+            el
+                [ width fill
+                , height fill
+                , Border.rounded 4
+                , Background.color <|
+                    case state of
+                        Input.Idle ->
+                            white
+
+                        Input.Focused ->
+                            lightBackground
+
+                        Input.Selected ->
+                            preferredBlue
+                ]
+                none
+        , text label
+        ]
