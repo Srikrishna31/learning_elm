@@ -111,7 +111,10 @@ main =
     --PageElements.scaledImage
     --PageElements.circularBorderImage
     --PageElements.imageTiles
-    PageElements.colorTable
+    --PageElements.colorTable
+    --PageElements.unstyledButton
+    --PageElements.buttonWithFocusStyle
+    PageElements.imageButton
 
 
 chatLayout : Html msg

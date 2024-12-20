@@ -1,10 +1,11 @@
 module PageElements exposing (..)
 
-import Colors exposing (black, blue, green, orange, red)
-import Element exposing (Attribute, Color, Element, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, height, image, link, newTabLink, none, padding, px, shrink, spacing, table, text, width)
+import Colors exposing (black, blue, bluish, green, grey, orange, red, white)
+import Element exposing (Attribute, Color, Element, alpha, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, shrink, spacing, table, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
 import Html exposing (Html)
 import Utils exposing (generalLayout, layoutWithPadding)
 
@@ -245,4 +246,63 @@ colorTable =
                                 none
                   }
                 ]
+            }
+
+
+
+{-
+   Buttons
+   A button is created using Input.button, which requires supplying an element for the button label, and an optional
+   message handler. elm-ui buttons are implemented with <div> rather than <button>.
+
+   if you set the onPress handler to Nothing, it doesn't disable the button or change it's appearance, it only stops it
+   from generating messages. The general recommendation in elm-ui is to avoid disabled controls as much as possible, as
+   they can be problematic for accessibility. When a button cannot perform it's normal action, it's recommended to still
+   handle clicks but in response explain to the user why the button isn't working.
+-}
+
+
+unstyledButton : Html msg
+unstyledButton =
+    layoutWithPadding <|
+        Input.button [] { onPress = Nothing, label = text "Unstyled button" }
+
+
+buttonWithFocusStyle : Html msg
+buttonWithFocusStyle =
+    layoutWithPadding <|
+        Input.button
+            [ padding 20
+            , Border.width 2
+            , Border.rounded 16
+            , Border.color grey
+            , Border.shadow { offset = ( 4, 4 ), size = 3, blur = 10, color = grey }
+            , Background.color bluish
+            , Font.color white
+            , mouseOver
+                [ Background.color white, Font.color black ]
+            , focused
+                [ Border.shadow { offset = ( 4, 4 ), size = 3, blur = 10, color = blue } ]
+            ]
+            { onPress = Nothing
+            , label = text "Button with focus style"
+            }
+
+
+imageButton : Html msg
+imageButton =
+    layoutWithPadding <|
+        Input.button
+            [ padding 3, Border.rounded 9, Border.width 3 ]
+            { onPress = Nothing
+            , label =
+                el [ clip, Border.rounded 6 ] <|
+                    image
+                        [ width <| px 200
+                        , height <| px 200
+                        , mouseOver [ alpha 0.7 ]
+                        ]
+                        { src = "https://picsum.photos/200/200?grayscale"
+                        , description = "Image button"
+                        }
             }
