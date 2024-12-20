@@ -306,3 +306,47 @@ imageButton =
                         , description = "Image button"
                         }
             }
+
+
+
+{-
+   Labels for inputs
+   elm-ui requires input controls other than button and link to have labels of type label msg. A label can be places in
+   different positions:
+
+       * labelLeft
+       * labelRight
+       * labelAbove
+       * labelBelow
+
+   A label function takes a list of attributes and an element. It's also possible to hide a label using labelHidden instead
+   of the functions above. labelHidden takes a String in order to make the label text accessible to screen readers.
+   In general, it's recommended to provide a visible label unless the purpose of the input is very clear from the context
+   or other clues.
+-}
+
+
+type Msg
+    = UserTypedText String
+
+
+type alias Model =
+    { text : String
+    }
+
+
+init : Model
+init =
+    { text = ""
+    }
+
+
+textInputLabel : Html Msg
+textInputLabel =
+    layoutWithPadding <|
+        Input.text []
+            { onChange = UserTypedText
+            , text = init.text
+            , placeholder = Just <| Input.placeholder [] <| text "Type here"
+            , label = Input.labelLeft [ centerY ] <| text "Text input"
+            }

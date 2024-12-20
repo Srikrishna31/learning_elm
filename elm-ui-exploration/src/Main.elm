@@ -95,7 +95,11 @@ channelList =
     ]
 
 
-main : Html msg
+type Msg
+    = PageElementMsg PageElements.Msg
+
+
+main : Html Msg
 main =
     --chatLayout
     --exampleLayout1
@@ -114,7 +118,8 @@ main =
     --PageElements.colorTable
     --PageElements.unstyledButton
     --PageElements.buttonWithFocusStyle
-    PageElements.imageButton
+    --PageElements.imageButton
+    Html.map PageElementMsg PageElements.textInputLabel
 
 
 chatLayout : Html msg
