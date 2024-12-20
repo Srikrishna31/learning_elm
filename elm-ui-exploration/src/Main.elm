@@ -124,7 +124,11 @@ main =
     --Html.map PageElementMsg PageElements.yesNoCheckbox
     --Html.map PageElementMsg PageElements.labelledCheckBox
     --Html.map PageElementMsg PageElements.simpleRadioButton
-    Html.map PageElementMsg PageElements.simpleRowRadioButton
+    --Html.map PageElementMsg PageElements.simpleRowRadioButton
+    --Html.map PageElementMsg PageElements.singleLineInputText
+    --Html.map PageElementMsg PageElements.simpleMultilineTextInput
+    --Html.map PageElementMsg PageElements.simpleSlider
+    Html.map PageElementMsg PageElements.verticalSlider
 
 
 chatLayout : Html msg

@@ -1,7 +1,7 @@
 module PageElements exposing (..)
 
-import Colors exposing (black, blue, bluish, borderGrey, checkBoxColor, green, grey, lightBackground, orange, preferredBlue, red, white)
-import Element exposing (Attribute, Color, Element, alpha, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, row, shrink, spacing, table, text, width)
+import Colors exposing (black, blue, bluish, borderGrey, checkBoxColor, green, grey, lightBackground, lightGrey, orange, preferredBlue, red, white)
+import Element exposing (Attribute, Color, Element, alpha, behindContent, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, row, shrink, spacing, table, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -330,12 +330,14 @@ type Msg
     = UserTypedText String
     | UserToggledCheckbox Bool
     | UserChoseDirection Direction
+    | UserMovedSlider Float
 
 
 type alias Model =
     { text : String
     , isChecked : Bool
     , selectedOption : Maybe Direction
+    , selectedValue : Float
     }
 
 
@@ -344,6 +346,7 @@ init =
     { text = ""
     , isChecked = True
     , selectedOption = Nothing
+    , selectedValue = 0.0
     }
 
 
@@ -567,3 +570,142 @@ radioOption label state =
                 none
         , text label
         ]
+
+
+
+{-
+   Single line text inputs
+
+   A single line text input box is made with Input.text:
+
+   The record argument of this function requires a message that takes a String, the current value of the tet in the input,
+   an optional placeholder (note that it's an element wrapped in Input.placeholder which can have its own attributes), and
+   finally a label.
+   There are several specialised input functions which provide a hint to the browser about which kind of input they
+   generate so that the browser can autofill them:
+    * username
+    * currentPassword
+    * newPassword
+    * email
+    * search (a search input field)
+    * spellChecked ( a text input that will be spellchecked if spellchecking is available).
+
+    currentPassword and newPassword functions take a record argument which has an extra field (show) in addition to the
+    fields required by Input.text. This field indicates whether the password text should be displayed or obscured.
+
+    Multiline text inputs
+
+    A multiline text input is created with Input.multiline in a similar fashion to a single line input:
+
+-}
+
+
+singleLineInputText : Html Msg
+singleLineInputText =
+    layoutWithPadding <|
+        Input.text []
+            { onChange = UserTypedText
+            , text = init.text
+            , placeholder = Just <| Input.placeholder [] <| text "Type here"
+            , label = Input.labelLeft [ centerY ] <| text "Text input"
+            }
+
+
+simpleMultilineTextInput : Html Msg
+simpleMultilineTextInput =
+    layoutWithPadding <|
+        Input.multiline
+            [ width <| px 450
+            , height <| px 150
+            , Border.rounded 6
+            , Border.width 2
+            , Border.color <| borderGrey
+            ]
+            { onChange = UserTypedText
+            , text = init.text
+            , placeholder = Just <| Input.placeholder [] <| text "Type your message"
+            , label = Input.labelAbove [] <| text "Message"
+            , spellcheck = True
+            }
+
+
+
+{-
+   Sliders
+   A slider is a good alternative to a text input for numeric values within a range, particularly floating point values.
+   The slider function from the Element.input module lets you create a slider:
+-}
+
+
+simpleSlider : Html Msg
+simpleSlider =
+    layoutWithPadding <|
+        Input.slider
+            [ height <| px 30
+            , behindContent <|
+                --Slider track
+                el
+                    [ width fill
+                    , height <| px 3
+                    , centerY
+                    , Background.color lightGrey
+                    , Border.rounded 2
+                    ]
+                    Element.none
+            ]
+            { onChange = UserMovedSlider
+            , label =
+                Input.labelAbove [] <|
+                    text ("Floating point value: " ++ String.fromFloat init.selectedValue)
+            , min = 0
+            , max = 100
+            , step = Nothing
+            , value = init.selectedValue
+            , thumb = Input.defaultThumb
+            }
+
+
+
+{-
+   It's possible to customize the slider "handle" (called a "thumb" in elm-ui).
+   A slider can be either horizontal or vertical. Its orientation can be changed to vertical using a fixed width and height
+   fill in the slider attributes, or alternatively a fixed height and width such that height is greater than width.
+-}
+
+
+thumb =
+    Input.thumb
+        [ width <| px 60
+        , height <| px 24
+        , Border.width 2
+        , Border.rounded 6
+        , Background.color white
+        ]
+
+
+verticalSlider : Html Msg
+verticalSlider =
+    layoutWithPadding <|
+        Input.slider
+            [ height <| px 300
+            , width <| px 30
+            , behindContent <|
+                -- Slider track
+                el
+                    [ width <| px 20
+                    , height fill
+                    , centerX
+                    , Background.color lightGrey
+                    , Border.rounded 6
+                    ]
+                    none
+            ]
+            { onChange = round >> toFloat >> UserMovedSlider
+            , label =
+                Input.labelAbove [] <| text ("Integer value: " ++ String.fromFloat init.selectedValue)
+            , min = 0
+            , max = 100
+            , step = Just 10
+            , value = init.selectedValue
+            , thumb = thumb
+            }
