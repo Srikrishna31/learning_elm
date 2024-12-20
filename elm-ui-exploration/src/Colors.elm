@@ -81,3 +81,8 @@ red =
 orange : Color
 orange =
     rgb255 255 150 0
+
+
+checkBoxColor : Color
+checkBoxColor =
+    rgb255 0x72 0x9F 0xCF

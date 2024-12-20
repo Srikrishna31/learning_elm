@@ -119,7 +119,10 @@ main =
     --PageElements.unstyledButton
     --PageElements.buttonWithFocusStyle
     --PageElements.imageButton
-    Html.map PageElementMsg PageElements.textInputLabel
+    --Html.map PageElementMsg PageElements.textInputLabel
+    --Html.map PageElementMsg PageElements.defaultCheckboxView
+    --Html.map PageElementMsg PageElements.yesNoCheckbox
+    Html.map PageElementMsg PageElements.labelledCheckBox
 
 
 chatLayout : Html msg

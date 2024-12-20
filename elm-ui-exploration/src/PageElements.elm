@@ -1,7 +1,7 @@
 module PageElements exposing (..)
 
-import Colors exposing (black, blue, bluish, green, grey, orange, red, white)
-import Element exposing (Attribute, Color, Element, alpha, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, shrink, spacing, table, text, width)
+import Colors exposing (black, blue, bluish, borderGrey, checkBoxColor, green, grey, orange, red, white)
+import Element exposing (Attribute, Color, Element, alpha, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, focused, height, image, link, mouseOver, newTabLink, none, padding, px, row, shrink, spacing, table, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -328,16 +328,19 @@ imageButton =
 
 type Msg
     = UserTypedText String
+    | UserToggledCheckbox Bool
 
 
 type alias Model =
     { text : String
+    , isChecked : Bool
     }
 
 
 init : Model
 init =
     { text = ""
+    , isChecked = True
     }
 
 
@@ -350,3 +353,119 @@ textInputLabel =
             , placeholder = Just <| Input.placeholder [] <| text "Type here"
             , label = Input.labelLeft [ centerY ] <| text "Text input"
             }
+
+
+
+{-
+   Checkboxes
+   A checkbox requires storing a Bool in the model.  To create a checkbox with Input.checkbox, you need to pass it a message
+   that takes a Bool, an icon, the current value, and a label.
+-}
+
+
+defaultCheckboxView : Html Msg
+defaultCheckboxView =
+    layoutWithPadding <|
+        Input.checkbox [ Font.size 20 ]
+            { onChange = UserToggledCheckbox
+            , icon = Input.defaultCheckbox
+            , checked = init.isChecked
+            , label = Input.labelRight [] <| text "Default checkbox"
+            }
+
+
+
+{-
+   You can also supply your own icon in the form of a function that takes a boolean value and returns an element:
+-}
+
+
+yesNoCheckbox : Html Msg
+yesNoCheckbox =
+    layoutWithPadding <|
+        Input.checkbox [ Font.size 48 ]
+            { onChange = UserToggledCheckbox
+            , icon = checkBoxIcon
+            , checked = init.isChecked
+            , label = Input.labelRight [] <| text "Yes or no?"
+            }
+
+
+checkBoxIcon : Bool -> Element msg
+checkBoxIcon isChecked =
+    el
+        [ width <| px 40
+        , height <| px 40
+        , centerY
+        , padding 4
+        , Border.rounded 6
+        , Border.width 2
+        , Border.color <| borderGrey
+        ]
+    <|
+        el
+            [ width fill
+            , height fill
+            , Border.rounded 4
+            , Background.color <|
+                if isChecked then
+                    checkBoxColor
+
+                else
+                    white
+            ]
+        <|
+            none
+
+
+
+--Since the label is an arbitrary element, you can easily implement on/off toggles with checkboxes, for example
+
+
+labelledCheckBox : Html Msg
+labelledCheckBox =
+    layoutWithPadding <|
+        Input.checkbox [ width shrink, Font.size 20 ]
+            { onChange = UserToggledCheckbox
+            , icon = labelledCheckBoxIcon
+            , checked = init.isChecked
+            , label = Input.labelHidden "On/Off"
+            }
+
+
+labelledCheckBoxIcon : Bool -> Element msg
+labelledCheckBoxIcon isChecked =
+    let
+        knob =
+            el
+                [ width <| px 36
+                , height <| px 36
+                , Border.rounded 18
+                , Border.width 2
+                , Border.color borderGrey
+                , Background.color white
+                ]
+                none
+    in
+    el
+        [ width <| px 100
+        , height <| px 48
+        , centerY
+        , padding 4
+        , Border.rounded 6
+        , Border.width 2
+        , Border.color <| borderGrey
+        , Background.color <|
+            if isChecked then
+                checkBoxColor
+
+            else
+                white
+        ]
+    <|
+        row [ width fill ] <|
+            if isChecked then
+                [ el [ centerX ] <| text "On", knob ]
+
+            else
+                [ knob, el [ centerX ] <| text "Off" ]
