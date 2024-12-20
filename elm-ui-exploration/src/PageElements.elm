@@ -709,3 +709,50 @@ verticalSlider =
             , value = init.selectedValue
             , thumb = thumb
             }
+
+
+
+{-
+   Focus
+   An element can be focused on page load by adding a focusedOnLoad attribute to it. This attribute is exported by the
+   Element.Input module, unlike other attributes which are defined in the Element module. You should only use this attribute
+   on a single element on the page.
+   If you need to focus an element at some other time, then you should use the Browser.Dom.focus task to find the input by
+   ID and focus it.
+
+   Events
+   elm-ui lets you generate messages from mouse and focus events triggered on any element. Here are the attributes supplied
+   by the Element.Events module, each of them taking a message constructor as an argument:
+
+   * onClick
+   * onDoubleClick
+   * onMouseDown
+   * onMouseUp
+   * onMouseEnter
+   * onMouseLeave
+   * onMoveMove
+   * onFocus
+   * onLoseFocus
+
+   For other event handling, you still need to use the Browsers.Events module.
+
+   Accessibility
+   Accessibility software needs some semantic information to be able to tell parts of the page apart. In HTML, an important
+   aspect of accessibility is using semantically appropriate tags. elm-ui instead allows you to provide these clues to
+   accessibility software like screenreaders via attributes defined in the Element.Region module:
+
+   * Region.mainContent
+   * Region.navigation
+   * Region.heading (this takes an integer argument for heading level)
+   * Region.aside
+   * Region.footer
+   * Region.description
+   * Region.announce (a screenreader will announce when changes are made to the element with this attribute)
+   * Region.announceUrgently ( a screenreader will announce when changes are made to the element with this attribute,
+   interrupting other announcements if necessary).
+
+
+   Third-party elements and controls
+   Date picker: fabhof/elm-ui-datepicker
+   Widget library: Orasund/elm-ui-widgets
+-}
