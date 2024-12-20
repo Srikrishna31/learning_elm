@@ -1,7 +1,7 @@
 module PageElements exposing (..)
 
-import Colors exposing (blue)
-import Element exposing (Attribute, Element, centerX, centerY, clip, column, download, downloadAs, el, fill, height, image, link, newTabLink, padding, px, text, width)
+import Colors exposing (black, blue, green, orange, red)
+import Element exposing (Attribute, Color, Element, centerX, centerY, clip, column, download, downloadAs, el, fill, fillPortion, height, image, link, newTabLink, none, padding, px, shrink, spacing, table, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -171,3 +171,78 @@ imageTiles =
                 el [ centerX, centerY ] <|
                     text "Horizontally tiled background image"
             ]
+
+
+
+{-
+      Element.table helps you display a list of records in tabular format:
+
+   To create a table you need to provide table with a list of attributes (one useful attribute is spacing as it controls
+   spacing between cells), as well as a record with two fields: data and columns. data is a list of records which can have
+   many fields. columns is a list of records which define how each column is going to be rendered.
+
+   Each column record needs to have three fields:
+    * header which is an Element that will be the column header
+    * width which determines the width of the column
+    * view which is a function that takes a record from your data list and turns into an Element.
+
+    Sometimes, you might need to know the row number when rendering cells. In that situation, you can use indexedTable.
+    The only difference from table is that the view function in column definition takes the row index in addition to the
+    record: view: Basics.Int -> record -> Element msg
+-}
+
+
+colors : List { color : Color, name : String }
+colors =
+    [ { color = black
+      , name = "Black"
+      }
+    , { color = blue
+      , name = "Blue"
+      }
+    , { color = green
+      , name = "Green"
+      }
+    , { color = orange
+      , name = "Orange"
+      }
+    , { color = red
+      , name = "Red"
+      }
+    ]
+
+
+colorTable : Html msg
+colorTable =
+    layoutWithPadding <|
+        let
+            headerAttrs =
+                [ Font.bold
+                , Font.color blue
+                , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+                , Border.color black
+                ]
+        in
+        table
+            [ width shrink
+            , spacing 10
+            ]
+            { data = colors
+            , columns =
+                [ { header = el headerAttrs <| text "Color Name"
+                  , width = fillPortion 2
+                  , view = .name >> text >> el [ centerY ]
+                  }
+                , { header = el headerAttrs <| text "Color Sample"
+                  , width = fillPortion 1
+                  , view =
+                        \rec ->
+                            el
+                                [ width fill
+                                , height <| px 40
+                                , Background.color rec.color
+                                ]
+                                none
+                  }
+                ]
+            }

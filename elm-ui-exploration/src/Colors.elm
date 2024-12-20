@@ -61,3 +61,23 @@ borderGrey =
 transparentBluish : Color
 transparentBluish =
     rgba255 0 125 223 0.4
+
+
+black : Color
+black =
+    rgb255 0 0 0
+
+
+green : Color
+green =
+    rgb255 0 255 0
+
+
+red : Color
+red =
+    rgb255 255 0 0
+
+
+orange : Color
+orange =
+    rgb255 255 150 0

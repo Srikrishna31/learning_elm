@@ -110,7 +110,8 @@ main =
     --PageElements.linkWithImage
     --PageElements.scaledImage
     --PageElements.circularBorderImage
-    PageElements.imageTiles
+    --PageElements.imageTiles
+    PageElements.colorTable
 
 
 chatLayout : Html msg
