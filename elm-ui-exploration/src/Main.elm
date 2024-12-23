@@ -133,7 +133,8 @@ main =
     --Text.fontStyling
     --Text.fontWeights
     --Text.fontAttributeStyles
-    Text.textLayout
+    --Text.textLayout
+    Text.textColumnExample
 
 
 chatLayout : Html msg

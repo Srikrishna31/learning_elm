@@ -1,7 +1,7 @@
 module Text exposing (..)
 
 import Colors exposing (blue)
-import Element exposing (alignLeft, column, el, height, image, paragraph, px, spacing, text, width)
+import Element exposing (alignLeft, alignRight, column, el, fill, height, image, minimum, paddingEach, paragraph, px, scrollbarY, spacing, text, textColumn, width)
 import Element.Font as Font
 import Html exposing (Html)
 import Utils exposing (layoutWithFixedWidthAndPadding, layoutWithPadding, moreSampleText, sampleText)
@@ -105,4 +105,38 @@ textLayout =
                 , description = "Image"
                 }
             , el [ Font.color blue ] <| text moreSampleText
+            ]
+
+
+
+{-
+   textColumn allows you to string paragraphs together.The spacing attribute determines the amount of vertical space
+   between paragraphs in this case.
+
+-}
+
+
+textColumnExample : Html msg
+textColumnExample =
+    layoutWithFixedWidthAndPadding <|
+        textColumn [ width fill, height <| minimum 0 <| px 450, spacing 30, scrollbarY ]
+            [ el
+                [ alignLeft
+                , paddingEach { right = 10, bottom = 10, top = 0, left = 0 }
+                ]
+              <|
+                image [ width <| px 150, height <| px 300 ]
+                    { src = "https://picsum.photos/150/300"
+                    , description = "Image"
+                    }
+            , paragraph []
+                [ image [ alignRight, width <| px 200, height <| px 100 ]
+                    { src = "https://picsum.photos/200/100"
+                    , description = "Image"
+                    }
+                , text "textColumn with images and paragraphs."
+                , el [ Font.color blue ] <| text sampleText
+                ]
+            , paragraph [] [ el [ Font.color blue ] <| text sampleText ]
+            , paragraph [] [ el [ Font.color blue ] <| text moreSampleText ]
             ]
