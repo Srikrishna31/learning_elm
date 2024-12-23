@@ -8,7 +8,8 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import PageElements
-import Utils exposing (generalLayout, layoutWithPadding, scaledLayoutWithFixedWidth)
+import Text
+import Utils exposing (generalLayout, layoutWithPadding, sampleText, scaledLayoutWithFixedWidth)
 
 
 
@@ -128,7 +129,11 @@ main =
     --Html.map PageElementMsg PageElements.singleLineInputText
     --Html.map PageElementMsg PageElements.simpleMultilineTextInput
     --Html.map PageElementMsg PageElements.simpleSlider
-    Html.map PageElementMsg PageElements.verticalSlider
+    --Html.map PageElementMsg PageElements.verticalSlider
+    --Text.fontStyling
+    --Text.fontWeights
+    --Text.fontAttributeStyles
+    Text.textLayout
 
 
 chatLayout : Html msg
@@ -449,28 +454,6 @@ elementBehindExample =
             ]
         <|
             paragraph [] [ text sampleText ]
-
-
-sampleText : String
-sampleText =
-    """
-    The quick, brown fox jumps over a lazy dog. DJs flock by when MTV ax quiz 
- 
-    prog. Junk MTV quiz graced by fox whelps. Bawds jog, flick quartz, vex 
-
-    nymphs. Waltz, bad nymph, for quick jigs vex! Fox nymphs grab quick-jived 
-
-    waltz. Brick quiz whangs jumpy vex fraught vixens jump; dozy fowl quack. 
-
-    Quick wafting zephyrs vex bold Jim; zephyrs blow, vexing daft Jim. Sex- 
-
-    charged fop blew my junk TV quiz. How quickly daft jumping zebras vex. Two 
-
-    driven jocks help fax my big quiz. Quick, Baz, get my woven flax jodhpurs! 
-
-    "Now fax quiz Jack!" my brave ghost pled.  
-
-    """
 
 
 
