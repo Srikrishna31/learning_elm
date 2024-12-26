@@ -33,6 +33,11 @@ bluish =
     rgb255 0 125 220
 
 
+lightBlue : Color
+lightBlue =
+    rgb255 0 170 240
+
+
 background : Color
 background =
     rgba255 0x72 0x9F 0xCF 0.4
@@ -61,6 +66,11 @@ lightAquaBlue =
 borderGrey : Color
 borderGrey =
     rgb255 0xC0 0xC0 0xC0
+
+
+darkCharcoal : Color
+darkCharcoal =
+    rgb255 70 70 70
 
 
 transparentBluish : Color

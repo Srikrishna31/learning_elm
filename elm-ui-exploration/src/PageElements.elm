@@ -357,7 +357,7 @@ textInputLabel =
             { onChange = UserTypedText
             , text = init.text
             , placeholder = Just <| Input.placeholder [] <| text "Type here"
-            , label = Input.labelLeft [ centerY ] <| text "Text input"
+            , label = Input.labelLeft [ centerY ] <| text "TextAndLayout input"
             }
 
 
@@ -607,7 +607,7 @@ singleLineInputText =
             { onChange = UserTypedText
             , text = init.text
             , placeholder = Just <| Input.placeholder [] <| text "Type here"
-            , label = Input.labelLeft [ centerY ] <| text "Text input"
+            , label = Input.labelLeft [ centerY ] <| text "TextAndLayout input"
             }
 
 

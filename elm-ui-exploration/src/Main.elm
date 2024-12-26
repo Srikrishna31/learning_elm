@@ -8,7 +8,7 @@ import Element.Font as Font
 import Element.Input as Input
 import Html exposing (Html)
 import PageElements
-import Text
+import TextAndLayout
 import Utils exposing (generalLayout, layoutWithPadding, sampleText, scaledLayoutWithFixedWidth)
 
 
@@ -130,11 +130,13 @@ main =
     --Html.map PageElementMsg PageElements.simpleMultilineTextInput
     --Html.map PageElementMsg PageElements.simpleSlider
     --Html.map PageElementMsg PageElements.verticalSlider
-    --Text.fontStyling
-    --Text.fontWeights
-    --Text.fontAttributeStyles
-    --Text.textLayout
-    Text.textColumnExample
+    --TextAndLayout.fontStyling
+    --TextAndLayout.fontWeights
+    --TextAndLayout.fontAttributeStyles
+    --TextAndLayout.textLayout
+    --TextAndLayout.textColumnExample
+    --TextAndLayout.exampleLayoutWith
+    TextAndLayout.buttonTempStyle
 
 
 chatLayout : Html msg

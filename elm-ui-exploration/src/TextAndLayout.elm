@@ -1,9 +1,12 @@
-module Text exposing (..)
+module TextAndLayout exposing (..)
 
-import Colors exposing (blue)
-import Element exposing (alignLeft, alignRight, column, el, fill, height, image, minimum, paddingEach, paragraph, px, scrollbarY, spacing, text, textColumn, width)
+import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey, white)
+import Element exposing (alignLeft, alignRight, column, el, fill, height, image, layout, layoutWith, minimum, mouseOver, noStaticStyleSheet, padding, paddingEach, paragraph, px, scrollbarY, spacing, text, textColumn, width)
+import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
-import Html exposing (Html)
+import Element.Input as Input
+import Html exposing (Html, div)
 import Utils exposing (layoutWithFixedWidthAndPadding, layoutWithPadding, moreSampleText, sampleText)
 
 
@@ -79,7 +82,7 @@ fontAttributeStyles =
 
 
 {-
-   Text Layout
+   TextAndLayout Layout
 
     Element.paragraph lays out its children as wrapped inline elements, and also gets text in text elements to wrap.
     Line spacing can be adjusted by adding a spacing attribute with a given number of pixels.
@@ -140,3 +143,92 @@ textColumnExample =
             , paragraph [] [ el [ Font.color blue ] <| text sampleText ]
             , paragraph [] [ el [ Font.color blue ] <| text moreSampleText ]
             ]
+
+
+
+{-
+      Multiple layouts on a page
+
+   You can't simply add multiple layout calls into a view because each layout produces a global stylesheet, and having
+   more than one of them is problematic as styles will clash. For this reason, there should only be a single call to layout
+   in a view.
+   To resolve this conflict, in addition to the plain layout function, there is also layoutWith which takes a list of
+   options, with one of the available options being noStaticStyleSheet.
+-}
+
+
+exampleLayoutWith : Html msg
+exampleLayoutWith =
+    div []
+        [ layout [] <|
+            column []
+                [ paragraph [ Font.size 28, Font.color blue ]
+                    [ text "Layout 1" ]
+                , Input.button [] { onPress = Nothing, label = text "Button" }
+                ]
+        , layoutWith { options = [ noStaticStyleSheet ] } [] <|
+            column []
+                [ paragraph [ Font.size 28, Font.color darkCharcoal ]
+                    [ text "Layout 2" ]
+                , Input.button [] { onPress = Nothing, label = text "Button" }
+                ]
+        ]
+
+
+
+{-
+      Temporary Styles
+   Some styles should only be applied temporarily, when an element is in a particular state:
+
+    * mouseOver (having the mouse pointer over the element)
+    * mouseDown (having the mouse pointer over and a mouse button pressed)
+    * focused (having the focus for input)
+
+   These three are attribute functions which take a list of decorations as their argument.
+   decorations are a subset of attributes which are purely visual and do not affect the layout, with a rather odd exception
+   of Font.size
+
+   These are the decorative attributes you can use in temporary styles:
+
+    * Opacity attributes
+        - transparent
+        - alpha
+    * Adjustment attributes
+        - moveUp
+        - moveDown
+        - moveLeft
+        - moveRight
+        - rotate
+        - scale
+    * Font attributes
+        - color
+        - size
+        - glow
+        - shadow
+    * Background attributes
+        - color
+        - gradient
+    * Border attributes
+        - glow
+        - innerGlow
+        - shadow
+        - innerShadow
+
+-}
+
+
+buttonTempStyle : Html msg
+buttonTempStyle =
+    layoutWithFixedWidthAndPadding <|
+        Input.button
+            [ padding 10
+            , Border.width 3
+            , Border.rounded 6
+            , Border.color blue
+            , Background.color lightBlue
+            , mouseOver
+                [ Background.color white
+                , Border.color lightGrey
+                ]
+            ]
+            { onPress = Nothing, label = text "Launch" }
