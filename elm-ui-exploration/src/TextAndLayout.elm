@@ -1,8 +1,8 @@
 module TextAndLayout exposing (..)
 
 import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey, white)
-import Element exposing (alignLeft, alignRight, column, el, fill, height, image, layout, layoutWith, minimum, mouseOver, noStaticStyleSheet, padding, paddingEach, paragraph, px, scrollbarY, spacing, text, textColumn, width)
-import Element.Background as Background
+import Element exposing (Attribute, Option, alignLeft, alignRight, column, el, fill, focusStyle, focused, height, image, layout, layoutWith, minimum, mouseDown, mouseOver, noStaticStyleSheet, padding, paddingEach, paragraph, px, scrollbarY, spacing, text, textColumn, width)
+import Element.Background as Background exposing (color)
 import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
@@ -232,3 +232,79 @@ buttonTempStyle =
                 ]
             ]
             { onPress = Nothing, label = text "Launch" }
+
+
+buttonStyleOnMouseDownAndMouseOver : Html msg
+buttonStyleOnMouseDownAndMouseOver =
+    layoutWithFixedWidthAndPadding <|
+        Input.button
+            [ padding 10
+            , Border.width 3
+            , Border.rounded 6
+            , Border.color blue
+            , Background.color lightBlue
+            , Font.variant Font.smallCaps
+
+            -- The order of mouseDown/mouseOver can be significant when changing the same attribute in both
+            , mouseDown
+                [ Background.color blue
+                , Border.color blue
+                , Font.color white
+                ]
+            , mouseOver
+                [ Background.color white
+                , Border.color lightGrey
+                ]
+            ]
+            { onPress = Nothing, label = text "Launch" }
+
+
+
+{-
+   forceHover option (ie. layoutWith {options = [forceHover]} []) makes the decorations in mouseOver apply regardless of
+   the hover state of the element. This may be useful for example, for testing purposes, or perhaps if you want these
+   visual styles to be switched on for all elements on touch-based devices, where they would never show up otherwise due
+   to the absence of a cursor.
+
+   Instead of adding a focused attribute to each control, you can also define a global focus style, once again by passing
+   an option called focusStyle to layoutWith.
+
+   The focus style can specify any or all of border color, background color and a shadow, which will apply to all controls
+   which display a focus indicator. Individual controls can still override this common style with their own focused
+   attribute.
+-}
+
+
+commonFocusStyle : Option
+commonFocusStyle =
+    focusStyle
+        { borderColor = Just darkCharcoal
+        , backgroundColor = Nothing
+        , shadow = Just { color = blue, offset = ( 4, 4 ), size = 3, blur = 10 }
+        }
+
+
+buttonWithFocusStyle : Html msg
+buttonWithFocusStyle =
+    layoutWith { options = [ commonFocusStyle ] }
+        [ padding 50 ]
+    <|
+        Input.button
+            [ padding 20
+            , Background.color lightBlue
+            , Border.width 2
+            , Border.rounded 16
+            , Border.color blue
+            , Border.shadow
+                { offset = ( 4, 4 ), size = 3, blur = 10, color = lightGrey }
+            , Font.color white
+            , mouseOver
+                [ Background.color white, Font.color darkCharcoal ]
+            , focused
+                [ Border.shadow
+                    { offset = ( 4, 4 ), size = 3, blur = 10, color = blue }
+                ]
+            ]
+            { onPress = Nothing
+            , label = text "Button with focus style"
+            }

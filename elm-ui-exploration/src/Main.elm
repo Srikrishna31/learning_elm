@@ -136,7 +136,9 @@ main =
     --TextAndLayout.textLayout
     --TextAndLayout.textColumnExample
     --TextAndLayout.exampleLayoutWith
-    TextAndLayout.buttonTempStyle
+    --TextAndLayout.buttonTempStyle
+    --TextAndLayout.buttonStyleOnMouseDownAndMouseOver
+    TextAndLayout.buttonWithFocusStyle
 
 
 chatLayout : Html msg
