@@ -4503,8 +4503,8 @@ var $mdgriffith$elm_ui$Element$Background$color = function (clr) {
 			'background-color',
 			clr));
 };
-var $mdgriffith$elm_ui$Internal$Model$Keyed = function (a) {
-	return {$: 'Keyed', a: a};
+var $mdgriffith$elm_ui$Internal$Model$Unkeyed = function (a) {
+	return {$: 'Unkeyed', a: a};
 };
 var $mdgriffith$elm_ui$Internal$Model$AsColumn = {$: 'AsColumn'};
 var $mdgriffith$elm_ui$Internal$Model$asColumn = $mdgriffith$elm_ui$Internal$Model$AsColumn;
@@ -4533,12 +4533,12 @@ var $mdgriffith$elm_ui$Internal$Model$contextClasses = function (context) {
 			return $mdgriffith$elm_ui$Internal$Model$pageClass;
 	}
 };
+var $mdgriffith$elm_ui$Internal$Model$Keyed = function (a) {
+	return {$: 'Keyed', a: a};
+};
 var $mdgriffith$elm_ui$Internal$Model$NoStyleSheet = {$: 'NoStyleSheet'};
 var $mdgriffith$elm_ui$Internal$Model$Styled = function (a) {
 	return {$: 'Styled', a: a};
-};
-var $mdgriffith$elm_ui$Internal$Model$Unkeyed = function (a) {
-	return {$: 'Unkeyed', a: a};
 };
 var $mdgriffith$elm_ui$Internal$Model$Unstyled = function (a) {
 	return {$: 'Unstyled', a: a};
@@ -10188,7 +10188,7 @@ var $mdgriffith$elm_ui$Internal$Model$Width = function (a) {
 	return {$: 'Width', a: a};
 };
 var $mdgriffith$elm_ui$Element$width = $mdgriffith$elm_ui$Internal$Model$Width;
-var $mdgriffith$elm_ui$Element$Keyed$column = F2(
+var $mdgriffith$elm_ui$Element$column = F2(
 	function (attrs, children) {
 		return A4(
 			$mdgriffith$elm_ui$Internal$Model$element,
@@ -10204,7 +10204,7 @@ var $mdgriffith$elm_ui$Element$Keyed$column = F2(
 						$elm$core$List$cons,
 						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
 						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Keyed(children));
+			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
 var $mdgriffith$elm_ui$Element$el = F2(
 	function (attrs, child) {
@@ -10513,485 +10513,258 @@ var $author$project$Utils$layoutWithPadding = $mdgriffith$elm_ui$Element$layout(
 			$mdgriffith$elm_ui$Element$padding(50),
 			$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill)
 		]));
-var $mdgriffith$elm_ui$Internal$Model$Empty = {$: 'Empty'};
-var $mdgriffith$elm_ui$Element$none = $mdgriffith$elm_ui$Internal$Model$Empty;
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $mdgriffith$elm_ui$Element$Lazy$embed = function (x) {
+	switch (x.$) {
+		case 'Unstyled':
+			var html = x.a;
+			return html;
+		case 'Styled':
+			var styled = x.a;
+			return styled.html(
+				A2(
+					$mdgriffith$elm_ui$Internal$Model$OnlyDynamic,
+					{
+						focus: {backgroundColor: $elm$core$Maybe$Nothing, borderColor: $elm$core$Maybe$Nothing, shadow: $elm$core$Maybe$Nothing},
+						hover: $mdgriffith$elm_ui$Internal$Model$AllowHover,
+						mode: $mdgriffith$elm_ui$Internal$Model$Layout
+					},
+					styled.styles));
+		case 'Text':
+			var text = x.a;
+			return $elm$core$Basics$always(
+				$elm$virtual_dom$VirtualDom$text(text));
+		default:
+			return $elm$core$Basics$always(
+				$elm$virtual_dom$VirtualDom$text(''));
+	}
+};
+var $mdgriffith$elm_ui$Element$Lazy$apply2 = F3(
+	function (fn, a, b) {
+		return $mdgriffith$elm_ui$Element$Lazy$embed(
+			A2(fn, a, b));
+	});
+var $elm$virtual_dom$VirtualDom$lazy4 = _VirtualDom_lazy4;
+var $mdgriffith$elm_ui$Element$Lazy$lazy2 = F3(
+	function (fn, a, b) {
+		return $mdgriffith$elm_ui$Internal$Model$Unstyled(
+			A4($elm$virtual_dom$VirtualDom$lazy4, $mdgriffith$elm_ui$Element$Lazy$apply2, fn, a, b));
+	});
+var $mdgriffith$elm_ui$Element$rgb255 = F3(
+	function (red, green, blue) {
+		return A4($mdgriffith$elm_ui$Internal$Model$Rgba, red / 255, green / 255, blue / 255, 1);
+	});
+var $author$project$Colors$lightBlue = A3($mdgriffith$elm_ui$Element$rgb255, 0, 170, 240);
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
 			f(x));
 	});
-var $tesk9$palette$Palette$Cubehelix$BGR = {$: 'BGR'};
-var $tesk9$palette$SolidColor$Color = function (a) {
-	return {$: 'Color', a: a};
-};
-var $tesk9$palette$Internal$Color$HSLA = function (a) {
-	return {$: 'HSLA', a: a};
-};
-var $tesk9$palette$Internal$HSLA$Color = function (a) {
-	return {$: 'Color', a: a};
-};
-var $elm$core$Basics$clamp = F3(
-	function (low, high, number) {
-		return (_Utils_cmp(number, low) < 0) ? low : ((_Utils_cmp(number, high) > 0) ? high : number);
-	});
-var $elm$core$Basics$modBy = _Basics_modBy;
-var $tesk9$palette$Internal$HSLA$fromChannels = function (_v0) {
-	var hue = _v0.hue;
-	var saturation = _v0.saturation;
-	var lightness = _v0.lightness;
-	var alpha = _v0.alpha;
-	var hueInt = $elm$core$Basics$floor(hue);
-	var hue360 = A2($elm$core$Basics$modBy, 360, hueInt);
-	var floatingHueValues = hue - hueInt;
-	return $tesk9$palette$Internal$HSLA$Color(
-		{
-			alpha: alpha,
-			hue: hue360 + floatingHueValues,
-			lightness: A3($elm$core$Basics$clamp, 0, 100, lightness),
-			saturation: A3($elm$core$Basics$clamp, 0, 100, saturation)
-		});
-};
-var $tesk9$palette$Internal$Color$fromHSLA = function (values) {
-	return $tesk9$palette$Internal$Color$HSLA(
-		$tesk9$palette$Internal$HSLA$fromChannels(values));
-};
-var $tesk9$palette$Internal$Opacity$Opacity = function (a) {
-	return {$: 'Opacity', a: a};
-};
-var $elm$core$Basics$composeL = F3(
-	function (g, f, x) {
-		return g(
-			f(x));
-	});
-var $tesk9$palette$Internal$Opacity$custom = A2(
-	$elm$core$Basics$composeL,
-	$tesk9$palette$Internal$Opacity$Opacity,
-	A2($elm$core$Basics$clamp, 0, 1.0));
-var $tesk9$palette$Internal$Opacity$opaque = $tesk9$palette$Internal$Opacity$custom(1.0);
-var $tesk9$palette$SolidColor$fromHSL = function (_v0) {
-	var hue = _v0.a;
-	var saturation = _v0.b;
-	var lightness = _v0.c;
-	return $tesk9$palette$SolidColor$Color(
-		$tesk9$palette$Internal$Color$fromHSLA(
-			{alpha: $tesk9$palette$Internal$Opacity$opaque, hue: hue, lightness: lightness, saturation: saturation}));
-};
-var $tesk9$palette$Palette$Cubehelix$defaultConfig = {
-	gamma: 1.0,
-	rotationDirection: $tesk9$palette$Palette$Cubehelix$BGR,
-	rotations: 1.5,
-	start: $tesk9$palette$SolidColor$fromHSL(
-		_Utils_Tuple3(-60, 100, 0))
-};
-var $elm$core$Basics$cos = _Basics_cos;
-var $tesk9$palette$Internal$Color$RGBA = function (a) {
-	return {$: 'RGBA', a: a};
-};
-var $tesk9$palette$Internal$RGBA$Color = function (a) {
-	return {$: 'Color', a: a};
-};
-var $tesk9$palette$Internal$RGBA$fromChannels = function (_v0) {
-	var red = _v0.red;
-	var green = _v0.green;
-	var blue = _v0.blue;
-	var alpha = _v0.alpha;
-	return $tesk9$palette$Internal$RGBA$Color(
-		{
-			alpha: alpha,
-			blue: A3($elm$core$Basics$clamp, 0, 255, blue),
-			green: A3($elm$core$Basics$clamp, 0, 255, green),
-			red: A3($elm$core$Basics$clamp, 0, 255, red)
-		});
-};
-var $tesk9$palette$Internal$Color$fromRGBA = function (values) {
-	return $tesk9$palette$Internal$Color$RGBA(
-		$tesk9$palette$Internal$RGBA$fromChannels(values));
-};
-var $tesk9$palette$SolidColor$fromRGB = function (_v0) {
-	var red = _v0.a;
-	var green = _v0.b;
-	var blue = _v0.c;
-	return $tesk9$palette$SolidColor$Color(
-		$tesk9$palette$Internal$Color$fromRGBA(
-			{alpha: $tesk9$palette$Internal$Opacity$opaque, blue: blue, green: green, red: red}));
-};
-var $elm$core$Basics$pi = _Basics_pi;
-var $elm$core$Basics$pow = _Basics_pow;
-var $elm$core$Basics$sin = _Basics_sin;
-var $tesk9$palette$Palette$Cubehelix$colorAtStep = F2(
-	function (i, _v0) {
-		var rotations = _v0.rotations;
-		var start = _v0.start;
-		var fract = _v0.fract;
-		var gamma = _v0.gamma;
-		var saturation = _v0.saturation;
-		var fract_ = A2(
-			$elm$core$Basics$pow,
-			fract(i),
-			gamma);
-		var angle = (2 * $elm$core$Basics$pi) * (((start / 3.0) + 1.0) + (rotations * fract(i)));
-		var amp = ((saturation * fract_) * (1 - fract_)) / 2.0;
-		var blue = fract_ + (amp * (1.97294 * $elm$core$Basics$cos(angle)));
-		var green = fract_ + (amp * (((-0.29227) * $elm$core$Basics$cos(angle)) - (0.90649 * $elm$core$Basics$sin(angle))));
-		var red = fract_ + (amp * (((-0.14861) * $elm$core$Basics$cos(angle)) + (1.78277 * $elm$core$Basics$sin(angle))));
-		return $tesk9$palette$SolidColor$fromRGB(
-			_Utils_Tuple3(red * 255, green * 255, blue * 255));
-	});
-var $elm$core$Basics$abs = function (n) {
-	return (n < 0) ? (-n) : n;
-};
-var $tesk9$palette$Internal$HSLA$fromRGBA = function (_v0) {
-	var red = _v0.red;
-	var green = _v0.green;
-	var blue = _v0.blue;
-	var alpha = _v0.alpha;
-	var _v1 = _Utils_Tuple3(red / 255, green / 255, blue / 255);
-	var r = _v1.a;
-	var g = _v1.b;
-	var b = _v1.c;
-	var maximum = A2(
-		$elm$core$Basics$max,
-		A2($elm$core$Basics$max, r, g),
-		b);
-	var minimum = A2(
-		$elm$core$Basics$min,
-		A2($elm$core$Basics$min, r, g),
-		b);
-	var chroma = maximum - minimum;
-	var hue = (!chroma) ? 0 : (_Utils_eq(maximum, r) ? ((60 * (g - b)) / chroma) : (_Utils_eq(maximum, g) ? (60 * (((b - r) / chroma) + 2)) : (60 * (((r - g) / chroma) + 4))));
-	var lightness = (minimum + maximum) / 2;
-	var saturation = ((lightness === 1) || (!lightness)) ? 0 : (chroma / (1 - $elm$core$Basics$abs((2 * lightness) - 1)));
-	return $tesk9$palette$Internal$HSLA$fromChannels(
-		{alpha: alpha, hue: hue, lightness: lightness * 100, saturation: saturation * 100});
-};
-var $tesk9$palette$Internal$RGBA$toChannels = function (_v0) {
-	var values = _v0.a;
-	return values;
-};
-var $tesk9$palette$Internal$Color$convertRGBAToHSL = function (color) {
-	return $tesk9$palette$Internal$Color$HSLA(
-		$tesk9$palette$Internal$HSLA$fromRGBA(
-			$tesk9$palette$Internal$RGBA$toChannels(color)));
-};
-var $tesk9$palette$Internal$Color$asHSLA = function (color) {
-	asHSLA:
-	while (true) {
-		if (color.$ === 'HSLA') {
-			var values = color.a;
-			return values;
-		} else {
-			var rgbValues = color.a;
-			var $temp$color = $tesk9$palette$Internal$Color$convertRGBAToHSL(rgbValues);
-			color = $temp$color;
-			continue asHSLA;
-		}
-	}
-};
-var $tesk9$palette$Internal$HSLA$toChannels = function (_v0) {
-	var values = _v0.a;
-	return values;
-};
-var $tesk9$palette$SolidColor$toHSL = function (_v0) {
-	var color = _v0.a;
-	var _v1 = $tesk9$palette$Internal$HSLA$toChannels(
-		$tesk9$palette$Internal$Color$asHSLA(color));
-	var hue = _v1.hue;
-	var saturation = _v1.saturation;
-	var lightness = _v1.lightness;
-	return _Utils_Tuple3(hue, saturation, lightness);
-};
-var $tesk9$palette$Palette$Cubehelix$toInternalConfig = F2(
-	function (_v0, numLevels) {
-		var start = _v0.start;
-		var rotationDirection = _v0.rotationDirection;
-		var rotations = _v0.rotations;
-		var gamma = _v0.gamma;
-		var positiveClampedRotations = A3(
-			$elm$core$Basics$clamp,
-			0,
-			1.5,
-			$elm$core$Basics$abs(rotations));
-		var _v1 = $tesk9$palette$SolidColor$toHSL(start);
-		var hue = _v1.a;
-		var sat = _v1.b;
-		return {
-			fract: function (i) {
-				return i / (numLevels - 1);
-			},
-			gamma: A3($elm$core$Basics$clamp, 0, 2, gamma),
-			rotations: function () {
-				if (rotationDirection.$ === 'RGB') {
-					return positiveClampedRotations;
-				} else {
-					return -positiveClampedRotations;
-				}
-			}(),
-			saturation: sat / 100,
-			start: ((hue * 3) / 360) + 1
-		};
-	});
-var $tesk9$palette$Palette$Cubehelix$generateAdvanced = F2(
-	function (numLevels, config) {
-		var clampedNumLevels = A3($elm$core$Basics$clamp, 0, 256, numLevels);
-		var internalConfig = A2($tesk9$palette$Palette$Cubehelix$toInternalConfig, config, clampedNumLevels);
-		var generate_ = function (colors) {
-			generate_:
-			while (true) {
-				if (_Utils_cmp(
-					$elm$core$List$length(colors),
-					clampedNumLevels) > -1) {
-					return colors;
-				} else {
-					var $temp$colors = A2(
-						$elm$core$List$cons,
-						A2(
-							$tesk9$palette$Palette$Cubehelix$colorAtStep,
-							$elm$core$List$length(colors),
-							internalConfig),
-						colors);
-					colors = $temp$colors;
-					continue generate_;
-				}
-			}
-		};
-		return $elm$core$List$reverse(
-			generate_(_List_Nil));
-	});
-var $tesk9$palette$Palette$Cubehelix$generate = function (numLevels) {
-	return A2($tesk9$palette$Palette$Cubehelix$generateAdvanced, numLevels, $tesk9$palette$Palette$Cubehelix$defaultConfig);
-};
-var $elm$core$String$reverse = _String_reverse;
-var $elm$core$List$sortBy = _List_sortBy;
-var $tesk9$palette$Internal$RGBA$fromHSLA = function (hsl) {
-	var hue = hsl.hue;
-	var alpha = hsl.alpha;
-	var saturation = hsl.saturation / 100;
-	var lightness = hsl.lightness / 100;
-	var hueIsBetween = F2(
-		function (lowerBound, upperBound) {
-			return (_Utils_cmp(lowerBound, hue) < 1) && (_Utils_cmp(hue, upperBound) < 1);
-		});
-	var chroma = (1 - $elm$core$Basics$abs((2 * lightness) - 1)) * saturation;
-	var lightnessModifier = lightness - (chroma / 2);
-	var zigUp = function (xIntercept) {
-		return (chroma * (hue - xIntercept)) / 60;
-	};
-	var zigDown = function (xIntercept) {
-		return (-1) * zigUp(xIntercept);
-	};
-	var _v0 = A2(hueIsBetween, 0, 60) ? _Utils_Tuple3(
-		chroma,
-		zigUp(0),
-		0) : (A2(hueIsBetween, 60, 120) ? _Utils_Tuple3(
-		zigDown(120),
-		chroma,
-		0) : (A2(hueIsBetween, 120, 180) ? _Utils_Tuple3(
-		0,
-		chroma,
-		zigUp(120)) : (A2(hueIsBetween, 180, 240) ? _Utils_Tuple3(
-		0,
-		zigDown(240),
-		chroma) : (A2(hueIsBetween, 240, 300) ? _Utils_Tuple3(
-		zigUp(240),
-		0,
-		chroma) : _Utils_Tuple3(
-		chroma,
-		0,
-		zigDown(360))))));
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	return $tesk9$palette$Internal$RGBA$fromChannels(
-		{alpha: alpha, blue: (b + lightnessModifier) * 255, green: (g + lightnessModifier) * 255, red: (r + lightnessModifier) * 255});
-};
-var $tesk9$palette$Internal$Color$convertHSLToRGBA = function (color) {
-	return $tesk9$palette$Internal$Color$RGBA(
-		$tesk9$palette$Internal$RGBA$fromHSLA(
-			$tesk9$palette$Internal$HSLA$toChannels(color)));
-};
-var $tesk9$palette$Internal$Color$asRGBA = function (color) {
-	asRGBA:
-	while (true) {
-		if (color.$ === 'RGBA') {
-			var values = color.a;
-			return values;
-		} else {
-			var hslValues = color.a;
-			var $temp$color = $tesk9$palette$Internal$Color$convertHSLToRGBA(hslValues);
-			color = $temp$color;
-			continue asRGBA;
-		}
-	}
-};
-var $tesk9$palette$SolidColor$toRGB = function (_v0) {
-	var color = _v0.a;
-	var _v1 = $tesk9$palette$Internal$RGBA$toChannels(
-		$tesk9$palette$Internal$Color$asRGBA(color));
-	var red = _v1.red;
-	var green = _v1.green;
-	var blue = _v1.blue;
-	return _Utils_Tuple3(red, green, blue);
-};
-var $elm$core$Dict$fromList = function (assocs) {
-	return A3(
-		$elm$core$List$foldl,
-		F2(
-			function (_v0, dict) {
-				var key = _v0.a;
-				var value = _v0.b;
-				return A3($elm$core$Dict$insert, key, value, dict);
-			}),
-		$elm$core$Dict$empty,
-		assocs);
-};
-var $tesk9$palette$Internal$Hex$getHexSymbol = function (m) {
-	var hexValues = $elm$core$Dict$fromList(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(0, '0'),
-				_Utils_Tuple2(1, '1'),
-				_Utils_Tuple2(2, '2'),
-				_Utils_Tuple2(3, '3'),
-				_Utils_Tuple2(4, '4'),
-				_Utils_Tuple2(5, '5'),
-				_Utils_Tuple2(6, '6'),
-				_Utils_Tuple2(7, '7'),
-				_Utils_Tuple2(8, '8'),
-				_Utils_Tuple2(9, '9'),
-				_Utils_Tuple2(10, 'A'),
-				_Utils_Tuple2(11, 'B'),
-				_Utils_Tuple2(12, 'C'),
-				_Utils_Tuple2(13, 'D'),
-				_Utils_Tuple2(14, 'E'),
-				_Utils_Tuple2(15, 'F')
-			]));
-	return A2(
-		$elm$core$Maybe$withDefault,
-		'0',
-		A2($elm$core$Dict$get, m, hexValues));
-};
-var $elm$core$String$cons = _String_cons;
-var $elm$core$String$fromChar = function (_char) {
-	return A2($elm$core$String$cons, _char, '');
-};
-var $elm$core$String$length = _String_length;
-var $elm$core$Bitwise$shiftRightBy = _Bitwise_shiftRightBy;
-var $elm$core$String$repeatHelp = F3(
-	function (n, chunk, result) {
-		return (n <= 0) ? result : A3(
-			$elm$core$String$repeatHelp,
-			n >> 1,
-			_Utils_ap(chunk, chunk),
-			(!(n & 1)) ? result : _Utils_ap(result, chunk));
-	});
-var $elm$core$String$repeat = F2(
-	function (n, chunk) {
-		return A3($elm$core$String$repeatHelp, n, chunk, '');
-	});
-var $elm$core$String$padLeft = F3(
-	function (n, _char, string) {
-		return _Utils_ap(
-			A2(
-				$elm$core$String$repeat,
-				n - $elm$core$String$length(string),
-				$elm$core$String$fromChar(_char)),
-			string);
-	});
-var $tesk9$palette$Internal$Hex$decToHex = function (c) {
-	var nextValue = function (_v0) {
-		nextValue:
+var $elm$core$Bitwise$shiftRightZfBy = _Bitwise_shiftRightZfBy;
+var $elm$core$Array$bitMask = 4294967295 >>> (32 - $elm$core$Array$shiftStep);
+var $elm$core$Elm$JsArray$unsafeGet = _JsArray_unsafeGet;
+var $elm$core$Array$getHelp = F3(
+	function (shift, index, tree) {
+		getHelp:
 		while (true) {
-			var dec = _v0.a;
-			var hex = _v0.b;
-			if (!dec) {
-				return hex;
+			var pos = $elm$core$Array$bitMask & (index >>> shift);
+			var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+			if (_v0.$ === 'SubTree') {
+				var subTree = _v0.a;
+				var $temp$shift = shift - $elm$core$Array$shiftStep,
+					$temp$index = index,
+					$temp$tree = subTree;
+				shift = $temp$shift;
+				index = $temp$index;
+				tree = $temp$tree;
+				continue getHelp;
 			} else {
-				var $temp$_v0 = _Utils_Tuple2(
-					(dec / 16) | 0,
-					_Utils_ap(
-						$tesk9$palette$Internal$Hex$getHexSymbol(dec % 16),
-						hex));
-				_v0 = $temp$_v0;
-				continue nextValue;
+				var values = _v0.a;
+				return A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, values);
 			}
 		}
-	};
-	return A3(
-		$elm$core$String$padLeft,
-		2,
-		_Utils_chr('0'),
-		nextValue(
-			_Utils_Tuple2(
-				$elm$core$Basics$round(c),
-				'')));
-};
-var $tesk9$palette$Internal$Opacity$toFloat = function (_v0) {
-	var v = _v0.a;
-	return v;
-};
-var $tesk9$palette$Internal$Hex$toStringWithOpacity = function (_v0) {
-	var red = _v0.red;
-	var green = _v0.green;
-	var blue = _v0.blue;
-	var alpha = _v0.alpha;
-	var opacityInDec = $tesk9$palette$Internal$Hex$decToHex(
-		$tesk9$palette$Internal$Opacity$toFloat(alpha) * 255);
-	return '#' + ($tesk9$palette$Internal$Hex$decToHex(red) + ($tesk9$palette$Internal$Hex$decToHex(green) + ($tesk9$palette$Internal$Hex$decToHex(blue) + opacityInDec)));
-};
-var $tesk9$palette$Internal$Hex$toStringWithoutOpacity = function (_v0) {
-	var red = _v0.red;
-	var green = _v0.green;
-	var blue = _v0.blue;
-	return '#' + ($tesk9$palette$Internal$Hex$decToHex(red) + ($tesk9$palette$Internal$Hex$decToHex(green) + $tesk9$palette$Internal$Hex$decToHex(blue)));
-};
-var $tesk9$palette$Internal$Hex$toString = function (values) {
-	var alpha = values.alpha;
-	return _Utils_eq($tesk9$palette$Internal$Opacity$opaque, alpha) ? $tesk9$palette$Internal$Hex$toStringWithoutOpacity(values) : $tesk9$palette$Internal$Hex$toStringWithOpacity(values);
-};
-var $tesk9$palette$SolidColor$toHex = function (color) {
-	var _v0 = $tesk9$palette$SolidColor$toRGB(color);
-	var red = _v0.a;
-	var green = _v0.b;
-	var blue = _v0.c;
-	return $tesk9$palette$Internal$Hex$toString(
-		{alpha: $tesk9$palette$Internal$Opacity$opaque, blue: blue, green: green, red: red});
-};
-var $author$project$VariousContentTypes$palette = function (isReversed) {
-	return A2(
-		$elm$core$List$sortBy,
-		isReversed ? A2($elm$core$Basics$composeR, $tesk9$palette$SolidColor$toHex, $elm$core$String$reverse) : $tesk9$palette$SolidColor$toHex,
-		$tesk9$palette$Palette$Cubehelix$generate(256));
-};
-var $mdgriffith$elm_ui$Internal$Model$AsRow = {$: 'AsRow'};
-var $mdgriffith$elm_ui$Internal$Model$asRow = $mdgriffith$elm_ui$Internal$Model$AsRow;
-var $mdgriffith$elm_ui$Element$row = F2(
-	function (attrs, children) {
-		return A4(
-			$mdgriffith$elm_ui$Internal$Model$element,
-			$mdgriffith$elm_ui$Internal$Model$asRow,
-			$mdgriffith$elm_ui$Internal$Model$div,
-			A2(
-				$elm$core$List$cons,
-				$mdgriffith$elm_ui$Internal$Model$htmlClass($mdgriffith$elm_ui$Internal$Style$classes.contentLeft + (' ' + $mdgriffith$elm_ui$Internal$Style$classes.contentCenterY)),
-				A2(
-					$elm$core$List$cons,
-					$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$shrink),
-					A2(
-						$elm$core$List$cons,
-						$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$shrink),
-						attrs))),
-			$mdgriffith$elm_ui$Internal$Model$Unkeyed(children));
 	});
-var $mdgriffith$elm_ui$Element$fromRgb = function (clr) {
-	return A4($mdgriffith$elm_ui$Internal$Model$Rgba, clr.red, clr.green, clr.blue, clr.alpha);
+var $elm$core$Array$tailIndex = function (len) {
+	return (len >>> 5) << 5;
 };
-var $author$project$VariousContentTypes$solidColorAsColor = function (clr) {
-	var _v0 = $tesk9$palette$SolidColor$toRGB(clr);
-	var r = _v0.a;
-	var g = _v0.b;
-	var b = _v0.c;
-	return $mdgriffith$elm_ui$Element$fromRgb(
-		{alpha: 1.0, blue: b / 255, green: g / 255, red: r / 255});
+var $elm$core$Array$get = F2(
+	function (index, _v0) {
+		var len = _v0.a;
+		var startShift = _v0.b;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? $elm$core$Maybe$Nothing : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? $elm$core$Maybe$Just(
+			A2($elm$core$Elm$JsArray$unsafeGet, $elm$core$Array$bitMask & index, tail)) : $elm$core$Maybe$Just(
+			A3($elm$core$Array$getHelp, startShift, index, tree)));
+	});
+var $elm$core$Elm$JsArray$foldl = _JsArray_foldl;
+var $elm$core$Elm$JsArray$indexedMap = _JsArray_indexedMap;
+var $elm$core$Array$indexedMap = F2(
+	function (func, _v0) {
+		var len = _v0.a;
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var initialBuilder = {
+			nodeList: _List_Nil,
+			nodeListSize: 0,
+			tail: A3(
+				$elm$core$Elm$JsArray$indexedMap,
+				func,
+				$elm$core$Array$tailIndex(len),
+				tail)
+		};
+		var helper = F2(
+			function (node, builder) {
+				if (node.$ === 'SubTree') {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldl, helper, builder, subTree);
+				} else {
+					var leaf = node.a;
+					var offset = builder.nodeListSize * $elm$core$Array$branchFactor;
+					var mappedLeaf = $elm$core$Array$Leaf(
+						A3($elm$core$Elm$JsArray$indexedMap, func, offset, leaf));
+					return {
+						nodeList: A2($elm$core$List$cons, mappedLeaf, builder.nodeList),
+						nodeListSize: builder.nodeListSize + 1,
+						tail: builder.tail
+					};
+				}
+			});
+		return A2(
+			$elm$core$Array$builderToArray,
+			true,
+			A3($elm$core$Elm$JsArray$foldl, helper, initialBuilder, tree));
+	});
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $lynn$elm_arithmetic$Arithmetic$intSquareRoot = A2(
+	$elm$core$Basics$composeR,
+	$elm$core$Basics$toFloat,
+	A2($elm$core$Basics$composeR, $elm$core$Basics$sqrt, $elm$core$Basics$round));
+var $elm$core$Array$repeat = F2(
+	function (n, e) {
+		return A2(
+			$elm$core$Array$initialize,
+			n,
+			function (_v0) {
+				return e;
+			});
+	});
+var $elm$core$Elm$JsArray$unsafeSet = _JsArray_unsafeSet;
+var $elm$core$Array$setHelp = F4(
+	function (shift, index, value, tree) {
+		var pos = $elm$core$Array$bitMask & (index >>> shift);
+		var _v0 = A2($elm$core$Elm$JsArray$unsafeGet, pos, tree);
+		if (_v0.$ === 'SubTree') {
+			var subTree = _v0.a;
+			var newSub = A4($elm$core$Array$setHelp, shift - $elm$core$Array$shiftStep, index, value, subTree);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$SubTree(newSub),
+				tree);
+		} else {
+			var values = _v0.a;
+			var newLeaf = A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, values);
+			return A3(
+				$elm$core$Elm$JsArray$unsafeSet,
+				pos,
+				$elm$core$Array$Leaf(newLeaf),
+				tree);
+		}
+	});
+var $elm$core$Array$set = F3(
+	function (index, value, array) {
+		var len = array.a;
+		var startShift = array.b;
+		var tree = array.c;
+		var tail = array.d;
+		return ((index < 0) || (_Utils_cmp(index, len) > -1)) ? array : ((_Utils_cmp(
+			index,
+			$elm$core$Array$tailIndex(len)) > -1) ? A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			tree,
+			A3($elm$core$Elm$JsArray$unsafeSet, $elm$core$Array$bitMask & index, value, tail)) : A4(
+			$elm$core$Array$Array_elm_builtin,
+			len,
+			startShift,
+			A4($elm$core$Array$setHelp, startShift, index, value, tree),
+			tail));
+	});
+var $lynn$elm_arithmetic$Arithmetic$primesBelow = function (n) {
+	var trueIndices = function () {
+		var g = F2(
+			function (x, acc) {
+				if (x.$ === 'Just') {
+					var a = x.a;
+					return A2($elm$core$List$cons, a, acc);
+				} else {
+					return acc;
+				}
+			});
+		var f = F2(
+			function (i, pred) {
+				return pred ? $elm$core$Maybe$Just(i) : $elm$core$Maybe$Nothing;
+			});
+		return A2(
+			$elm$core$Basics$composeR,
+			$elm$core$Array$indexedMap(f),
+			A2($elm$core$Array$foldr, g, _List_Nil));
+	}();
+	var sieve = F2(
+		function (p, arr) {
+			var mark = F4(
+				function (i, x, num, array) {
+					mark:
+					while (true) {
+						if (_Utils_cmp(i * x, num) > -1) {
+							return array;
+						} else {
+							var $temp$i = i + 1,
+								$temp$x = x,
+								$temp$num = num,
+								$temp$array = A3($elm$core$Array$set, i * x, false, array);
+							i = $temp$i;
+							x = $temp$x;
+							num = $temp$num;
+							array = $temp$array;
+							continue mark;
+						}
+					}
+				});
+			return _Utils_eq(
+				A2($elm$core$Array$get, p, arr),
+				$elm$core$Maybe$Just(true)) ? A4(mark, 2, p, n, arr) : arr;
+		});
+	var ps = A2(
+		$elm$core$List$cons,
+		2,
+		A2(
+			$elm$core$List$map,
+			function (x) {
+				return (2 * x) + 1;
+			},
+			A2(
+				$elm$core$List$range,
+				1,
+				($lynn$elm_arithmetic$Arithmetic$intSquareRoot(n) / 2) | 0)));
+	var initial = A3(
+		$elm$core$Array$set,
+		1,
+		false,
+		A3(
+			$elm$core$Array$set,
+			0,
+			false,
+			A2($elm$core$Array$repeat, n, true)));
+	return trueIndices(
+		A3($elm$core$List$foldr, sieve, initial, ps));
 };
 var $mdgriffith$elm_ui$Internal$Model$SpacingStyle = F3(
 	function (a, b, c) {
@@ -11018,84 +10791,52 @@ var $mdgriffith$elm_ui$Internal$Model$Text = function (a) {
 var $mdgriffith$elm_ui$Element$text = function (content) {
 	return $mdgriffith$elm_ui$Internal$Model$Text(content);
 };
-var $author$project$VariousContentTypes$colorList = function (isReversed) {
-	return $author$project$Utils$layoutWithPadding(
-		function () {
-			var colorRow = function (clr) {
-				return _Utils_Tuple2(
-					$tesk9$palette$SolidColor$toHex(clr),
-					A2(
-						$mdgriffith$elm_ui$Element$row,
-						_List_fromArray(
-							[
-								$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-								$mdgriffith$elm_ui$Element$spacing(20)
-							]),
-						_List_fromArray(
-							[
-								A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-										$mdgriffith$elm_ui$Element$height($mdgriffith$elm_ui$Element$fill),
-										$mdgriffith$elm_ui$Element$Background$color(
-										$author$project$VariousContentTypes$solidColorAsColor(clr))
-									]),
-								$mdgriffith$elm_ui$Element$none),
-								A2(
-								$mdgriffith$elm_ui$Element$el,
-								_List_fromArray(
-									[
-										$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-									]),
-								$mdgriffith$elm_ui$Element$text(
-									$tesk9$palette$SolidColor$toHex(clr)))
-							])));
-			};
-			return A2(
-				$mdgriffith$elm_ui$Element$Keyed$column,
+var $author$project$VariousContentTypes$primesBelow = F2(
+	function (limit, interval) {
+		var intervalCount = (limit / interval) | 0;
+		return A2(
+			$mdgriffith$elm_ui$Element$column,
+			_List_fromArray(
+				[
+					$mdgriffith$elm_ui$Element$spacing(20)
+				]),
+			A2(
+				$elm$core$List$map,
+				function (lmt) {
+					return $mdgriffith$elm_ui$Element$text(
+						$elm$core$String$fromInt(
+							$elm$core$List$length(
+								$lynn$elm_arithmetic$Arithmetic$primesBelow(lmt))) + (' primes less than ' + $elm$core$String$fromInt(lmt)));
+				},
+				A2(
+					$elm$core$List$map,
+					$elm$core$Basics$mul(interval),
+					A2($elm$core$List$range, 1, intervalCount))));
+	});
+var $author$project$VariousContentTypes$lazyRenderingExample = $author$project$Utils$layoutWithPadding(
+	A2(
+		$mdgriffith$elm_ui$Element$column,
+		_List_fromArray(
+			[
+				$mdgriffith$elm_ui$Element$spacing(30)
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$mdgriffith$elm_ui$Element$el,
+				_List_fromArray(
+					[$mdgriffith$elm_ui$Element$Font$bold]),
+				$mdgriffith$elm_ui$Element$text('Number of primes:')),
+				A2(
+				$mdgriffith$elm_ui$Element$el,
 				_List_fromArray(
 					[
-						$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-						$mdgriffith$elm_ui$Element$spacing(30)
+						$mdgriffith$elm_ui$Element$Background$color($author$project$Colors$lightBlue),
+						$mdgriffith$elm_ui$Element$padding(20)
 					]),
-				A2(
-					$elm$core$List$cons,
-					_Utils_Tuple2(
-						'Header',
-						A2(
-							$mdgriffith$elm_ui$Element$row,
-							_List_fromArray(
-								[
-									$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill),
-									$mdgriffith$elm_ui$Element$spacing(20),
-									$mdgriffith$elm_ui$Element$Font$bold
-								]),
-							_List_fromArray(
-								[
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-										]),
-									$mdgriffith$elm_ui$Element$text('Color')),
-									A2(
-									$mdgriffith$elm_ui$Element$el,
-									_List_fromArray(
-										[
-											$mdgriffith$elm_ui$Element$width($mdgriffith$elm_ui$Element$fill)
-										]),
-									$mdgriffith$elm_ui$Element$text('Value'))
-								]))),
-					A2(
-						$elm$core$List$map,
-						colorRow,
-						$author$project$VariousContentTypes$palette(isReversed))));
-		}());
-};
-var $author$project$Main$main = $author$project$VariousContentTypes$colorList(true);
+				A3($mdgriffith$elm_ui$Element$Lazy$lazy2, $author$project$VariousContentTypes$primesBelow, 1000000, 200000))
+			])));
+var $author$project$Main$main = $author$project$VariousContentTypes$lazyRenderingExample;
 _Platform_export({'Main':{'init':_VirtualDom_init($author$project$Main$main)(0)(0)}});}(this));
 
   var app = Elm.Main.init({ node: document.getElementById("elm") });

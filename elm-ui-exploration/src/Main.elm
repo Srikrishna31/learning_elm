@@ -140,7 +140,8 @@ main =
     --TextAndLayout.buttonTempStyle
     --TextAndLayout.buttonStyleOnMouseDownAndMouseOver
     --TextAndLayout.buttonWithFocusStyle
-    VariousContentTypes.colorList True
+    --VariousContentTypes.colorList True
+    VariousContentTypes.lazyRenderingExample
 
 
 chatLayout : Html msg

@@ -1,9 +1,12 @@
 module VariousContentTypes exposing (..)
 
-import Element exposing (Color, el, fill, fromRgb, height, none, rgb, rgb255, row, spacing, text, width)
+import Arithmetic
+import Colors exposing (lightBlue)
+import Element exposing (Color, Element, column, el, fill, fromRgb, height, none, padding, rgb, rgb255, row, spacing, text, width)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Keyed as Keyed
+import Element.Lazy
 import Html exposing (Html)
 import Palette.Cubehelix as Palette
 import SolidColor exposing (SolidColor)
@@ -81,3 +84,81 @@ palette isReversed =
              else
                 SolidColor.toHex
             )
+
+
+
+{-
+      Lazy Evaluation
+   Element.Lazy allows you to avoid re-rendering the view when the model is unchanged. This module caters to functions of
+   upto five arguments (whereas Html.Lazy goes all the way to 8 arguments):
+
+   lazy: (a -> Element msg) -> a -> Element msg
+
+   lazy2 : (a -> b -> Element msg) -> a -> b -> Element msg
+
+   lazy3 : (a -> b -> c -> Element msg) -> a -> b -> c -> Element msg
+
+   lazy4: (a -> b -> c -> d -> Element msg) -> a -> b -> c -> d -> Element msg
+
+   lazy5: (a -> b -> c -> d -> e -> Element msg) -> a -> b -> c -> d -> e -> Element msg
+
+
+   The optimization is based on the fact that Elm functions are pure. Calling view model results in generating a virtual
+   DOM object which could potentially get very large. lazy* functions bundle the view function and its arguments without
+   actually calling it.
+
+   The virtual DOM diffing algorithm compares the view function arguments by reference (which is really fast), and if they
+   are the same, it skips calling the view function altogether.
+
+   One needs to be careful with the arguments of lazy* functions. Anything that prevents argument comparison by reference
+   will remove the speedup. For example, if instead of plain integer arguments you passed a newly-constructed list of limits
+   or a record to primesBelow, it would mean that reference equality checks would fail as these values are not the same as
+   whatever was passed below:
+
+   primesBelow [1000 2000 3000] -- would not work with Element.Lazy.lazy
+   primesBelow {limit = 1000000, interval = 200000 } -- would not work either
+
+   So, if you need to pass a value which is not an Int, Float, Bool, String or Char, store it in the model and pass it that
+   way rather than constructing the argument in place. That way, as long as the value in the model doesn't change, reference
+   equality check will succeed.
+
+   Similarly, if you passed a lambda instead of a named function, it would be a problem as well:
+
+    Lazy.lazy2 (\limit interval -> primesBelow limit interval) 1000000 200000
+
+    So always pass a named function to lazy*
+
+-}
+
+
+primesBelow : Int -> Int -> Element msg
+primesBelow limit interval =
+    let
+        intervalCount =
+            limit // interval
+    in
+    List.range 1 intervalCount
+        |> List.map ((*) interval)
+        |> List.map
+            (\lmt ->
+                text
+                    ((String.fromInt <| List.length <| Arithmetic.primesBelow lmt)
+                        ++ " primes less than "
+                        ++ String.fromInt lmt
+                    )
+            )
+        |> column [ spacing 20 ]
+
+
+lazyRenderingExample : Html msg
+lazyRenderingExample =
+    layoutWithPadding <|
+        column [ spacing 30 ]
+            [ el [ Font.bold ] <| text "Number of primes:"
+            , el
+                [ Background.color lightBlue, padding 20 ]
+              <|
+                Element.Lazy.lazy2 primesBelow 1000000 200000
+
+            --recomputed on every color change, if not for the lazy construct
+            ]
