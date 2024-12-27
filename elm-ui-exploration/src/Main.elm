@@ -10,6 +10,7 @@ import Html exposing (Html)
 import PageElements
 import TextAndLayout
 import Utils exposing (generalLayout, layoutWithPadding, sampleText, scaledLayoutWithFixedWidth)
+import VariousContentTypes
 
 
 
@@ -138,7 +139,8 @@ main =
     --TextAndLayout.exampleLayoutWith
     --TextAndLayout.buttonTempStyle
     --TextAndLayout.buttonStyleOnMouseDownAndMouseOver
-    TextAndLayout.buttonWithFocusStyle
+    --TextAndLayout.buttonWithFocusStyle
+    VariousContentTypes.colorList True
 
 
 chatLayout : Html msg
