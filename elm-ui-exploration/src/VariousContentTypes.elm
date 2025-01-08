@@ -1,13 +1,21 @@
 module VariousContentTypes exposing (..)
 
 import Arithmetic
-import Colors exposing (lightBlue)
-import Element exposing (Color, Element, column, el, fill, fromRgb, height, none, padding, rgb, rgb255, row, spacing, text, width)
+import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey)
+import Element exposing (Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, newTabLink, none, padding, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, width)
 import Element.Background as Background
+import Element.Border as Border
 import Element.Font as Font
+import Element.Input as Input
 import Element.Keyed as Keyed
 import Element.Lazy
-import Html exposing (Html)
+import Element.Region as Region
+import Html exposing (Html, code)
+import Html.Attributes
+import Markdown.Block as Block exposing (ListItem(..), Task(..))
+import Markdown.Html
+import Markdown.Parser
+import Markdown.Renderer
 import Palette.Cubehelix as Palette
 import SolidColor exposing (SolidColor)
 import Utils exposing (layoutWithPadding)
@@ -162,3 +170,197 @@ lazyRenderingExample =
 
             --recomputed on every color change, if not for the lazy construct
             ]
+
+
+
+{-
+   We use a powerful package called dillonkearns/elm-markdown. This package allows you to define a custom renderer capable
+   of producing any kind of "view" value rather than just Html msg.
+
+   The Markdown string is passed to Markdown.Parser.parse which can either succeed or fail. If it fails, it produces a
+   list of errors. If it succeeds, it produces a list of Markdown.Block.Block values, which can then go through a renderer,
+   and be turned into Element msg values.
+-}
+
+
+markdownView : String -> Result String (List (Element msg))
+markdownView markdown =
+    markdown
+        |> Markdown.Parser.parse
+        |> Result.mapError
+            (\error ->
+                error |> List.map Markdown.Parser.deadEndToString |> String.join "\n"
+            )
+        |> Result.andThen (Markdown.Renderer.render elmUiRenderer)
+
+
+elmUiRenderer : Markdown.Renderer.Renderer (Element msg)
+elmUiRenderer =
+    { heading = heading
+    , paragraph = paragraph [ spacing 15 ]
+    , thematicBreak = none
+    , text = text
+    , strong = \content -> row [ Font.bold ] content
+    , emphasis = \content -> row [ Font.italic ] content
+    , strikethrough = \content -> row [ Font.strike ] content
+    , codeSpan = code
+    , link =
+        \{ title, destination } body ->
+            newTabLink
+                [ htmlAttribute <| Html.Attributes.style "display" "inline-flex" ]
+                { url = destination
+                , label =
+                    paragraph [ Font.color blue ] body
+                }
+    , hardLineBreak = html <| Html.br [] []
+    , image =
+        \img ->
+            image [ width fill ] { src = img.src, description = img.alt }
+    , blockQuote =
+        \children ->
+            column
+                [ padding 10
+                , Border.widthEach { top = 0, right = 0, bottom = 0, left = 10 }
+                , Border.color darkCharcoal
+                , Background.color lightGrey
+                ]
+                children
+    , unorderedList =
+        \items ->
+            column [ spacing 15 ]
+                (items
+                    |> List.map
+                        (\(ListItem task children) ->
+                            row [ spacing 5 ]
+                                [ row
+                                    [ alignTop ]
+                                    ((case task of
+                                        IncompleteTask ->
+                                            Input.defaultCheckbox False
+
+                                        CompletedTask ->
+                                            Input.defaultCheckbox True
+
+                                        NoTask ->
+                                            text "•"
+                                     )
+                                        :: text " "
+                                        :: children
+                                    )
+                                ]
+                        )
+                )
+    , orderedList =
+        \startingIndex items ->
+            column [ spacing 15 ] <|
+                List.indexedMap
+                    (\index itemBlocks ->
+                        row [ spacing 5 ]
+                            [ row [ alignTop ] <|
+                                text
+                                    (String.fromInt (index + startingIndex) ++ " ")
+                                    :: itemBlocks
+                            ]
+                    )
+                    items
+    , codeBlock = codeBlock
+    , html = Markdown.Html.oneOf []
+    , table = column []
+    , tableHeader = column []
+    , tableBody = column []
+    , tableRow = row []
+    , tableHeaderCell = \maybeAlignment children -> paragraph [] children
+    , tableCell = \maybeAlignment children -> paragraph [] children
+    }
+
+
+heading : { level : Block.HeadingLevel, rawText : String, children : List (Element msg) } -> Element msg
+heading { level, rawText, children } =
+    paragraph
+        [ Font.size
+            (case level of
+                Block.H1 ->
+                    36
+
+                Block.H2 ->
+                    24
+
+                _ ->
+                    20
+            )
+        , Font.bold
+        , Region.heading <| Block.headingLevelToInt level
+        ]
+        children
+
+
+code : String -> Element msg
+code snippet =
+    el
+        [ Background.color lightGrey
+        , Border.rounded 2
+        , paddingXY 5 3
+        , Font.family
+            [ Font.external
+                { url = "https://fonts.googleapis.com/css?family=Source+Code+Pro"
+                , name = "Source Code Pro"
+                }
+            ]
+        ]
+    <|
+        text snippet
+
+
+codeBlock : { body : String, language : Maybe String } -> Element msg
+codeBlock details =
+    el
+        [ width fill
+        , scrollbarX
+        , Background.color (rgba 0 0 0 0.03)
+        , htmlAttribute (Html.Attributes.style "white-space" "pre")
+        , padding 20
+        , Font.family
+            [ Font.external
+                { url = "https://fonts.googleapis.com/css?family=Source+Code+Pro"
+                , name = "Source Code Pro"
+                }
+            ]
+        ]
+    <|
+        text details.body
+
+
+markdownBody : String
+markdownBody =
+    """# Markdown Sample
+    With the `dillonkearns/elm-markdown` package, it's possible to turn *Markdown* straight into
+    `Element msg` values:
+
+    markdownView : String -> Result String (List (Element msg))
+    markdownView markdown =
+        markdown
+            |> Markdown.Parser.parse
+            |> Result.mapError
+                (\\error ->
+                    error |> List.map Markdown.Parser.deadEndToString |> String.join "\\n"
+                )
+            |> Result.andThen (Markdown.Renderer.render elmUiRenderer)
+
+
+    [dillonkearns/elm-markdown documentation](https://package.elm-lang.org/packages/dillonkearns/elm-markdown/)
+
+    An image for good measure:
+
+    ![A random image](https://picsum.photos/800/400)
+    """
+
+
+markdownExample : Html msg
+markdownExample =
+    layoutWithPadding <|
+        case markdownView markdownBody of
+            Ok renderedEls ->
+                column [ spacing 30, padding 10, width fill ] renderedEls
+
+            Err string ->
+                text string

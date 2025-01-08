@@ -141,7 +141,8 @@ main =
     --TextAndLayout.buttonStyleOnMouseDownAndMouseOver
     --TextAndLayout.buttonWithFocusStyle
     --VariousContentTypes.colorList True
-    VariousContentTypes.lazyRenderingExample
+    --VariousContentTypes.lazyRenderingExample
+    VariousContentTypes.markdownExample
 
 
 chatLayout : Html msg

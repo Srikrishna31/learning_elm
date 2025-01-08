@@ -603,6 +603,11 @@ when test attr attrs =
 
 
 -- WIRING IT ALL TOGETHER --
+{-
+   To render a form, we need to supply a record with some details: the message produced on input, the labels for the submit
+   button, and the validation mode. We also need to supply the form definition (wrapped in a Form.map call to construct an
+   appropriate message that carries UserDetails). Finally, we need to provide the form data (model.formData)
+-}
 
 
 view : Model -> Html Msg
