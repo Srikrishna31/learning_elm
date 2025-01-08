@@ -2,7 +2,7 @@ module VariousContentTypes exposing (..)
 
 import Arithmetic
 import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey)
-import Element exposing (Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, newTabLink, none, padding, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, width)
+import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, newTabLink, none, padding, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -12,6 +12,8 @@ import Element.Lazy
 import Element.Region as Region
 import Html exposing (Html, code)
 import Html.Attributes
+import Mark exposing (Block, Document)
+import Mark.Error
 import Markdown.Block as Block exposing (ListItem(..), Task(..))
 import Markdown.Html
 import Markdown.Parser
@@ -364,3 +366,78 @@ markdownExample =
 
             Err string ->
                 text string
+
+
+
+{-
+   Elm-markup
+
+   elm-markup parser functions return Block values which can be composed in order to handle more complex documents. The
+   text function produces a block containing a list of output values, rather than a single value. Since styledText converts
+   a style record and a string into an el with some font attributes, the type of output values is Element msg.
+-}
+
+
+styledText : { bold : Bool, italic : Bool, strike : Bool } -> String -> Element msg
+styledText styles str =
+    let
+        when : Bool -> Attribute msg -> List (Attribute msg) -> List (Attribute msg)
+        when cond value list =
+            if cond then
+                value :: list
+
+            else
+                list
+    in
+    text str
+        |> el
+            ([]
+                |> when styles.bold Font.bold
+                |> when styles.italic Font.italic
+                |> when styles.strike Font.strike
+            )
+
+
+inlineMarkup : Block (List (Element msg))
+inlineMarkup =
+    Mark.text styledText
+
+
+document : Document (Element msg)
+document =
+    Mark.document (paragraph []) inlineMarkup
+
+
+markup : String
+markup =
+    """
+    Let's look at some *styled* /markup/.
+    """
+
+
+markupView : Html msg
+markupView =
+    let
+        errorsToEl errors =
+            errors
+                |> List.map (Mark.Error.toString >> text)
+                |> List.map (\txtEl -> paragraph [] [ txtEl ])
+                |> textColumn []
+
+        markupToEl =
+            case Mark.compile document markup of
+                Mark.Success el ->
+                    el
+
+                Mark.Almost { result, errors } ->
+                    -- This is the case where there has been an error, but it has been caught by `Mark.onError` and is
+                    -- still renderable.
+                    column []
+                        [ errorsToEl errors
+                        , result
+                        ]
+
+                Mark.Failure errors ->
+                    errorsToEl errors
+    in
+    layoutWithPadding markupToEl

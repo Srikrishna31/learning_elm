@@ -12,6 +12,7 @@
             "elm/html": "1.0.0",
             "hecrj/composable-form": "8.0.1",
             "lynn/elm-arithmetic": "3.0.0",
+            "mdgriffith/elm-markup": "3.0.1",
             "mdgriffith/elm-ui": "1.1.8",
             "tesk9/palette": "3.0.1"
         },

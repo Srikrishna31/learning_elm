@@ -142,7 +142,8 @@ main =
     --TextAndLayout.buttonWithFocusStyle
     --VariousContentTypes.colorList True
     --VariousContentTypes.lazyRenderingExample
-    VariousContentTypes.markdownExample
+    --VariousContentTypes.markdownExample
+    VariousContentTypes.markupView
 
 
 chatLayout : Html msg
