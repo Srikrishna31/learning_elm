@@ -2,7 +2,7 @@ module VariousContentTypes exposing (..)
 
 import Arithmetic
 import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey)
-import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, newTabLink, none, padding, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
+import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, newTabLink, none, padding, paddingEach, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -403,15 +403,93 @@ inlineMarkup =
     Mark.text styledText
 
 
+
+{-
+   The block function takes a string (the name of the block), a function which converts the content into an output value,
+   and a Block content value which describes how to parse the content:
+
+   block : String -> (content -> result) ->
+-}
+
+
+heading1 : Block (Element msg)
+heading1 =
+    Mark.block "H1"
+        (\children ->
+            paragraph [ Font.size 28, Region.heading 1 ] children
+        )
+        inlineMarkup
+
+
+
+{-
+   In the metadata function, we use Mark.record to declare that |> Metadata is a specific kind of block containing key-value
+   pairs. Then we describe the types of each field in the record, and finally finish things off by converting it to a block.
+   The second argument of metadata is a function that receives the values of all the fields as its arguments, and uses them
+   to produce an output value. In this case, frontMatter receives two strings (title and a string of tags) and converts them
+   into an Element msg.
+-}
+
+
+metadata : Block (Element msg)
+metadata =
+    Mark.record "Metadata"
+        frontMatter
+        |> Mark.field "title" Mark.string
+        |> Mark.field "tags" Mark.string
+        |> Mark.toBlock
+
+
+frontMatter : String -> String -> Element msg
+frontMatter title tagString =
+    let
+        tagsToEls tagStr =
+            List.map
+                (\tag ->
+                    el
+                        [ padding 5
+                        , Border.rounded 6
+                        , Background.color lightGrey
+                        ]
+                    <|
+                        text tag
+                )
+            <|
+                String.split " " tagStr
+    in
+    column
+        [ width fill
+        , spacing 10
+        , Border.widthEach { bottom = 1, top = 0, left = 0, right = 0 }
+        , Border.color lightGrey
+        ]
+        [ paragraph [ Font.size 32, Region.heading 1 ] [ text title ]
+        , row
+            [ spacing 10
+            , paddingEach { bottom = 10, top = 0, left = 0, right = 0 }
+            ]
+          <|
+            tagsToEls tagString
+        ]
+
+
 document : Document (Element msg)
 document =
-    Mark.document (paragraph []) inlineMarkup
+    Mark.document (column []) <|
+        Mark.manyOf
+            [ metadata
+            , Mark.map (paragraph []) inlineMarkup
+            , heading1
+            ]
 
 
 markup : String
 markup =
     """
     Let's look at some *styled* /markup/.
+
+    |> H1
+        This is a /heading/ with some inline styling
     """
 
 
@@ -440,4 +518,4 @@ markupView =
                 Mark.Failure errors ->
                     errorsToEl errors
     in
-    layoutWithPadding markupToEl
+    layout [ padding 10 ] markupToEl
