@@ -143,7 +143,8 @@ main =
     --VariousContentTypes.colorList True
     --VariousContentTypes.lazyRenderingExample
     --VariousContentTypes.markdownExample
-    VariousContentTypes.markupView
+    --VariousContentTypes.markupView
+    VariousContentTypes.iFrameView
 
 
 chatLayout : Html msg

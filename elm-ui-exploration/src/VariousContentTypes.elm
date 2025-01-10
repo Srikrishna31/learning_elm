@@ -2,7 +2,7 @@ module VariousContentTypes exposing (..)
 
 import Arithmetic
 import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey)
-import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, link, newTabLink, none, padding, paddingEach, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
+import Element exposing (Attribute, Color, Element, alignTop, centerX, centerY, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, link, newTabLink, none, padding, paddingEach, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -589,3 +589,31 @@ markupView =
                     errorsToEl errors
     in
     layout [ padding 10 ] markupToEl
+
+
+
+{-
+   iFrame view
+-}
+
+
+iFrameView : Html msg
+iFrameView =
+    layoutWithPadding <|
+        el
+            [ width fill
+            , centerX
+            , centerY
+            , padding 20
+            , Border.width 2
+            , Border.color lightGrey
+            ]
+        <|
+            html <|
+                Html.iframe
+                    [ Html.Attributes.src <| "pattern.html#Tabs"
+                    , Html.Attributes.style "border" "none"
+                    , Html.Attributes.style "width" "100%"
+                    , Html.Attributes.style "height" "100%"
+                    ]
+                    []
