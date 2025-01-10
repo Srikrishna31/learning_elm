@@ -609,11 +609,38 @@ iFrameView =
             , Border.color lightGrey
             ]
         <|
-            html <|
+            Element.html <|
                 Html.iframe
                     [ Html.Attributes.src <| "pattern.html#Tabs"
                     , Html.Attributes.style "border" "none"
                     , Html.Attributes.style "width" "100%"
                     , Html.Attributes.style "height" "100%"
+                    ]
+                    []
+
+
+
+{-
+   Video
+-}
+
+
+videoView : Html msg
+videoView =
+    layoutWithPadding <|
+        el
+            [ width fill
+            , padding 20
+            , Border.width 2
+            , Border.color lightGrey
+            ]
+        <|
+            html <|
+                Html.video
+                    [ Html.Attributes.src "video.mp4"
+                    , Html.Attributes.controls True
+                    , Html.Attributes.loop True
+                    , Html.Attributes.attribute "muted" ""
+                    , Html.Attributes.style "width" "100%"
                     ]
                     []

@@ -144,7 +144,8 @@ main =
     --VariousContentTypes.lazyRenderingExample
     --VariousContentTypes.markdownExample
     --VariousContentTypes.markupView
-    VariousContentTypes.iFrameView
+    --VariousContentTypes.iFrameView  -- This causes a crash in nodejs.
+    VariousContentTypes.videoView
 
 
 chatLayout : Html msg
