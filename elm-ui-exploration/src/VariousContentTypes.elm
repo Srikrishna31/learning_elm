@@ -2,7 +2,7 @@ module VariousContentTypes exposing (..)
 
 import Arithmetic
 import Colors exposing (blue, darkCharcoal, lightBlue, lightGrey)
-import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, newTabLink, none, padding, paddingEach, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
+import Element exposing (Attribute, Color, Element, alignTop, column, el, fill, fromRgb, height, html, htmlAttribute, image, layout, link, newTabLink, none, padding, paddingEach, paddingXY, paragraph, rgb, rgb255, rgba, row, scrollbarX, spacing, text, textColumn, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
@@ -10,7 +10,7 @@ import Element.Input as Input
 import Element.Keyed as Keyed
 import Element.Lazy
 import Element.Region as Region
-import Html exposing (Html, code)
+import Html exposing (Html)
 import Html.Attributes
 import Mark exposing (Block, Document)
 import Mark.Error
@@ -431,10 +431,10 @@ heading1 =
 -}
 
 
-metadata : Block (Element msg)
+metadata : Block { title : String, tags : String }
 metadata =
     Mark.record "Metadata"
-        frontMatter
+        (\title tags -> { title = title, tags = tags })
         |> Mark.field "title" Mark.string
         |> Mark.field "tags" Mark.string
         |> Mark.toBlock
@@ -475,33 +475,103 @@ frontMatter title tagString =
 
 document : Document (Element msg)
 document =
-    Mark.document (column []) <|
-        Mark.manyOf
-            [ metadata
-            , Mark.map (paragraph []) inlineMarkup
-            , heading1
+    Mark.documentWith
+        (\meta body ->
+            column [ width fill, spacing 20 ] <| frontMatter meta.title meta.tags :: body
+        )
+        { metadata = metadata
+        , body =
+            Mark.manyOf
+                [ heading1
+                , codeMarkup
+                , Mark.map (paragraph []) annotatedInlineMarkup
+                ]
+        }
+
+
+codeMarkup : Block (Element msg)
+codeMarkup =
+    Mark.record "Code"
+        (\lang str ->
+            el
+                [ padding 5
+                , Background.color lightGrey
+                , Border.rounded 6
+                , fixedWidthFont
+                ]
+            <|
+                text str
+        )
+        |> Mark.field "lang" Mark.string
+        |> Mark.field "code" Mark.string
+        |> Mark.toBlock
+
+
+annotatedInlineMarkup : Block (List (Element msg))
+annotatedInlineMarkup =
+    Mark.textWith
+        { view = styledText
+        , replacements = Mark.commonReplacements
+        , inlines =
+            [ Mark.annotation "link"
+                (\texts url ->
+                    link [ Font.color blue ]
+                        { url = url
+                        , label =
+                            paragraph [] <|
+                                List.map
+                                    (\( styles, str ) -> styledText styles str)
+                                    texts
+                        }
+                )
+                |> Mark.field "url" Mark.string
+            , Mark.verbatim "name" (\str -> el [ fixedWidthFont ] <| text str)
             ]
+        }
+
+
+fixedWidthFont : Attribute msg
+fixedWidthFont =
+    Font.family [ Font.typeface "Courier New", Font.monospace ]
 
 
 markup : String
 markup =
     """
-    Let's look at some *styled* /markup/.
+  |> Metadata
+      title = This is an elm-markup document
+      tags = markup parsing
 
-    |> H1
-        This is a /heading/ with some inline styling
+  Let's look at some *styled* /markup/.
+
+  |> H1
+      This is a /heading/ with some inline styling
+
+  This is a `verbatim annotation`{name}`.
+
+  This is a [link with *style*]{link | url = "#"}.
+
+  |> Code
+      lang = elm
+      code =
+          view content =
+              { title = ""
+              , body = [htmlTemplate content.siteTitle <| toHtml content ]
+              }
     """
 
 
 markupView : Html msg
 markupView =
     let
+        errorsToEl : List Mark.Error.Error -> Element msg
         errorsToEl errors =
             errors
                 |> List.map (Mark.Error.toString >> text)
                 |> List.map (\txtEl -> paragraph [] [ txtEl ])
                 |> textColumn []
 
+        markupToEl : Element msg
         markupToEl =
             case Mark.compile document markup of
                 Mark.Success el ->
