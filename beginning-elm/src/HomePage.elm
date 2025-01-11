@@ -87,9 +87,24 @@ view model =
                 """
             ]
         , p []
-            [ text <| "Regex.contains regex apollo11 " ++ (fromBool <| Regex.contains regex apollo11) ]
+            [ Regex.contains regex apollo11
+                |> fromBool
+                |> (++) "Regex.contains regex apollo11"
+                |> text
+            ]
         , p []
-            [ text <| String.join "; " <| List.map matchRecordToString <| Regex.find newRegex newString ]
+            [ Regex.find newRegex newString
+                |> List.map matchRecordToString
+                |> String.join "; "
+                |> text
+            ]
+        , p []
+            [ Regex.replace newRegex (\_ -> "go-getter") newString
+                |> text
+            ]
+        , Regex.split splitRegex apollo11
+            |> List.map (\t -> p [] [ text t ])
+            |> p []
         ]
 
 
@@ -154,7 +169,12 @@ newPattern =
 
 newRegex : Regex
 newRegex =
-    Maybe.withDefault Regex.never <| Regex.fromString newPattern
+    regexBuilder newPattern
+
+
+regexBuilder : String -> Regex
+regexBuilder patt =
+    Regex.fromString patt |> Maybe.withDefault Regex.never
 
 
 newString : String
@@ -190,3 +210,13 @@ matchRecordToString rec =
                )
             ++ "]"
         ]
+
+
+splitPattern : String
+splitPattern =
+    "\\d\\d:\\d\\d"
+
+
+splitRegex : Regex
+splitRegex =
+    regexBuilder splitPattern
