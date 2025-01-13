@@ -105,6 +105,14 @@ view model =
         , Regex.split splitRegex apollo11
             |> List.map (\t -> p [] [ text t ])
             |> p []
+        , [ 316, 320, 312, 370, 337, 318, 314 ]
+            |> List.sortWith descending
+            |> Debug.toString
+            |> Html.text
+        , [ "Night King", "Joffrey", "Ramsay" ]
+            |> List.sortWith evilometer
+            |> Debug.toString
+            |> Html.text
         ]
 
 
@@ -220,3 +228,49 @@ splitPattern =
 splitRegex : Regex
 splitRegex =
     regexBuilder splitPattern
+
+
+descending : number -> number -> Order
+descending a b =
+    case compare a b of
+        LT ->
+            GT
+
+        GT ->
+            LT
+
+        EQ ->
+            EQ
+
+
+evilometer : String -> String -> Order
+evilometer char1 char2 =
+    case ( char1, char2 ) of
+        ( "Joffrey", "Ramsay" ) ->
+            LT
+
+        ( "Joffrey", "Night King" ) ->
+            LT
+
+        ( "Ramsay", "Joffrey" ) ->
+            GT
+
+        ( "Ramsay", "Night King" ) ->
+            LT
+
+        ( "Night King", "Joffrey" ) ->
+            GT
+
+        ( "Night King", "Ramsay" ) ->
+            GT
+
+        _ ->
+            GT
+
+
+
+{-
+   # Referential Transparency
+       If an expression can be replaced with the value it evaluates to without changing the program's behavior at all,
+       that expression is said to have referential transparency.
+-}
