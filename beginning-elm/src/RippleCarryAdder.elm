@@ -155,15 +155,15 @@ padZeros total list =
 digits : Int -> List Int
 digits number =
     let
-        getDigits : Int -> List Int
-        getDigits n =
+        getDigits : Int -> List Int -> List Int
+        getDigits n res =
             if n == 0 then
-                []
+                res
 
             else
-                remainderBy 10 n :: getDigits (n // 10)
+                getDigits (n // 10) (remainderBy 10 n :: res)
     in
-    getDigits number
+    getDigits number []
         |> List.reverse
 
 
