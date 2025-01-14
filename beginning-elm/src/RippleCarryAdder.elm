@@ -167,12 +167,6 @@ digits number =
         |> List.reverse
 
 
-stringToInt : String -> Int
-stringToInt string =
-    String.toInt string
-        |> Maybe.withDefault -1
-
-
 arrayToRecord : Array Int -> Binary
 arrayToRecord array =
     let
