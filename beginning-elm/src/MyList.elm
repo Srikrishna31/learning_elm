@@ -71,3 +71,18 @@ isEmpty xs =
 
         _ ->
             False
+
+
+convertToMyList : List a -> MyList a
+convertToMyList list =
+    let
+        listAccumulator : MyList a -> List a -> MyList a
+        listAccumulator acc rem =
+            case rem of
+                [] ->
+                    Empty
+
+                v :: rest ->
+                    listAccumulator (Node v acc) rest
+    in
+    listAccumulator Empty list
