@@ -2,6 +2,7 @@ module HomePage exposing (main)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
+import MyList exposing (MyList(..), isEmpty, sum)
 import Regex exposing (Regex)
 
 
@@ -111,6 +112,9 @@ view model =
             |> Html.text
         , [ "Night King", "Joffrey", "Ramsay" ]
             |> List.sortWith evilometer
+            |> Debug.toString
+            |> Html.text
+        , isEmpty list2
             |> Debug.toString
             |> Html.text
         ]
@@ -274,3 +278,13 @@ evilometer char1 char2 =
        If an expression can be replaced with the value it evaluates to without changing the program's behavior at all,
        that expression is said to have referential transparency.
 -}
+
+
+list1 : MyList a
+list1 =
+    Empty
+
+
+list2 : MyList number
+list2 =
+    Node 9 Empty
