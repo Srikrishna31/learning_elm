@@ -164,7 +164,6 @@ digits number =
                 getDigits (n // 10) (remainderBy 10 n :: res)
     in
     getDigits number []
-        |> List.reverse
 
 
 arrayToRecord : Array Int -> Binary

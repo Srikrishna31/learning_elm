@@ -10,14 +10,21 @@ module FuzzTests exposing
     , listReverseTests
     , multiplyFloatTests
     , pizzaLeftTests
+    , rippleCarryAdderProperty1
+    , rippleCarryAdderProperty2
+    , rippleCarryAdderProperty3
+    , rippleCarryAdderProperty4
     , stringTests
+    , sumListTests
     )
 
 import Array
 import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (..)
-import MyList exposing (MyList, convertToMyList)
+import List exposing (repeat)
+import MyList exposing (MyList(..), convertToMyList)
 import Random exposing (maxInt, minInt)
+import RippleCarryAdder exposing (digits, numberFromDigits, rippleCarryAdder)
 import Test exposing (..)
 
 
@@ -249,7 +256,7 @@ pizzaLeft eatenPercent totalSlices =
 pizzaLeftTests : Test
 pizzaLeftTests =
     describe "pizzaLeft"
-        [ fuzz2 percentage float "returns remaining pizza slices" <|
+        [ fuzz2 percentage (floatRange 0.0 100.0) "returns remaining pizza slices" <|
             \eaten total ->
                 pizzaLeft eaten total
                     |> Expect.within (Absolute 0.000000001) (total - (eaten * total))
@@ -377,17 +384,241 @@ listReverseTests =
         ]
 
 
+sumListTests : Test
+sumListTests =
+    describe "MyList.sum"
+        [ fuzz repeatedListFuzzer "should equal the length of list" <|
+            \intList ->
+                let
+                    num : Int
+                    num =
+                        case intList of
+                            Empty ->
+                                0
 
---sumListTests : Test
---sumListTests =
---    describe "MyList.sum"
---        [ fuzz (listWithRepeatedValues 1) "should equal the length of list" <|
---            \intLlist ->
---                intLlist
---                    |> myList.sum
---        ]
+                            Node a _ ->
+                                a
+                in
+                intList
+                    |> MyList.sum
+                    |> Expect.equal (num * MyList.length intList)
+        , fuzz listWithNaturalNumbers "should conform to the formula n*(n+1)/2" <|
+            \intList ->
+                let
+                    num : Int
+                    num =
+                        case intList of
+                            Empty ->
+                                0
+
+                            Node a _ ->
+                                a
+                in
+                intList
+                    |> MyList.sum
+                    |> Expect.equal (num * (num + 1) // 2)
+        ]
+
+
+
 -- Sum of a list with any repeated element is equal to element * list.length
+
+
+repeatedListFuzzer : Fuzzer (MyList Int)
+repeatedListFuzzer =
+    Fuzz.map2 List.repeat (Fuzz.intRange 0 50) (Fuzz.intRange 0 50)
+        |> Fuzz.map convertToMyList
+
+
+
 -- Sum of a list with n natural numbers is equal to n*(n+1)/2
---listWithRepeatedValues : Int -> Fuzzer (MyList Int)
---listWithRepeatedValues v =
---    convertToMyList (list (constant v))
+
+
+listWithNaturalNumbers : Fuzzer (MyList Int)
+listWithNaturalNumbers =
+    Fuzz.map (List.range 1) (Fuzz.intRange 2 50)
+        |> Fuzz.map convertToMyList
+
+
+
+{-
+   # Properties of RippleCarryAdder
+
+   1. If the most significant digits of both inputs are 0, the carry-out digit will always be 0 regardless of what the
+   carry-in digit is.
+
+   2. If the most significant digits of both inputs are 1, the carry-out digit will always be 1 regardless of what the
+   carry-in digit is.
+
+   3. If the least significant digits of both inputs are 0 and the carry-in digit is also 0, the least significant digit
+   of the output will always be 0.
+
+   4. If the least significant digits of both inputs are 1 and the carry-in digit is 0, the least significant digit will
+   always be 0.
+-}
+
+
+rippleCarryAdderProperty1 : Test
+rippleCarryAdderProperty1 =
+    describe "carry-out's relationship with most significant digits"
+        [ fuzz3
+            (list (intRange 0 1))
+            (list (intRange 0 1))
+            (intRange 0 1)
+            "carry-out is 0 when most significant digits are both 0"
+          <|
+            \list1 list2 carryIn ->
+                let
+                    convertToBinary : List Int -> Int
+                    convertToBinary digitsList =
+                        digitsList
+                            -- Take only 3 digits since the msbs are 0
+                            |> List.take 3
+                            |> numberFromDigits
+
+                    firstInput : Int
+                    firstInput =
+                        convertToBinary list1
+
+                    secondInput : Int
+                    secondInput =
+                        convertToBinary list2
+                in
+                rippleCarryAdder firstInput secondInput carryIn
+                    |> digits
+                    |> List.length
+                    |> Expect.lessThan 5
+        ]
+
+
+rippleCarryAdderProperty2 : Test
+rippleCarryAdderProperty2 =
+    describe "carry-out's relationship with msbs, when both are 1"
+        [ fuzz3
+            (list <| intRange 0 1)
+            (list <| intRange 0 1)
+            (intRange 0 1)
+            "carry-out is 1 when most significant digits are both 1"
+          <|
+            \list1 list2 carryIn ->
+                let
+                    convertToBinary : List Int -> Int
+                    convertToBinary digitsList =
+                        digitsList
+                            -- Take only 3 digits since the msbs are 1
+                            |> List.take 3
+                            |> numberFromDigits
+
+                    firstInput : Int
+                    firstInput =
+                        1
+                            :: list1
+                            |> convertToBinary
+
+                    secondInput : Int
+                    secondInput =
+                        1
+                            :: list2
+                            |> convertToBinary
+                in
+                rippleCarryAdder firstInput secondInput carryIn
+                    |> digits
+                    |> List.head
+                    |> Expect.equal (Just 1)
+        ]
+
+
+rippleCarryAdderProperty3 : Test
+rippleCarryAdderProperty3 =
+    describe "carry-in's relationship with least significant digits - property 3"
+        [ fuzz3
+            (list <| intRange 0 1)
+            (list <| intRange 0 1)
+            (constant 0)
+            """
+            the least significant digit of the output is 0 when the carry-in is 0 and the least
+            significant digits of both inputs are 0
+            """
+          <|
+            \list1 list2 carryIn ->
+                let
+                    firstInput : Int
+                    firstInput =
+                        convertToBinary list1
+
+                    secondInput : Int
+                    secondInput =
+                        convertToBinary list2
+
+                    convertToBinary : List Int -> Int
+                    convertToBinary digitsList =
+                        digitsList
+                            |> List.take 4
+                            |> setLastDigitToZero
+                            |> numberFromDigits
+
+                    setLastDigitToZero : List Int -> List Int
+                    setLastDigitToZero digitsList =
+                        List.take 3 digitsList ++ [ 0 ]
+
+                    isLastDigitZero : List Int -> Bool
+                    isLastDigitZero digitsList =
+                        digitsList
+                            |> List.reverse
+                            |> List.head
+                            |> Maybe.withDefault 0
+                            |> (==) 0
+                in
+                rippleCarryAdder firstInput secondInput carryIn
+                    |> digits
+                    |> isLastDigitZero
+                    |> Expect.equal True
+        ]
+
+
+rippleCarryAdderProperty4 : Test
+rippleCarryAdderProperty4 =
+    describe "carry-in's relationship with least significant digits - property 4"
+        [ fuzz3
+            (list <| intRange 0 1)
+            (list <| intRange 0 1)
+            (constant 0)
+            """
+            the least significant digit of the output is 0 when the carry-in is 0 and the least
+            significant digits of both inputs are 1
+            """
+          <|
+            \list1 list2 carryIn ->
+                let
+                    firstInput : Int
+                    firstInput =
+                        convertToBinary list1
+
+                    secondInput : Int
+                    secondInput =
+                        convertToBinary list2
+
+                    convertToBinary : List Int -> Int
+                    convertToBinary digitsList =
+                        digitsList
+                            |> List.take 4
+                            |> setLastDigitToOne
+                            |> numberFromDigits
+
+                    setLastDigitToOne : List Int -> List Int
+                    setLastDigitToOne digitsList =
+                        List.take 3 digitsList ++ [ 1 ]
+
+                    isLastDigitZero : List Int -> Bool
+                    isLastDigitZero digitsList =
+                        digitsList
+                            |> List.reverse
+                            |> List.head
+                            |> Maybe.withDefault 0
+                            |> (==) 0
+                in
+                rippleCarryAdder firstInput secondInput carryIn
+                    |> digits
+                    |> isLastDigitZero
+                    |> Expect.equal True
+        ]

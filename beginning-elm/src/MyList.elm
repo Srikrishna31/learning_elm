@@ -86,3 +86,13 @@ convertToMyList list =
                     listAccumulator (Node v acc) rest
     in
     listAccumulator Empty list
+
+
+length : MyList a -> Int
+length list =
+    case list of
+        Empty ->
+            0
+
+        Node _ rest ->
+            1 + length rest
