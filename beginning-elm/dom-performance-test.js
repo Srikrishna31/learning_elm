@@ -27,7 +27,7 @@ function updateDOM() {
 }
 
 t1 = performance.now();
-updateString();
+updateDOM();
 t2 = performance.now();
 
 console.log ("It took " + (t2 - t1) + " milliseconds to update a DOM element");
