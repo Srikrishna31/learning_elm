@@ -10,12 +10,14 @@
         text-align: center;
       }
     </style>
+    <title></title>
 </head>
 <body>
   <div id="elm-app-is-loaded-here"></div>
   <script src="/app.js"></script>
+  <script src="dom-performance-test.js"></script>
   <script>
-    let app = Elm.HomePage.init({
+    let app = Elm.Counter.init({
       node:document.getElementById("elm-app-is-loaded-here")
     })
   </script>

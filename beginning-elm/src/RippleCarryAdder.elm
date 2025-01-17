@@ -146,6 +146,7 @@ extractDigits number =
 padZeros : Int -> List Int -> List Int
 padZeros total list =
     let
+        numberOfZeros : Int
         numberOfZeros =
             total - List.length list
     in
