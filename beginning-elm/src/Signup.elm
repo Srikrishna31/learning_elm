@@ -1,9 +1,12 @@
 module Signup exposing (..)
 
+--import Html exposing (Attribute, Html, button, div, h1, input, text)
+--import Html.Attributes exposing (id, style, type_)
+
 import Browser
 import Css exposing (..)
-import Html exposing (Attribute, Html, button, div, h1, input, text)
-import Html.Attributes exposing (id, style, type_)
+import Html.Styled exposing (..)
+import Html.Styled.Attributes exposing (..)
 
 
 type Msg
@@ -44,25 +47,90 @@ initialModel =
 view : User -> Html msg
 view user =
     div []
-        [ h1 [ style "padding-left" "3cm" ] [ text "Sign up" ]
-        , Html.form formStyle
+        [ h1 [ css [ paddingLeft <| cm 3 ] ] [ text "Sign up" ]
+        , styledForm []
             [ div []
                 [ text "Name"
-                , input ([ id "name", type_ "text" ] ++ inputStyle) []
+                , styledInput [ id "name", type_ "text" ] []
                 ]
             , div []
                 [ text "Email"
-                , input ([ id "email", type_ "email" ] ++ inputStyle) []
+                , styledInput [ id "email", type_ "email" ] []
                 ]
             , div []
                 [ text "Password"
-                , input ([ id "password", type_ "password" ] ++ inputStyle) []
+                , styledInput [ id "password", type_ "password" ] []
                 ]
             , div []
-                [ button ([ type_ "submit" ] ++ buttonStyle)
+                [ styledButton [ type_ "submit" ]
                     [ text "Create my account" ]
                 ]
             ]
+        ]
+
+
+
+{-
+   Html.Styled is a drop-in replacement for the Html module from the elm/html package. All it does is return a styled
+   version of elements defined in the html module.
+   For example, here is how the Html.text function is implemented:
+
+   text: String -> Html msg
+   text =
+        VirtualDom.text
+
+   Here is how the Html.Styled.text is implemented:
+
+   text: String -> Html msg
+   text =
+        VirtualDom.Styled.text
+
+   To style an element using elm-css, we need to use the styled function defined in the Html.Styled module. here is how
+   it's type signature looks:
+
+    styled:
+        (List (Attribute a) -> List (Html b) -> Html msg)
+         -> List Style
+         -> List (Attribute a)
+         -> List (Html b)
+         -> Html msg
+    The first argument is an HTML element from the Html.Styled module. The second argument is a list of CSS styles.
+-}
+
+
+styledForm : List (Attribute msg) -> List (Html msg) -> Html msg
+styledForm =
+    styled Html.Styled.form
+        [ borderRadius <| px 5
+        , backgroundColor <| hex "#f2f2f2"
+        , padding <| px 20
+        , Css.width <| px 300
+        ]
+
+
+styledInput : List (Attribute msg) -> List (Html msg) -> Html msg
+styledInput =
+    styled Html.Styled.input
+        [ display block
+        , Css.width <| px 260
+        , padding2 (px 12) <| px 20
+        , margin2 (px 8) <| px 0
+        , border <| px 0
+        , borderRadius <| px 4
+        ]
+
+
+styledButton : List (Attribute msg) -> List (Html msg) -> Html msg
+styledButton =
+    styled Html.Styled.button
+        [ Css.width <| px 300
+        , backgroundColor <| hex "#397cd5"
+        , color <| hex "#fff"
+        , padding2 (px 12) <| px 20
+        , marginTop <| px 10
+        , border <| px 0
+        , borderRadius <| px 4
+        , fontSize <| px 16
         ]
 
 
@@ -75,7 +143,7 @@ main : Program () User Msg
 main =
     Browser.sandbox
         { init = initialModel
-        , view = view
+        , view = \model -> toUnstyled <| view model
         , update = update
         }
 
@@ -83,36 +151,3 @@ main =
 update : Msg -> User -> User
 update msg user =
     user
-
-
-formStyle : List (Attribute msg)
-formStyle =
-    [ style "border-radius" "5px"
-    , style "background-color" "#f2f2f2"
-    , style "padding" "20px"
-    , style "width" "300px"
-    ]
-
-
-inputStyle : List (Attribute msg)
-inputStyle =
-    [ style "display" "block"
-    , style "width" "260px"
-    , style "padding" "12px 20px"
-    , style "margin" "8px 0"
-    , style "border" "none"
-    , style "border-radius" "4px"
-    ]
-
-
-buttonStyle : List (Attribute msg)
-buttonStyle =
-    [ style "width" "300px"
-    , style "background-color" "#397cd5"
-    , style "color" "white"
-    , style "padding" "14px 20px"
-    , style "margin-top" "10px"
-    , style "border" "none"
-    , style "border-radius" "4px"
-    , style "font-size" "16px"
-    ]
