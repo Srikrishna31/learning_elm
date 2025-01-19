@@ -7,7 +7,9 @@ import Http
 
 
 type alias Model =
-    List String
+    { names : List String
+    , errorMessage : Maybe String
+    }
 
 
 view : Model -> Html Msg
@@ -15,8 +17,37 @@ view model =
     div []
         [ button [ onClick SendHttpRequest ]
             [ text "Get data from server" ]
-        , h3 [] [ text "Old School Main Characters" ]
-        , ul [] <| List.map viewNickName model
+        , viewNickNamesOrError model
+        ]
+
+
+viewNickNamesOrError : Model -> Html Msg
+viewNickNamesOrError model =
+    case model.errorMessage of
+        Just message ->
+            viewError message
+
+        Nothing ->
+            viewNickNames model.names
+
+
+viewError : String -> Html Msg
+viewError errorMessage =
+    let
+        errorHeading =
+            "Couldn't fetch nicknames at this time"
+    in
+    div []
+        [ h3 [] [ text errorHeading ]
+        , text <| "Error" ++ errorMessage
+        ]
+
+
+viewNickNames : List String -> Html Msg
+viewNickNames nicknames =
+    div []
+        [ h3 [] [ text "Old School Main Characters" ]
+        , ul [] <| List.map viewNickName nicknames
         ]
 
 
@@ -84,16 +115,40 @@ update msg model =
                 nickNames =
                     String.split "," nickNamesStr
             in
-            ( nickNames, Cmd.none )
+            ( { model | names = nickNames }, Cmd.none )
 
-        DataReceived (Err _) ->
-            ( model, Cmd.none )
+        DataReceived (Err error) ->
+            ( { model | errorMessage = Just <| buildErrorMessage error }, Cmd.none )
+
+
+buildErrorMessage : Http.Error -> String
+buildErrorMessage httpError =
+    case httpError of
+        Http.BadUrl message ->
+            message
+
+        Http.Timeout ->
+            "Server is taking too long to respond. Please try again later"
+
+        Http.NetworkError ->
+            "Unable to reach server"
+
+        Http.BadStatus int ->
+            "Request failed with status code" ++ String.fromInt int
+
+        Http.BadBody message ->
+            message
+
+
+init : () -> ( Model, Cmd msg )
+init _ =
+    ( { names = [], errorMessage = Nothing }, Cmd.none )
 
 
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \flags -> ( [], Cmd.none )
+        { init = init
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
