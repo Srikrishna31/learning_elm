@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, h3, li, text, ul)
 import Html.Events exposing (onClick)
 import Http
+import Json.Decode exposing (Decoder, Error(..), decodeString, field, list, string, succeed)
 
 
 type alias Model =
@@ -33,13 +34,9 @@ viewNickNamesOrError model =
 
 viewError : String -> Html Msg
 viewError errorMessage =
-    let
-        errorHeading =
-            "Couldn't fetch nicknames at this time"
-    in
     div []
-        [ h3 [] [ text errorHeading ]
-        , text <| "Error" ++ errorMessage
+        [ h3 [] [ text "Couldn't fetch nicknames at this time" ]
+        , text errorMessage
         ]
 
 
@@ -58,12 +55,12 @@ viewNickName nickname =
 
 type Msg
     = SendHttpRequest
-    | DataReceived (Result Http.Error String)
+    | DataReceived (Result Http.Error (List String))
 
 
 url : String
 url =
-    "http://localhost:5016/old-school.txt"
+    "http://localhost:5019/names/1"
 
 
 
@@ -81,7 +78,7 @@ getNickNames : Cmd Msg
 getNickNames =
     Http.get
         { url = url
-        , expect = Http.expectString DataReceived
+        , expect = Http.expectJson DataReceived nickNamesDecoder
         }
 
 
@@ -109,16 +106,29 @@ update msg model =
         SendHttpRequest ->
             ( model, getNickNames )
 
-        DataReceived (Ok nickNamesStr) ->
-            let
-                nickNames : List String
-                nickNames =
-                    String.split "," nickNamesStr
-            in
+        DataReceived (Ok nickNames) ->
             ( { model | names = nickNames }, Cmd.none )
 
         DataReceived (Err error) ->
             ( { model | errorMessage = Just <| buildErrorMessage error }, Cmd.none )
+
+
+handleJsonError : Json.Decode.Error -> Maybe String
+handleJsonError error =
+    case error of
+        Field string _ ->
+            Just string
+
+        --
+        --Index int error ->
+        --
+        --
+        --OneOf errors ->
+        Failure errorMessage _ ->
+            Just errorMessage
+
+        _ ->
+            Just "Error: Invalid JSON"
 
 
 buildErrorMessage : Http.Error -> String
@@ -153,3 +163,27 @@ main =
         , update = update
         , subscriptions = \_ -> Sub.none
         }
+
+
+
+{-
+
+   decodeString: Decoder a -> String -> Result Error a
+
+   decodeString first parses the raw json and then uses a given decoder to translate that JSON to respective Elm values.
+
+   The Error type is defined in the Json.Decode module like this:
+
+        type Error
+            = Field String Error
+            | Index Int Error
+            | OneOf (List Error)
+            | Failure String Value
+
+    It's a recursive type.
+-}
+
+
+nickNamesDecoder : Decoder (List String)
+nickNamesDecoder =
+    field "nicknames" <| list string
