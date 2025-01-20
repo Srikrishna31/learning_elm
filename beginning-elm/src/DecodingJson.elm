@@ -2,24 +2,31 @@ module DecodingJson exposing (..)
 
 import Browser
 import Html exposing (..)
+import Html.Attributes exposing (href)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode
     exposing
         ( Decoder
-        , decodeString
         , field
         , int
         , list
         , map3
         , string
         )
+import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
+
+
+type alias Author =
+    { name : String
+    , url : String
+    }
 
 
 type alias Post =
-    { id : String
+    { id : Int
     , title : String
-    , author : String
+    , author : Author
     }
 
 
@@ -81,9 +88,10 @@ viewTableHeader =
 viewPost : Post -> Html Msg
 viewPost post =
     tr []
-        [ td [] [ text post.id ]
+        [ td [] [ text <| String.fromInt post.id ]
         , td [] [ text post.title ]
-        , td [] [ text post.author ]
+        , td []
+            [ a [ href post.author.url ] [ text post.author.name ] ]
         ]
 
 
@@ -92,12 +100,29 @@ type Msg
     | DataReceived (Result Http.Error (List Post))
 
 
+authorDecoder : Decoder Author
+authorDecoder =
+    Decode.succeed Author
+        |> required "name" string
+        |> required "url" string
+
+
+
+{-
+   The `Decode.succeed` function ignores the given JSON and always produces a specific value.
+-}
+
+
 postDecoder : Decoder Post
 postDecoder =
-    map3 Post
-        (field "id" string)
-        (field "title" string)
-        (field "author" string)
+    --map3 Post
+    --    (field "id" int)
+    --    (field "title" string)
+    --    (field "author" string)
+    Decode.succeed Post
+        |> required "id" int
+        |> required "title" string
+        |> required "author" authorDecoder
 
 
 httpCommand : Cmd Msg
