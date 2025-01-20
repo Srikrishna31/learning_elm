@@ -8,10 +8,8 @@ import Http
 import Json.Decode as Decode
     exposing
         ( Decoder
-        , field
         , int
         , list
-        , map3
         , string
         )
 import Json.Decode.Pipeline exposing (optional, optionalAt, required, requiredAt)
