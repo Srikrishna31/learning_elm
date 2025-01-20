@@ -55,7 +55,7 @@ view model =
     div []
         [ button
             [ onClick SendHttpRequest ]
-            [ text "Get data from server" ]
+            [ text "Refresh posts" ]
         , viewPostsOrError model
         ]
 
@@ -152,8 +152,8 @@ postDecoder =
         |> required "authorUrl" string
 
 
-httpCommand : Cmd Msg
-httpCommand =
+fetchPosts : Cmd Msg
+fetchPosts =
     Http.get
         { url = "http://localhost:5019/posts"
         , expect = Http.expectJson (RemoteData.fromResult >> DataReceived) <| list postDecoder
@@ -164,7 +164,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SendHttpRequest ->
-            ( { model | posts = RemoteData.Loading }, httpCommand )
+            ( { model | posts = RemoteData.Loading }, fetchPosts )
 
         DataReceived response ->
             ( { model | posts = response }, Cmd.none )
@@ -191,7 +191,7 @@ buildErrorMessage httpError =
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { posts = RemoteData.NotAsked }, Cmd.none )
+    ( { posts = RemoteData.Loading }, fetchPosts )
 
 
 main : Program () Model Msg
