@@ -22,7 +22,7 @@ type alias Author =
 
 
 type alias Post =
-    { id : Int
+    { id : Int -- Json-server is converting integers to string, so keep this id as string for now.
     , title : String
     , authorName : String
     , authorUrl : String
@@ -127,8 +127,8 @@ postDecoder =
     Decode.succeed Post
         |> required "id" int
         |> required "title" string
-        |> requiredAt [ "author", "name" ] string
-        |> optionalAt [ "author", "url" ] string "http://dudeism.com"
+        |> required "authorName" string
+        |> required "authorUrl" string
 
 
 httpCommand : Cmd Msg
