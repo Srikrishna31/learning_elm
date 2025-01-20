@@ -24,7 +24,8 @@ type alias Author =
 type alias Post =
     { id : Int
     , title : String
-    , author : Author
+    , authorName : String
+    , authorUrl : String
     }
 
 
@@ -89,7 +90,7 @@ viewPost post =
         [ td [] [ text <| String.fromInt post.id ]
         , td [] [ text post.title ]
         , td []
-            [ a [ href post.author.url ] [ text post.author.name ] ]
+            [ a [ href post.authorUrl ] [ text post.authorName ] ]
         ]
 
 
@@ -108,6 +109,12 @@ authorDecoder =
 
 {-
    The `Decode.succeed` function ignores the given JSON and always produces a specific value.
+
+   # Decoding nested fields with requiredAt
+   `requiredAt` takes a list of field names and traverses them in order. Once it reaches the last field, it applies the
+   given decoder to it.
+
+   # Decoding Nested fields with optionalAt
 -}
 
 
@@ -120,7 +127,8 @@ postDecoder =
     Decode.succeed Post
         |> required "id" int
         |> required "title" string
-        |> required "author" authorDecoder
+        |> requiredAt [ "author", "name" ] string
+        |> optionalAt [ "author", "url" ] string "http://dudeism.com"
 
 
 httpCommand : Cmd Msg
