@@ -1,7 +1,9 @@
-module Post exposing (Post, PostId, idToString, postDecoder, postsDecoder)
+module Post exposing (Post, PostId, idParser, idToString, postDecoder, postEncoder, postsDecoder)
 
 import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
+import Json.Encode as Encode
+import Url.Parser exposing (Parser, custom)
 
 
 
@@ -72,7 +74,7 @@ postsDecoder =
 
 idDecoder : Decoder PostId
 idDecoder =
-    Decode.map PostId int
+    Decode.map PostId string
 
 
 postDecoder : Decoder Post
@@ -85,10 +87,100 @@ postDecoder =
 
 
 type PostId
-    = PostId Int
+    = PostId String
 
 
 idToString : PostId -> String
 idToString (PostId id) =
     -- use pattern matching to expose the underlying integer value inside the PostId data constructor.
-    String.fromInt id
+    id
+
+
+
+{-
+   # Primitive Parsers
+   The `Url.parser` module defines three primitive parsers as shown below:
+
+       int : Parser (Int -> a) a
+       string: Parser (String -> a) a
+       s : String -> Parser a a
+
+   To understand how these parsers work, let's imagine a type called FakeRoute as defined below:
+
+       type FakeRoute
+           = Home
+           | Posts
+           | Post PostId
+           | User Username
+           | Comment Username CommentId
+
+       type PostId
+           = PostId Int
+
+       type Username
+           = Username String
+
+       type CommentId
+           = CommentId Int
+
+    Below are the parsers for matching routes listed in FakeRoute:
+
+       matchFakeRoute: Parser (Route -> a) a
+       matchFakeRoute =
+           oneOf
+               [ map Home top
+               , map Posts (s "posts")
+               , map Post (s "posts" </> int)
+               , map User (s "user" </> string)
+               , map Comment (s "user" </> string </> s "comment" </> int)
+               ]
+
+     The table below shows which path gets parsed to which route based on the logic in `matchFakeRoute`
+
+     Path                           Parser                                                      Route
+                                    top                                                         Home
+     /posts                         s "posts"                                                   Posts
+     /posts/1                       s "posts" </> int                                           Post 1
+     /user/pam                      s "user" </> string                                         User "pam"
+     /user/pam/comment/12           s "user" </> string </> s "comment" </> int                 Comment "pam" 12
+
+
+     Both `string` and `int` parsers pluck values out of a path, whereas `s` simply matches the given string. So when we
+     use s "posts" </> int to parse /posts/1, the s parser first verifies that the path indeed starts with posts. After
+     that the int parser comes in and extracts 1 from the path.
+
+     Now that the path has been parsed successfully, we need to map the result to the Post data constructor from FakeRoute.
+     It's important to note that `s` expects the path segment to match exactly. Therefore if the given path is /postss/1
+     it'll fail.
+
+     # Custom Parsers
+     Primitive parsers are only capable of converting a path segment to either `String` or `Int`. If we need to convert
+     a segment to any other type, we must create our own parser using the `custom` function from `Url.Parser`.
+
+        custom: String -> (String -> Maybe a) -> Parser (a -> b) b
+
+     (String -> Maybe a) function is given a path segment as an input. In our app, that segment is a post ID in string
+     format.
+-}
+
+
+idParser : Parser (PostId -> a) a
+idParser =
+    custom "POSTID" <|
+        --\postid -> String.toInt postid |> Maybe.map PostId
+        \postid -> Just (PostId postid)
+
+
+postEncoder : Post -> Encode.Value
+postEncoder post =
+    Encode.object
+        [ ( "id", encodeId post.id )
+        , ( "title", Encode.string post.title )
+        , ( "authorName", Encode.string post.authorName )
+        , ( "authorUrl", Encode.string post.authorUrl )
+        ]
+
+
+encodeId : PostId -> Encode.Value
+encodeId (PostId id) =
+    Encode.string id

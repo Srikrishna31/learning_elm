@@ -1,5 +1,7 @@
-module Route exposing (..)
+module Route exposing (Route(..), parseUrl, pushUrl)
 
+import Browser.Navigation as Nav
+import Post exposing (PostId)
 import Url exposing (Url)
 import Url.Parser exposing (..)
 
@@ -30,6 +32,7 @@ import Url.Parser exposing (..)
 type Route
     = NotFound
     | Posts
+    | Post PostId
 
 
 
@@ -64,6 +67,10 @@ parseUrl url =
     The function s also defines a parser, but it takes a path as an argument.
     The oneOf function executes the parsers one at a time starting from the top. It stops as soon as a match is found for
     the entire path and not just a portion of it.
+
+    The parser for matching an individual post route uses </> to combine two different parsers. This </> operator combines
+    the parsers created by s and Post.idParser and creates a new parser that knows how to match a path for an individual
+    post.
 -}
 
 
@@ -72,6 +79,7 @@ matchRoute =
     oneOf
         [ map Posts top
         , map Posts <| s "posts"
+        , map Post <| s "posts" </> Post.idParser
         ]
 
 
@@ -88,3 +96,22 @@ matchRoute =
    5. Ask the page from step 4 to return its model by calling its init function.
    6. Pass the model from step 5 to that page's view function.
 -}
+
+
+pushUrl : Route -> Nav.Key -> Cmd msg
+pushUrl route navKey =
+    routeToString route
+        |> Nav.pushUrl navKey
+
+
+routeToString : Route -> String
+routeToString route =
+    case route of
+        NotFound ->
+            "/not-found"
+
+        Posts ->
+            "/posts"
+
+        Post postId ->
+            "/posts/" ++ Post.idToString postId

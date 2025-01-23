@@ -7,6 +7,7 @@ import Http
 import Json.Decode as Decode
 import Post exposing (Post, PostId, postsDecoder)
 import RemoteData exposing (WebData)
+import Util exposing (buildErrorMessage)
 
 
 type alias Model =
@@ -88,6 +89,10 @@ viewTableHeader =
 
 viewPost : Post -> Html Msg
 viewPost post =
+    let
+        postPath =
+            "/posts/" ++ Post.idToString post.id
+    in
     tr []
         [ td []
             [ text <| Post.idToString post.id ]
@@ -95,6 +100,8 @@ viewPost post =
             [ text post.title ]
         , td []
             [ a [ href post.authorUrl ] [ text post.authorName ] ]
+        , td []
+            [ a [ href postPath ] [ text "Edit" ] ]
         ]
 
 
@@ -104,22 +111,3 @@ viewFetchError errorMessage =
         [ h3 [] [ text "Couldn't fetch posts at this time." ]
         , text <| "Error: " ++ errorMessage
         ]
-
-
-buildErrorMessage : Http.Error -> String
-buildErrorMessage httpError =
-    case httpError of
-        Http.BadUrl message ->
-            message
-
-        Http.Timeout ->
-            "Server is taking too long to respond. Please try again later."
-
-        Http.NetworkError ->
-            "Unable to reach server."
-
-        Http.BadStatus statusCode ->
-            "Request failed with status code: " ++ String.fromInt statusCode
-
-        Http.BadBody message ->
-            message
