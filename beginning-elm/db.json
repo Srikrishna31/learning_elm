@@ -1,18 +1,5 @@
 {
-  "posts": [
-    {
-      "id": "1",
-      "title": "json-server(modified)",
-      "authorName": "typicode",
-      "authorUrl": "https://github.com/typicode"
-    },
-    {
-      "id": "2",
-      "title": "http-server(krishna)",
-      "authorName": "indexzero",
-      "authorUrl": "https://github.com/indexzero"
-    }
-  ],
+  "posts": [],
   "comments": [
     {
       "id": "1",
