@@ -33,6 +33,7 @@ type Route
     = NotFound
     | Posts
     | Post PostId
+    | NewPost
 
 
 
@@ -79,6 +80,9 @@ matchRoute =
     oneOf
         [ map Posts top
         , map Posts <| s "posts"
+        , map NewPost <| s "posts" </> s "new"
+
+        -- Since the id is typed as a string, placing the Post.idParser line above new posts will route to edit posts page.
         , map Post <| s "posts" </> Post.idParser
         ]
 
@@ -115,3 +119,6 @@ routeToString route =
 
         Post postId ->
             "/posts/" ++ Post.idToString postId
+
+        NewPost ->
+            "/posts/new"

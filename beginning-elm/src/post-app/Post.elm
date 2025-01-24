@@ -1,4 +1,4 @@
-module Post exposing (Post, PostId, idParser, idToString, postDecoder, postEncoder, postsDecoder)
+module Post exposing (Post, PostId, emptyPost, idParser, idToString, newPostEncoder, postDecoder, postEncoder, postsDecoder)
 
 import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
@@ -184,3 +184,21 @@ postEncoder post =
 encodeId : PostId -> Encode.Value
 encodeId (PostId id) =
     Encode.string id
+
+
+emptyPost : Post
+emptyPost =
+    { id = PostId ""
+    , title = ""
+    , authorName = ""
+    , authorUrl = ""
+    }
+
+
+newPostEncoder : Post -> Encode.Value
+newPostEncoder post =
+    Encode.object
+        [ ( "title", Encode.string post.title )
+        , ( "authorName", Encode.string post.authorName )
+        , ( "authorUrl", Encode.string post.authorUrl )
+        ]
