@@ -14,11 +14,15 @@ view model =
     div []
         [ button [ onClick SendDataToJS ]
             [ text "Send Data to JavaScript" ]
+        , br [] []
+        , br [] []
+        , text <| "Data received from JavaScript: " ++ model
         ]
 
 
 type Msg
     = SendDataToJS
+    | ReceivedDataFromJS Model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -26,6 +30,9 @@ update msg model =
     case msg of
         SendDataToJS ->
             ( model, sendData "Hello JavaScript!" )
+
+        ReceivedDataFromJS data ->
+            ( data, Cmd.none )
 
 
 
@@ -44,6 +51,17 @@ update msg model =
 port sendData : String -> Cmd msg
 
 
+
+{-
+   The incoming port function also takes only one argument. The argument here is a function that takes the model and
+   returns a message.
+   The incoming port function always returns a subscription, whereas the outgoing port function returns a command.
+-}
+
+
+port receiveData : (Model -> msg) -> Sub msg
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
     ( "", Cmd.none )
@@ -55,5 +73,10 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    receiveData ReceivedDataFromJS
