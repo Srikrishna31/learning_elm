@@ -3,10 +3,13 @@ port module PortExamples exposing (..)
 import Browser
 import Html exposing (..)
 import Html.Events exposing (onClick)
+import Json.Decode exposing (Error(..), Value, decodeValue, string)
 
 
 type alias Model =
-    String
+    { dataFromJS : String
+    , jsonError : Maybe Error
+    }
 
 
 view : Model -> Html Msg
@@ -14,15 +17,63 @@ view model =
     div []
         [ button [ onClick SendDataToJS ]
             [ text "Send Data to JavaScript" ]
-        , br [] []
-        , br [] []
-        , text <| "Data received from JavaScript: " ++ model
+        , viewDataFromJSorError model
+        ]
+
+
+viewDataFromJSorError : Model -> Html Msg
+viewDataFromJSorError model =
+    case model.jsonError of
+        Just error ->
+            viewError error
+
+        Nothing ->
+            viewDataFromJS model.dataFromJS
+
+
+viewError : Error -> Html Msg
+viewError err =
+    let
+        errorMessage : String
+        errorMessage =
+            case err of
+                Failure message _ ->
+                    message
+
+                _ ->
+                    "Error: Invalid JSON"
+    in
+    div []
+        [ h3 [] [ text "Couldn't receive data from JavaScript" ]
+        , text <| "Error: " ++ errorMessage
+        ]
+
+
+viewDataFromJS : String -> Html Msg
+viewDataFromJS json =
+    div []
+        [ br [] []
+        , strong [] [ text "Data received from JavaScript: " ]
+        , text json
         ]
 
 
 type Msg
     = SendDataToJS
-    | ReceivedDataFromJS Model
+    | ReceivedDataFromJS Value
+
+
+
+{-
+   decodeString vs decodeValue
+   We used decodeValue in below function, whereas we used decodeString earlier to decode data from an HTTP server. This
+   is because, the data coming from JavaScript is already a valid JSON. An HTTP server on the other hand sends a raw string
+   which must be parsed first to make sure that it's a valid JSON. That's why, decodeString had to be used. The decodeValue
+   skips the parsing altogether and focuses on transforming a valid JSON into an Elm value.
+
+    decodeString: Decoder a -> String -> Result Error a
+    decodeValue: Decoder a -> Value -> Result Error a
+-}
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -32,7 +83,12 @@ update msg model =
             ( model, sendData "Hello JavaScript!" )
 
         ReceivedDataFromJS data ->
-            ( data, Cmd.none )
+            case decodeValue string data of
+                Ok info ->
+                    ( { model | dataFromJS = info }, Cmd.none )
+
+                Err error ->
+                    ( { model | jsonError = Just error }, Cmd.none )
 
 
 
@@ -59,12 +115,26 @@ port sendData : String -> Cmd msg
 -}
 
 
-port receiveData : (Model -> msg) -> Sub msg
+port receiveData : (Value -> msg) -> Sub msg
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( "", Cmd.none )
+    ( initialModel, Cmd.none )
+
+
+initialModel : Model
+initialModel =
+    { dataFromJS = ""
+    , jsonError = Nothing
+    }
+
+
+
+{-
+   Interacting with JavaScript code from an Elm app is very similar to how we interact with an HTTP server. Therefore, to
+   keep things simple, Elm prefers to stick with JSON when sending and receiving data from JavaScript as well.
+-}
 
 
 main : Program () Model Msg
