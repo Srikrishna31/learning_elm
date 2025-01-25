@@ -8,6 +8,7 @@ import Json.Decode exposing (Error(..), Value, decodeValue, string)
 
 type alias Model =
     { dataFromJS : String
+    , dataToJS : ComplexData
     , jsonError : Maybe Error
     }
 
@@ -19,6 +20,37 @@ view model =
             [ text "Send Data to JavaScript" ]
         , viewDataFromJSorError model
         ]
+
+
+type alias ComplexData =
+    { posts : List Post
+    , comments : List Comment
+    , profile : Profile
+    }
+
+
+type alias Post =
+    { id : Int
+    , title : String
+    , author : Author
+    }
+
+
+type alias Author =
+    { name : String
+    , url : String
+    }
+
+
+type alias Comment =
+    { id : Int
+    , body : String
+    , postId : Int
+    }
+
+
+type alias Profile =
+    { name : String }
 
 
 viewDataFromJSorError : Model -> Html Msg
@@ -80,7 +112,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         SendDataToJS ->
-            ( model, sendData "Hello JavaScript!" )
+            ( model, sendData model.dataToJS )
 
         ReceivedDataFromJS data ->
             case decodeValue string data of
@@ -101,10 +133,13 @@ update msg model =
    once the operation is complete. A command that doesn't send any messages back to the app always has the type Cmd msg.
 
    The syntax for calling a port function is identical to that of a regular function.
+
+   For sending complex json data, it's enough to define it as types in ELm, and then hand it over to the port. Elm runtime
+   takes care of converting the data into JSON.
 -}
 
 
-port sendData : String -> Cmd msg
+port sendData : ComplexData -> Cmd msg
 
 
 
@@ -127,6 +162,24 @@ initialModel : Model
 initialModel =
     { dataFromJS = ""
     , jsonError = Nothing
+    , dataToJS = initialComplexData
+    }
+
+
+initialComplexData : ComplexData
+initialComplexData =
+    let
+        post1 =
+            Author "typicode" "https://github.com/typicode"
+                |> Post 1 "json-server"
+
+        post2 =
+            Author "indexzero" "https://github.com/indexzero"
+                |> Post 2 "http-server"
+    in
+    { posts = [ post1, post2 ]
+    , comments = [ Comment 1 "some comment" 1 ]
+    , profile = { name = "typicode" }
     }
 
 
