@@ -5,17 +5,18 @@ module Main exposing (main)
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Html exposing (Html, h3, text)
-import Json.Decode exposing (decodeString)
+import Http
+import Json.Decode as Decode exposing (Value, decodeString, decodeValue)
 import Page.EditPost as EditPost
 import Page.ListPosts as ListPosts
 import Page.NewPost as NewPost
 import Post exposing (Post, postsDecoder)
-import RemoteData exposing (WebData)
+import RemoteData exposing (RemoteData, WebData)
 import Route exposing (Route(..))
 import Url exposing (Url)
 
 
-main : Program (Maybe String) Model Msg
+main : Program Value Model Msg
 main =
     Browser.application
         { init = init
@@ -57,8 +58,8 @@ type Page
 -}
 
 
-init : Maybe String -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init posts url navKey =
+init : Value -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init flags url navKey =
     let
         model : Model
         model =
@@ -67,20 +68,27 @@ init posts url navKey =
             , navKey = navKey
             }
 
-        postsJson : String
+        postsJson : WebData (List Post)
         postsJson =
-            Maybe.withDefault "" posts
-
-        decodeStoredPost : WebData (List Post)
-        decodeStoredPost =
-            case decodeString postsDecoder postsJson of
-                Ok value ->
-                    RemoteData.succeed value
+            case decodeValue Decode.string flags of
+                Ok posts ->
+                    decodeStoredPosts posts
 
                 Err _ ->
-                    RemoteData.Loading
+                    Http.BadBody "Flags must be either string on null"
+                        |> RemoteData.Failure
     in
-    initCurrentPage decodeStoredPost ( model, Cmd.none )
+    initCurrentPage postsJson ( model, Cmd.none )
+
+
+decodeStoredPosts : String -> WebData (List Post)
+decodeStoredPosts postsJson =
+    case decodeString postsDecoder postsJson of
+        Ok value ->
+            RemoteData.succeed value
+
+        Err _ ->
+            RemoteData.Loading
 
 
 
