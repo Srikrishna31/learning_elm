@@ -13,41 +13,44 @@
     <title></title>
 </head>
 <body>
-  <div id="elm-app-is-loaded-here"></div>
-  <script src="/app.js"></script>
-  <script src="dom-performance-test.js"></script>
-  <script>
-    // let app = Elm.Signup.init({
-    //   node:document.getElementById("elm-app-is-loaded-here")
-    // })
-    // let app = Elm.RandomNumber.init({
-    //   node:document.getElementById("elm-app-is-loaded-here")
-    // })
-    // let app = Elm.HttpExamples.init({
-    //     node:document.getElementById("elm-app-is-loaded-here")
-    // let app = Elm.DecodingJson.init({
-    //     node:document.getElementById("elm-app-is-loaded-here")
-    // })
-    let app = Elm.Main.init({
-        node: document.getElementById("elm-app-is-loaded-here")
-    });
-    app.ports.storePosts.subscribe(function(posts){
-        if (posts.length > 0) {
-            let postsJson = JSON.stringify(posts);
-            localStorage.setItem('post-app-save', postsJson);
-            console.log("Saved State: ", postsJson);
-        }
-    })
-    // let app = Elm.PortExamples.init({
-    //     node: document.getElementById("elm-app-is-loaded-here")
-    // });
-    // app.ports.sendData.subscribe(function(data) {
-    //     console.log("Data from Elm: ", data);
-    //     app.ports.receiveData.send("Hey Elm!");
-    // });
-    // let app = Elm.EventListener.init({
-    //     node:document.getElementById("elm-app-is-loaded-here")
-    // });
-  </script>
+    <script src="/app.js"></script>
+    <script>
+        let storedState = localStorage.getItem('post-app-save');
+        console.log("Retrieved state: ", storedState);
+        let startingState = storedState ? JSON.parse(storedState) : null;
+        let app = Elm.Main.init({flags: startingState});
+        app.ports.storePosts.subscribe(function(posts){
+            if (posts.length > 0) {
+                let postsJson = JSON.stringify(posts);
+                localStorage.setItem('post-app-save', postsJson);
+                console.log("Saved State: ", postsJson);
+            }
+        })
+    </script>
+<!--  <div id="elm-app-is-loaded-here"></div>-->
+<!--  <script src="dom-performance-test.js"></script>-->
+<!--  <script>-->
+<!--    // let app = Elm.Signup.init({-->
+<!--    //   node:document.getElementById("elm-app-is-loaded-here")-->
+<!--    // })-->
+<!--    // let app = Elm.RandomNumber.init({-->
+<!--    //   node:document.getElementById("elm-app-is-loaded-here")-->
+<!--    // })-->
+<!--    // let app = Elm.HttpExamples.init({-->
+<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
+<!--    // let app = Elm.DecodingJson.init({-->
+<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
+<!--    // })-->
+<!--    // let app = Elm.PortExamples.init({-->
+<!--    //     node: document.getElementById("elm-app-is-loaded-here")-->
+<!--    // });-->
+<!--    // app.ports.sendData.subscribe(function(data) {-->
+<!--    //     console.log("Data from Elm: ", data);-->
+<!--    //     app.ports.receiveData.send("Hey Elm!");-->
+<!--    // });-->
+<!--    // let app = Elm.EventListener.init({-->
+<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
+<!--    // });-->
+<!--  </script>-->
 </body>
 </html>

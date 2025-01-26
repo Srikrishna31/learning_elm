@@ -5,14 +5,17 @@ module Main exposing (main)
 import Browser exposing (Document, UrlRequest)
 import Browser.Navigation as Nav
 import Html exposing (Html, h3, text)
+import Json.Decode exposing (decodeString)
 import Page.EditPost as EditPost
 import Page.ListPosts as ListPosts
 import Page.NewPost as NewPost
+import Post exposing (Post, postsDecoder)
+import RemoteData exposing (WebData)
 import Route exposing (Route(..))
 import Url exposing (Url)
 
 
-main : Program () Model Msg
+main : Program (Maybe String) Model Msg
 main =
     Browser.application
         { init = init
@@ -54,16 +57,30 @@ type Page
 -}
 
 
-init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
-init _ url navKey =
+init : Maybe String -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init posts url navKey =
     let
+        model : Model
         model =
             { route = Route.parseUrl url
             , page = NotFoundPage
             , navKey = navKey
             }
+
+        postsJson : String
+        postsJson =
+            Maybe.withDefault "" posts
+
+        decodeStoredPost : WebData (List Post)
+        decodeStoredPost =
+            case decodeString postsDecoder postsJson of
+                Ok value ->
+                    RemoteData.succeed value
+
+                Err _ ->
+                    RemoteData.Loading
     in
-    initCurrentPage ( model, Cmd.none )
+    initCurrentPage decodeStoredPost ( model, Cmd.none )
 
 
 
@@ -134,8 +151,8 @@ type Msg
 -}
 
 
-initCurrentPage : ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
-initCurrentPage ( model, existingCmds ) =
+initCurrentPage : WebData (List Post) -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+initCurrentPage posts ( model, existingCmds ) =
     let
         ( currentPage, mappedPageCmds ) =
             case model.route of
@@ -145,11 +162,11 @@ initCurrentPage ( model, existingCmds ) =
                 Posts ->
                     let
                         ( pageModel, pageCmds ) =
-                            ListPosts.init
+                            ListPosts.init posts
                     in
                     ( ListPage pageModel, Cmd.map ListPageMsg pageCmds )
 
-                Post postId ->
+                Route.Post postId ->
                     let
                         ( pageModel, pageCmd ) =
                             EditPost.init postId model.navKey
@@ -229,11 +246,12 @@ update msg model =
 
         ( UrlChanged url, _ ) ->
             let
+                newRoute : Route
                 newRoute =
                     Route.parseUrl url
             in
             ( { model | route = newRoute }, Cmd.none )
-                |> initCurrentPage
+                |> initCurrentPage RemoteData.Loading
 
         ( EditPageMsg subMsg, EditPage pageModel ) ->
             let

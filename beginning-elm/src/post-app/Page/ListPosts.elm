@@ -23,13 +23,27 @@ type Msg
     | PostDeleted (Result Http.Error String)
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( { posts = RemoteData.Loading
-      , deleteError = Nothing
-      }
-    , fetchPosts
+init : WebData (List Post) -> ( Model, Cmd Msg )
+init posts =
+    let
+        initialCmd : Cmd Msg
+        initialCmd =
+            if RemoteData.isSuccess posts then
+                Cmd.none
+
+            else
+                fetchPosts
+    in
+    ( initialModel posts
+    , initialCmd
     )
+
+
+initialModel : WebData (List Post) -> Model
+initialModel posts =
+    { posts = posts
+    , deleteError = Nothing
+    }
 
 
 fetchPosts : Cmd Msg
