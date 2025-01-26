@@ -28,16 +28,23 @@
     // let app = Elm.DecodingJson.init({
     //     node:document.getElementById("elm-app-is-loaded-here")
     // })
-    // let app = Elm.Main.init({
-    //     node: document.getElementById("elm-app-is-loaded-here")
-    // })
-    let app = Elm.PortExamples.init({
+    let app = Elm.Main.init({
         node: document.getElementById("elm-app-is-loaded-here")
     });
-    app.ports.sendData.subscribe(function(data) {
-        console.log("Data from Elm: ", data);
-        app.ports.receiveData.send("Hey Elm!");
-    });
+    app.ports.storePosts.subscribe(function(posts){
+        if (posts.length > 0) {
+            let postsJson = JSON.stringify(posts);
+            localStorage.setItem('post-app-save', postsJson);
+            console.log("Saved State: ", postsJson);
+        }
+    })
+    // let app = Elm.PortExamples.init({
+    //     node: document.getElementById("elm-app-is-loaded-here")
+    // });
+    // app.ports.sendData.subscribe(function(data) {
+    //     console.log("Data from Elm: ", data);
+    //     app.ports.receiveData.send("Hey Elm!");
+    // });
     // let app = Elm.EventListener.init({
     //     node:document.getElementById("elm-app-is-loaded-here")
     // });

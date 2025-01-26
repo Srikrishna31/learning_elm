@@ -1,8 +1,9 @@
-module Post exposing (Post, PostId, emptyPost, idParser, idToString, newPostEncoder, postDecoder, postEncoder, postsDecoder)
+module Post exposing (Post, PostId, emptyPost, idParser, idToString, newPostEncoder, postDecoder, postEncoder, postsDecoder, savePosts)
 
 import Json.Decode as Decode exposing (Decoder, int, list, string)
 import Json.Decode.Pipeline exposing (required)
 import Json.Encode as Encode
+import Ports exposing (..)
 import Url.Parser exposing (Parser, custom)
 
 
@@ -202,3 +203,18 @@ newPostEncoder post =
         , ( "authorName", Encode.string post.authorName )
         , ( "authorUrl", Encode.string post.authorUrl )
         ]
+
+
+
+{-
+   The Encode.encode function converts a Value into an actual JSON string.
+
+        encode: Int -> Value -> String
+-}
+
+
+savePosts : List Post -> Cmd msg
+savePosts posts =
+    Encode.list postEncoder posts
+        |> Encode.encode 0
+        |> Ports.storePosts

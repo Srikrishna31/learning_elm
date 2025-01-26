@@ -5,7 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Http
 import Json.Decode as Decode
-import Post exposing (Post, PostId, postsDecoder)
+import Post exposing (Post, PostId, postsDecoder, savePosts)
 import RemoteData exposing (WebData)
 import Util exposing (buildErrorMessage)
 
@@ -49,7 +49,16 @@ update msg model =
             ( { model | posts = RemoteData.Loading }, fetchPosts )
 
         PostsReceived response ->
-            ( { model | posts = response }, Cmd.none )
+            let
+                savePostsCmd =
+                    case response of
+                        RemoteData.Success actualPosts ->
+                            savePosts actualPosts
+
+                        _ ->
+                            Cmd.none
+            in
+            ( { model | posts = response }, savePostsCmd )
 
         DeletePost postId ->
             ( model, deletePost postId )
