@@ -10,47 +10,66 @@
         text-align: center;
       }
     </style>
+    <script>
+        type="module"
+        src="node_modules/@github/image-crop-element/dist/index.esm.js"
+    </script>
+    <link
+        href = "node_modules/@github/image-crop-element/index.css"
+        rel="stylesheet">
+    <style>
+        .wrapper {
+            width: 500px;
+            margin: 30px auto;
+        }
+        .center {
+            text-align: center;
+        }
+    </style>
     <title></title>
 </head>
 <body>
     <script src="/app.js"></script>
-    <script>
-        let storedState = localStorage.getItem('post-app-save');
-        console.log("Retrieved state: ", storedState);
-        let startingState = storedState ? JSON.parse(storedState) : null;
-        let app = Elm.Main.init({flags: startingState});
-        app.ports.storePosts.subscribe(function(posts){
-            if (posts.length > 0) {
-                let postsJson = JSON.stringify(posts);
-                localStorage.setItem('post-app-save', postsJson);
-                console.log("Saved State: ", postsJson);
-            }
-        })
-    </script>
-<!--  <div id="elm-app-is-loaded-here"></div>-->
-<!--  <script src="dom-performance-test.js"></script>-->
-<!--  <script>-->
-<!--    // let app = Elm.Signup.init({-->
-<!--    //   node:document.getElementById("elm-app-is-loaded-here")-->
-<!--    // })-->
-<!--    // let app = Elm.RandomNumber.init({-->
-<!--    //   node:document.getElementById("elm-app-is-loaded-here")-->
-<!--    // })-->
-<!--    // let app = Elm.HttpExamples.init({-->
-<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
-<!--    // let app = Elm.DecodingJson.init({-->
-<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
-<!--    // })-->
-<!--    // let app = Elm.PortExamples.init({-->
-<!--    //     node: document.getElementById("elm-app-is-loaded-here")-->
-<!--    // });-->
-<!--    // app.ports.sendData.subscribe(function(data) {-->
-<!--    //     console.log("Data from Elm: ", data);-->
-<!--    //     app.ports.receiveData.send("Hey Elm!");-->
-<!--    // });-->
-<!--    // let app = Elm.EventListener.init({-->
-<!--    //     node:document.getElementById("elm-app-is-loaded-here")-->
-<!--    // });-->
-<!--  </script>-->
+<!--    <script>-->
+<!--        let storedState = localStorage.getItem('post-app-save');-->
+<!--        console.log("Retrieved state: ", storedState);-->
+<!--        let startingState = storedState ? JSON.parse(storedState) : null;-->
+<!--        let app = Elm.Main.init({flags: startingState});-->
+<!--        app.ports.storePosts.subscribe(function(posts){-->
+<!--            if (posts.length > 0) {-->
+<!--                let postsJson = JSON.stringify(posts);-->
+<!--                localStorage.setItem('post-app-save', postsJson);-->
+<!--                console.log("Saved State: ", postsJson);-->
+<!--            }-->
+<!--        })-->
+<!--    </script>-->
+  <div id="elm-app-is-loaded-here"></div>
+  <script src="dom-performance-test.js"></script>
+  <script>
+    // let app = Elm.Signup.init({
+    //   node:document.getElementById("elm-app-is-loaded-here")
+    // })
+    // let app = Elm.RandomNumber.init({
+    //   node:document.getElementById("elm-app-is-loaded-here")
+    // })
+    // let app = Elm.HttpExamples.init({
+    //     node:document.getElementById("elm-app-is-loaded-here")
+    // let app = Elm.DecodingJson.init({
+    //     node:document.getElementById("elm-app-is-loaded-here")
+    // })
+    // let app = Elm.PortExamples.init({
+    //     node: document.getElementById("elm-app-is-loaded-here")
+    // });
+    // app.ports.sendData.subscribe(function(data) {
+    //     console.log("Data from Elm: ", data);
+    //     app.ports.receiveData.send("Hey Elm!");
+    // });
+    // let app = Elm.EventListener.init({
+    //     node:document.getElementById("elm-app-is-loaded-here")
+    // });
+    let app = Elm.CustomElements.init({
+        node: document.getElementById("elm-app-is-loaded-here")
+    });
+  </script>
 </body>
 </html>
