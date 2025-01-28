@@ -1,14 +1,22 @@
 module Picshare exposing (main)
 
 import Browser
-import Html exposing (Html, div, h1, h2, i, img, text)
-import Html.Attributes exposing (class, src)
+import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong, text, ul)
+import Html.Attributes exposing (class, placeholder, src, type_)
 import Html.Events exposing (onClick)
 
 
 type Msg
-    = Like
-    | Unlike
+    = ToggleLike
+
+
+type alias Model =
+    { url : String
+    , caption : String
+    , liked : Bool
+    , comments : List String
+    , newComment : String
+    }
 
 
 {-| A compiled Elm application creates a global Elm namespace variable. The Elm variable has properties for any top-level
@@ -29,37 +37,70 @@ object specifies a DOM node.
     Elm defines the Program type as a custom type with three type variables: flags, model, and msg.
 
 -}
-viewDetailedPhoto : { url : String, caption : String, liked : Bool } -> Html Msg
-viewDetailedPhoto { url, caption, liked } =
+viewDetailedPhoto : Model -> Html Msg
+viewDetailedPhoto model =
+    div [ class "detailed-photo" ]
+        [ img [ src model.url ] []
+        , div [ class "photo-info" ]
+            [ viewLoveButton model
+            , h2 [ class "caption" ] [ text model.caption ]
+            , viewComments model
+            ]
+        ]
+
+
+viewLoveButton : Model -> Html Msg
+viewLoveButton model =
     let
-        buttonClass : String
         buttonClass =
-            if liked then
+            if model.liked then
                 "fa-heart"
 
             else
                 "fa-heart-o"
-
-        msg : Msg
-        msg =
-            if liked then
-                Unlike
-
-            else
-                Like
     in
-    div [ class "detailed-photo" ]
-        [ img [ src url ] []
-        , div [ class "photo-info" ]
-            [ div [ class "like-button" ]
-                [ i
-                    [ class "fa fa-2x"
-                    , class buttonClass
-                    , onClick msg
-                    ]
-                    []
+    div [ class "like-button" ]
+        [ i
+            [ class "fa fa-2x"
+            , class buttonClass
+            , onClick ToggleLike
+            ]
+            []
+        ]
+
+
+viewComment : String -> Html Msg
+viewComment comment =
+    li []
+        [ strong [] [ text "Comment: " ]
+        , text <| " " ++ comment
+        ]
+
+
+viewCommentList : List String -> Html Msg
+viewCommentList comments =
+    case comments of
+        [] ->
+            text ""
+
+        _ ->
+            div [ class "comments" ]
+                [ ul [] <|
+                    List.map viewComment comments
                 ]
-            , h2 [ class "caption" ] [ text caption ]
+
+
+viewComments : Model -> Html Msg
+viewComments model =
+    div []
+        [ viewCommentList model.comments
+        , form [ class "new-comment" ]
+            [ input
+                [ type_ "text"
+                , placeholder "Add a comment..."
+                ]
+                []
+            , button [] [ text "Save" ]
             ]
         ]
 
@@ -69,15 +110,17 @@ baseUrl =
     "https://programming-elm.com/"
 
 
-initialModel : { url : String, caption : String, liked : Bool }
+initialModel : Model
 initialModel =
     { url = baseUrl ++ "1.jpg"
     , caption = "Surfing"
     , liked = False
+    , comments = [ "Cowabunga, dude!" ]
+    , newComment = ""
     }
 
 
-view : { url : String, caption : String, liked : Bool } -> Html Msg
+view : Model -> Html Msg
 view model =
     div []
         [ div [ class "header" ]
@@ -127,15 +170,14 @@ The above cycle repeats when the button is clicked again. Data flows in Elm appl
 in one direction from model to view to messages to update and back to model.
 
 -}
-update :
-    Msg
-    -> { url : String, caption : String, liked : Bool }
-    -> { url : String, caption : String, liked : Bool }
+update : Msg -> Model -> Model
 update msg model =
-    { model | liked = msg == Like }
+    case msg of
+        ToggleLike ->
+            { model | liked = not model.liked }
 
 
-main : Program () { url : String, caption : String, liked : Bool } Msg
+main : Program () Model Msg
 main =
     Browser.sandbox
         { init = initialModel
