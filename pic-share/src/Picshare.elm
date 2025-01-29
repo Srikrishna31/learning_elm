@@ -4,6 +4,12 @@ import Browser
 import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong, text, ul)
 import Html.Attributes exposing (class, disabled, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
+import Json.Decode.Pipeline exposing (hardcoded, required)
+
+
+type alias Id =
+    Int
 
 
 type Msg
@@ -12,13 +18,18 @@ type Msg
     | SaveComment
 
 
-type alias Model =
-    { url : String
+type alias Photo =
+    { id : Id
+    , url : String
     , caption : String
     , liked : Bool
     , comments : List String
     , newComment : String
     }
+
+
+type alias Model =
+    Photo
 
 
 {-| A compiled Elm application creates a global Elm namespace variable. The Elm variable has properties for any top-level
@@ -117,7 +128,8 @@ baseUrl =
 
 initialModel : Model
 initialModel =
-    { url = baseUrl ++ "1.jpg"
+    { id = 1
+    , url = baseUrl ++ "1.jpg"
     , caption = "Surfing"
     , liked = False
     , comments = [ "Cowabunga, dude!" ]
@@ -209,3 +221,77 @@ main =
         , view = view
         , update = update
         }
+
+
+{-|
+
+    Decode an object
+    Let's understand decoding json objects with a simple dog json record. Enter the following in the REPL:
+    > dog name age = {name = name, age = age}
+    <function> : a -> b -> { age: b , name: a }
+
+    Create a dog decoder by entering the following code in the REPL:
+    > dogDecoder =
+    |   succeed dog
+    |       |> required "name" string
+    |       |> required "age" int
+    <internals>: Json.Decode.Decoder {age: Int, name: String}
+
+    Let's understand the function line by line. The succeed function creates a decoder literal. For example you call
+    succeed on the string "Elm", then you get back a Decoder String. For the dog function, you get back a
+    Decoder (a -> b -> {age: b, name: a}). Essentially you get back a decoder of whatever you pass in, even if it's a
+    function like dog.
+    On the next line, we use the pipe operator to feed the decoder into the required function. It requires a property to
+    exist in the JSON object just like the field function. It's different from field in that it not only extracts the
+    property but also applies the value to the function inside the current decoder. Below is the type signature of required:
+
+        required: String -> Decoder a -> Decoder b -> Decoder (a -> b) -> Decoder b
+
+    The first argument is a String, which is the name of the property. The second argument is a Decoder a that expects
+    the property to have a type of a. The third argument is another decoder that contains a function. This inner function
+    must translate the type a to the type b. This translation process allows required to return a Decoder b.
+
+    In this example, the third argument is the decoder that contains the dog function. If you had only run the first two
+    lines from the example, the decoder would have this type:
+
+        Decoder ( a -> {age: a, name: String})
+
+    Compare that type to executing only the first line of the example:
+
+        Decoder (a -> b -> {age: b, name: a})
+
+    Notice that you filled in the first type variable to be a String. That is, you went from a function with two arguments
+    to a function with one argument.
+
+    Moving to the third line in the example, you call the required function with the "age", the int decoder, and the
+    current dog decoder. The dog decoder can now extract the age property and apply it as the second argument to the
+    original dog function, which gives us the following final decoder:
+
+        Decoder {age: Int, name: String}
+
+    The photoDecoder resembles the dogDecoder written in the REPL with a couple of differences. First is the call to
+    succeed on the Photo constructor function. You pipe the constructor function through several calls to required with
+    different decoders. For the "id" property you use the int decoder. For the "url" and "caption" properties, you use
+    the string decoder. For the "liked" property you use the bool decoder. Finally, for the "comments" property you use
+    list string. The list decoder takes another decoder as an argument to decode each item in the JSON array to that
+    inner decoder's type.
+    At the end, you use the hardcoded function. You can use the hardcoded function to tell the decoder to use a static
+    value as an argument to the underlying decoder function instead of extracting a property from the JSON object. In
+    this case, you use hardcoded to provide the empty string as the final newComment argument to the Photo constructor
+    function.
+
+    One important note to add is that the order of the piping operations matters. The order needs to match the order of
+    the arguments to the constructor function. For example, if you switched the order of the id and url field decoders,
+    you would get a compiler error. That's because the decoder would think it needs to call the constructor function with
+    a String first instead of an Int.
+
+-}
+photoDecoder : Decoder Photo
+photoDecoder =
+    succeed Photo
+        |> required "id" int
+        |> required "url" string
+        |> required "caption" string
+        |> required "liked" bool
+        |> required "comments" (list string)
+        |> hardcoded ""
