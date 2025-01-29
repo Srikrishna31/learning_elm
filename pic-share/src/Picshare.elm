@@ -4,6 +4,7 @@ import Browser
 import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong, text, ul)
 import Html.Attributes exposing (class, disabled, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
+import Http
 import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 
@@ -16,6 +17,7 @@ type Msg
     = ToggleLike
     | UpdateComment String
     | SaveComment
+    | LoadFeed (Result Http.Error Photo)
 
 
 type alias Photo =
@@ -29,7 +31,8 @@ type alias Photo =
 
 
 type alias Model =
-    Photo
+    { photo : Maybe Photo
+    }
 
 
 {-| A compiled Elm application creates a global Elm namespace variable. The Elm variable has properties for any top-level
@@ -50,19 +53,19 @@ object specifies a DOM node.
     Elm defines the Program type as a custom type with three type variables: flags, model, and msg.
 
 -}
-viewDetailedPhoto : Model -> Html Msg
-viewDetailedPhoto model =
+viewDetailedPhoto : Photo -> Html Msg
+viewDetailedPhoto photo =
     div [ class "detailed-photo" ]
-        [ img [ src model.url ] []
+        [ img [ src photo.url ] []
         , div [ class "photo-info" ]
-            [ viewLoveButton model
-            , h2 [ class "caption" ] [ text model.caption ]
-            , viewComments model
+            [ viewLoveButton photo
+            , h2 [ class "caption" ] [ text photo.caption ]
+            , viewComments photo
             ]
         ]
 
 
-viewLoveButton : Model -> Html Msg
+viewLoveButton : Photo -> Html Msg
 viewLoveButton model =
     let
         buttonClass =
@@ -103,19 +106,19 @@ viewCommentList comments =
                 ]
 
 
-viewComments : Model -> Html Msg
-viewComments model =
+viewComments : Photo -> Html Msg
+viewComments photo =
     div []
-        [ viewCommentList model.comments
+        [ viewCommentList photo.comments
         , form [ class "new-comment", onSubmit SaveComment ]
             [ input
                 [ type_ "text"
                 , placeholder "Add a comment..."
-                , value model.newComment
+                , value photo.newComment
                 , onInput UpdateComment
                 ]
                 []
-            , button [ disabled <| String.isEmpty model.newComment ]
+            , button [ disabled <| String.isEmpty photo.newComment ]
                 [ text "Save" ]
             ]
         ]
@@ -128,13 +131,21 @@ baseUrl =
 
 initialModel : Model
 initialModel =
-    { id = 1
-    , url = baseUrl ++ "1.jpg"
-    , caption = "Surfing"
-    , liked = False
-    , comments = [ "Cowabunga, dude!" ]
-    , newComment = ""
+    { photo = Nothing
     }
+
+
+fetchFeed : Cmd Msg
+fetchFeed =
+    Http.get
+        { url = baseUrl ++ "feed/1"
+        , expect = Http.expectJson LoadFeed photoDecoder
+        }
+
+
+init : () -> ( Model, Cmd Msg )
+init () =
+    ( initialModel, fetchFeed )
 
 
 view : Model -> Html Msg
@@ -143,8 +154,19 @@ view model =
         [ div [ class "header" ]
             [ h1 [] [ text "Picshare" ] ]
         , div [ class "content-flow" ]
-            [ viewDetailedPhoto model ]
+            [ viewFeed model.photo ]
         ]
+
+
+viewFeed : Maybe Photo -> Html Msg
+viewFeed maybePhoto =
+    case maybePhoto of
+        Just photo ->
+            viewDetailedPhoto photo
+
+        Nothing ->
+            div [ class "loading-feed" ]
+                [ text "Loading Feed..." ]
 
 
 {-|
@@ -187,39 +209,61 @@ The above cycle repeats when the button is clicked again. Data flows in Elm appl
 in one direction from model to view to messages to update and back to model.
 
 -}
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ToggleLike ->
-            { model | liked = not model.liked }
+            ( { model | photo = updateFeed toggleLike model.photo }, Cmd.none )
 
         UpdateComment comment ->
-            { model | newComment = comment }
+            ( { model | photo = updateFeed (updateComment comment) model.photo }, Cmd.none )
 
         SaveComment ->
-            saveNewComment model
+            ( { model | photo = updateFeed saveNewComment model.photo }, Cmd.none )
+
+        LoadFeed (Ok photo) ->
+            ( { model | photo = Just photo }, Cmd.none )
+
+        LoadFeed (Err _) ->
+            ( model, Cmd.none )
 
 
-saveNewComment : Model -> Model
-saveNewComment model =
+toggleLike : Photo -> Photo
+toggleLike photo =
+    { photo | liked = not photo.liked }
+
+
+updateComment : String -> Photo -> Photo
+updateComment comment photo =
+    { photo | newComment = comment }
+
+
+updateFeed : (Photo -> Photo) -> Maybe Photo -> Maybe Photo
+updateFeed updatePhoto maybePhoto =
+    Maybe.map updatePhoto maybePhoto
+
+
+saveNewComment : Photo -> Photo
+saveNewComment photo =
     let
         comment =
-            String.trim model.newComment
+            String.trim photo.newComment
     in
     case comment of
         "" ->
-            model
+            photo
 
         _ ->
-            { model | comments = model.comments ++ [ comment ], newComment = "" }
+            { photo | comments = photo.comments ++ [ comment ], newComment = "" }
 
 
 main : Program () Model Msg
 main =
-    Browser.sandbox
-        { init = initialModel
+    Browser.element
+        { init = init
         , view = view
         , update = update
+        , subscriptions = subscriptions
         }
 
 
@@ -295,3 +339,8 @@ photoDecoder =
         |> required "liked" bool
         |> required "comments" (list string)
         |> hardcoded ""
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.none
