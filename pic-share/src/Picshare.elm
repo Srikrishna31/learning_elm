@@ -5,7 +5,7 @@ import Html exposing (Html, button, div, form, h1, h2, i, img, input, li, strong
 import Html.Attributes exposing (class, disabled, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
-import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
+import Json.Decode exposing (Decoder, bool, decodeString, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
 import Websocket
 
@@ -19,7 +19,8 @@ type Msg
     | UpdateComment Id String
     | SaveComment Id
     | LoadFeed (Result Http.Error Feed)
-    | LoadStreamPhoto String
+    | LoadStreamPhoto (Result Json.Decode.Error Photo)
+    | FlushStreamQueue
 
 
 type alias Photo =
@@ -39,6 +40,7 @@ type alias Feed =
 type alias Model =
     { feed : Maybe Feed
     , error : Maybe Http.Error
+    , streamQueue : Feed
     }
 
 
@@ -131,6 +133,25 @@ viewComments photo =
         ]
 
 
+viewStreamNotification : Feed -> Html Msg
+viewStreamNotification queue =
+    case queue of
+        [] ->
+            text ""
+
+        _ ->
+            let
+                content : String
+                content =
+                    "View new photos: " ++ String.fromInt (List.length queue)
+            in
+            div
+                [ class "stream-notification"
+                , onClick FlushStreamQueue
+                ]
+                [ text content ]
+
+
 viewContent : Model -> Html Msg
 viewContent model =
     case model.error of
@@ -139,7 +160,10 @@ viewContent model =
                 [ text <| errorMessage error ]
 
         Nothing ->
-            viewFeed model.feed
+            div []
+                [ viewStreamNotification model.streamQueue
+                , viewFeed model.feed
+                ]
 
 
 errorMessage : Http.Error -> String
@@ -179,6 +203,7 @@ initialModel : Model
 initialModel =
     { feed = Nothing
     , error = Nothing
+    , streamQueue = []
     }
 
 
@@ -274,11 +299,17 @@ update msg model =
         LoadFeed (Err err) ->
             ( { model | error = Just err }, Cmd.none )
 
-        LoadStreamPhoto data ->
+        LoadStreamPhoto (Ok photo) ->
             let
-                _ =
-                    Debug.log "WebSocket data" data
+                photoReceived =
+                    Debug.log "WebSocket data" photo
             in
+            ( { model | streamQueue = photo :: model.streamQueue }, Cmd.none )
+
+        LoadStreamPhoto (Err _) ->
+            ( model, Cmd.none )
+
+        FlushStreamQueue ->
             ( model, Cmd.none )
 
 
@@ -419,7 +450,13 @@ photoDecoder =
     Elm provides other subscriptions that don't depend on ports such as periodically getting the current time or receiving
     certain browser events.
 
+
+    The << operator is the backward composition operator. It combines two functions into one function. It chains the
+    functions together by passing in the return value of one function as the argument to the next function. The first
+    function in the chain receives the initial argument. Because the operator points to the left, it calls functions from
+    right to left.
+
 -}
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Websocket.receive LoadStreamPhoto
+    Websocket.receive (LoadStreamPhoto << decodeString photoDecoder)
