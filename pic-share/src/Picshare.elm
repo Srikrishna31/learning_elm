@@ -36,6 +36,7 @@ type alias Feed =
 
 type alias Model =
     { feed : Maybe Feed
+    , error : Maybe Http.Error
     }
 
 
@@ -128,6 +129,40 @@ viewComments photo =
         ]
 
 
+viewContent : Model -> Html Msg
+viewContent model =
+    case model.error of
+        Just error ->
+            div [ class "feed-error" ]
+                [ text <| errorMessage error ]
+
+        Nothing ->
+            viewFeed model.feed
+
+
+errorMessage : Http.Error -> String
+errorMessage err =
+    case err of
+        Http.BadUrl string ->
+            """ Provided url is not correct.
+                Please check your url:
+            """ ++ string
+
+        Http.Timeout ->
+            """ Request timed out"""
+
+        Http.NetworkError ->
+            """ Couldn't connect to the server.
+            Please try again after checking your network"""
+
+        Http.BadStatus int ->
+            """Error returned from server: """ ++ String.fromInt int
+
+        Http.BadBody string ->
+            """Sorry we couldn't process your feed at this time.
+            We're working on it! """ ++ string
+
+
 baseUrl : String
 baseUrl =
     "https://programming-elm.com/"
@@ -136,6 +171,7 @@ baseUrl =
 initialModel : Model
 initialModel =
     { feed = Nothing
+    , error = Nothing
     }
 
 
@@ -158,7 +194,7 @@ view model =
         [ div [ class "header" ]
             [ h1 [] [ text "Picshare" ] ]
         , div [ class "content-flow" ]
-            [ viewFeed model.feed ]
+            [ viewContent model ]
         ]
 
 
@@ -228,8 +264,8 @@ update msg model =
         LoadFeed (Ok feed) ->
             ( { model | feed = Just feed }, Cmd.none )
 
-        LoadFeed (Err _) ->
-            ( model, Cmd.none )
+        LoadFeed (Err err) ->
+            ( { model | error = Just err }, Cmd.none )
 
 
 toggleLike : Photo -> Photo
