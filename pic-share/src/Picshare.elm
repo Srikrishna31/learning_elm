@@ -7,6 +7,7 @@ import Html.Events exposing (onClick, onInput, onSubmit)
 import Http
 import Json.Decode exposing (Decoder, bool, int, list, string, succeed)
 import Json.Decode.Pipeline exposing (hardcoded, required)
+import Websocket
 
 
 type alias Id =
@@ -18,6 +19,7 @@ type Msg
     | UpdateComment Id String
     | SaveComment Id
     | LoadFeed (Result Http.Error Feed)
+    | LoadStreamPhoto String
 
 
 type alias Photo =
@@ -168,6 +170,11 @@ baseUrl =
     "https://programming-elm.com/"
 
 
+wsUrl : String
+wsUrl =
+    "wss://programming-elm.com"
+
+
 initialModel : Model
 initialModel =
     { feed = Nothing
@@ -262,10 +269,17 @@ update msg model =
             ( { model | feed = updateFeed saveNewComment id model.feed }, Cmd.none )
 
         LoadFeed (Ok feed) ->
-            ( { model | feed = Just feed }, Cmd.none )
+            ( { model | feed = Just feed }, Websocket.listen wsUrl )
 
         LoadFeed (Err err) ->
             ( { model | error = Just err }, Cmd.none )
+
+        LoadStreamPhoto data ->
+            let
+                _ =
+                    Debug.log "WebSocket data" data
+            in
+            ( model, Cmd.none )
 
 
 toggleLike : Photo -> Photo
@@ -394,6 +408,18 @@ photoDecoder =
         |> hardcoded ""
 
 
+{-|
+
+    Subscriptions differ from commands in that commands tell the Elm Architecture to do something to the outside world
+    while subscriptions tell the Elm Architecture to receive information from the outside world. The Elm Architecture
+    will listen for events related to subscriptions, and notify your application's update function with whatever message
+    constructor you provide at subscription time. Recall that the JavaScript code will call the receive port with event.data
+    which will trigger the subscription on the Elm end to receive the data.
+
+    Elm provides other subscriptions that don't depend on ports such as periodically getting the current time or receiving
+    certain browser events.
+
+-}
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Websocket.receive LoadStreamPhoto

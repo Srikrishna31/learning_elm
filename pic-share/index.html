@@ -20,9 +20,32 @@
 <body>
   <div id="main"></div>
   <script>
-    Elm.Picshare.init({
-      node: document.getElementById('main')
-    });
+    /*
+     Here we are creating an immediately-invoked-function-expression (IIFE). The IIFE lets you create variables inside
+     the scope of function instead of polluting browser's global namespace.
+     */
+    (function() {
+      let app = Elm.Picshare.init({
+        node: document.getElementById('main')
+      });
+
+      app.ports.listen.subscribe(listen);
+
+      function listen(url) {
+        /*
+        WebSocket is a built-in JavaScript constructor function for connecting to WebSocket servers. You receive the url
+        from the port and create a new instance of WebSocket with it. Then, you define the WebSocket's onmessage callback,
+        which will receive events from the server. The actual photo data you'll need resides in the data property, so you
+        pull that out and pass it into app.ports.receive.send. Ports that receive data, such as receive, provide a send
+        method for JavaScript to forward data to Elm.
+         */
+        let socket = new WebSocket(url);
+
+        socket.onmessage = function(event) {
+          app.ports.receive.send(event.data);
+        }
+      }
+    })();
   </script>
 </body>
 </html>
