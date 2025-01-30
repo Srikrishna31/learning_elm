@@ -310,7 +310,16 @@ update msg model =
             ( model, Cmd.none )
 
         FlushStreamQueue ->
-            ( model, Cmd.none )
+            ( { model
+                {-
+                   Order is important here-you want model.streamQueue to be the left operand because these are the newest
+                   photos that need to be on the top.
+                -}
+                | feed = Maybe.map ((++) model.streamQueue) model.feed
+                , streamQueue = []
+              }
+            , Cmd.none
+            )
 
 
 toggleLike : Photo -> Photo
